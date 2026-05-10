@@ -1,0 +1,88 @@
+"""Reusable figure helpers for chapter orchestrators."""
+
+from .animations import (
+    animate_2d_posterior,
+    animate_bimodal_emergence,
+    animate_blr_predictive_band,
+    animate_calibration_growth,
+    animate_em_convergence,
+    animate_em_steps,
+    animate_gradient_descent,
+    animate_lgs_online,
+    animate_precision_sweep,
+    animate_sequential_posterior,
+    animate_sufficient_statistics,
+    save_animation,
+)
+from .diagnostics import (
+    plot_calibration,
+    plot_cdf_comparison,
+    plot_coverage_curve,
+    plot_kl_trace,
+    plot_posterior_predictive_check,
+    plot_qq,
+    plot_running_statistics,
+    plot_score_trace,
+)
+from .interactive import interactive_inference, interactive_precision
+from .style import (
+    COLORS,
+    DEFAULT_RC,
+    annotate_stat_box,
+    figure_style,
+    set_default_style,
+    stat_box_bbox,
+)
+from .plotting import (
+    confidence_ellipse,
+    plot_2d_gaussian,
+    plot_generating_function,
+    plot_gradient_descent,
+    plot_joint_heatmap,
+    plot_likelihood_ridge,
+    plot_precision_comparison,
+    plot_prior_likelihood_posterior,
+    save_or_show,
+)
+
+__all__ = [
+    "plot_prior_likelihood_posterior",
+    "plot_generating_function",
+    "plot_likelihood_ridge",
+    "plot_joint_heatmap",
+    "plot_gradient_descent",
+    "plot_precision_comparison",
+    "plot_2d_gaussian",
+    "confidence_ellipse",
+    "save_or_show",
+    "interactive_inference",
+    "interactive_precision",
+    "animate_sequential_posterior",
+    "animate_gradient_descent",
+    "animate_2d_posterior",
+    "animate_em_convergence",
+    "animate_sufficient_statistics",
+    "animate_calibration_growth",
+    "animate_precision_sweep",
+    "animate_bimodal_emergence",
+    "animate_lgs_online",
+    "animate_em_steps",
+    "animate_blr_predictive_band",
+    "save_animation",
+    # Style
+    "COLORS",
+    "DEFAULT_RC",
+    "stat_box_bbox",
+    "annotate_stat_box",
+    "set_default_style",
+    "figure_style",
+    # Diagnostic figures
+    "plot_calibration",
+    "plot_cdf_comparison",
+    "plot_coverage_curve",
+    "plot_kl_trace",
+    "plot_posterior_predictive_check",
+    "plot_qq",
+    "plot_running_statistics",
+    "plot_score_trace",
+]

@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "active-inference-fundamentals"
+version = "0.1.0"
+description = "Open source Python companion to 'Fundamentals of Active Inference' by Sanjeev V. Namjoshi (MIT Press)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Active Inference Institute", email = "blanket@activeinference.institute" }
+]
+keywords = [
+    "active inference",
+    "free energy principle",
+    "Bayesian inference",
+    "predictive coding",
+    "computational neuroscience",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.10",
+    "matplotlib>=3.6",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+interactive = [
+    "ipywidgets>=8.0",
+    "jupyter>=1.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ActiveInferenceInstitute/fundamentals"
+Repository = "https://github.com/ActiveInferenceInstitute/fundamentals"
+
+[project.scripts]
+# Console entry point installed alongside the package. After
+# `uv pip install -e .` you can invoke the text menu as:
+#     active-inference-menu
+#     active-inference-menu --all
+active-inference-menu = "active_inference:run_menu"
+# Local web UI (`./run.sh --web`):
+#     active-inference-web --host 127.0.0.1 --port 8765
+active-inference-web = "active_inference:run_web"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+# --- uv configuration --------------------------------------------------------
+# uv is the recommended package manager for this project. Plain pip still
+# works (this is a standard PEP 621 project), but uv is faster, gives a
+# lockfile, and `uv run` makes ad-hoc invocations painless:
+#
+#     uv sync                       # create .venv + install everything
+#     uv sync --extra interactive   # add the optional notebook deps
+#     uv run pytest                 # run the test suite
+#     uv run ./run.sh               # launch the chapter runner menu
+#
+[tool.uv]
+package = true
+
+# PEP 735 dependency groups. `uv sync` installs the `dev` group by default;
+# pass `--no-dev` to skip it. The `dev` group intentionally mirrors the
+# `[project.optional-dependencies].dev` extra so pip and uv stay aligned.
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]

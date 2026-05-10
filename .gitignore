@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Tooling
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.uv-cache/
+# uv.lock is intentionally committed; see docs/uv.md.
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Generated artifacts (committed selectively)
+output/figures/*.png
+output/figures/*.pdf
+output/data/*.npz
+!output/figures/.gitkeep
+!output/data/.gitkeep
+/.cursor

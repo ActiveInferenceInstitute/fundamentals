@@ -7,7 +7,7 @@
 #
 # Usage:
 #   ./run.sh                          # interactive text menu
-#   ./run.sh --all                    # run every chapter (headless)
+#                      # run every chapter (headless)
 #   ./run.sh --chapter 2              # run chapter 2 only
 #   ./run.sh --script example_2_2     # run one orchestrator by name
 #   ./run.sh --list                   # print the menu and exit

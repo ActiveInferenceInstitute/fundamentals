@@ -10,7 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from active_inference.extra_topics import extra_topic_spec, extra_topic_slugs
+import numpy as np
+
+from active_inference.extra_topics import build_topic_animation, extra_topic_spec, extra_topic_slugs
 from active_inference.menu.runner import discover_extra_scripts
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -68,5 +70,33 @@ def test_declared_extra_topic_scripts_exist(topic: str) -> None:
     assert (EXTRAS_ROOT / topic / f"visualize_{topic}.py").is_file()
     if spec.has_simulation:
         assert (EXTRAS_ROOT / topic / f"simulate_{topic}.py").is_file()
+        assert (EXTRAS_ROOT / topic / f"interactive_{topic}.py").is_file()
     if spec.has_animation:
         assert (EXTRAS_ROOT / topic / f"animation_{topic}.py").is_file()
+
+
+@pytest.mark.parametrize(
+    "topic",
+    [topic for topic in TOPICS if extra_topic_spec(topic).has_animation],
+    ids=[topic for topic in TOPICS if extra_topic_spec(topic).has_animation],
+)
+def test_declared_extra_topic_animations_have_meaningful_raw_trajectories(topic: str) -> None:
+    """Animation builders expose finite, non-static raw trajectories plus provenance metadata."""
+    anim, raw, metadata = build_topic_animation(topic)
+    try:
+        assert metadata["trajectory_kind"]
+        assert metadata["source_apis"] == list(extra_topic_spec(topic).source_apis)
+        assert raw
+        found_dynamic = False
+        for values in raw.values():
+            array = np.asarray(values)
+            assert array.size > 0
+            assert np.all(np.isfinite(array))
+            if array.ndim >= 2 and array.shape[0] >= 2:
+                found_dynamic = found_dynamic or not np.allclose(array[0], array[-1])
+        assert found_dynamic
+    finally:
+        anim._draw_was_started = True
+        import matplotlib.pyplot as plt
+
+        plt.close(anim._fig)

@@ -12,6 +12,7 @@ Recovering hidden states from observations under a generative model.
 
 - `visualize_inverse_problem.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_inverse_problem.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_inverse_problem.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/in
 ```bash
 uv run python extras/inverse_problem/visualize_inverse_problem.py --save
 uv run python extras/inverse_problem/simulate_inverse_problem.py --save
+uv run python extras/inverse_problem/interactive_inverse_problem.py
 ```

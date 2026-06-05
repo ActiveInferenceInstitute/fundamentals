@@ -12,6 +12,7 @@ Backward messages that refine earlier state beliefs.
 
 - `visualize_backward_smoothing.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_backward_smoothing.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_backward_smoothing.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 - `animation_backward_smoothing.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
@@ -21,5 +22,6 @@ Run any script with `--save` to render artifacts under `output/figures/extras/ba
 ```bash
 uv run python extras/backward_smoothing/visualize_backward_smoothing.py --save
 uv run python extras/backward_smoothing/simulate_backward_smoothing.py --save
+uv run python extras/backward_smoothing/interactive_backward_smoothing.py
 uv run python extras/backward_smoothing/animation_backward_smoothing.py --save
 ```

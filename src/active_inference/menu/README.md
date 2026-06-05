@@ -80,7 +80,8 @@ run_all_extras()
 * Discovery walks `chapters/chapter_<NN>/` and `extras/<topic>/`, treating
   every top-level `.py` file as a runnable orchestrator except files
   containing `interactive` (slider windows that block until the user closes
-  them).
+  them). Pass `include_interactive=True` to `discover_scripts` or
+  `discover_extra_scripts` when a UI needs launchable slider rows.
 * Each script runs with `MPLBACKEND=Agg` and `--save`. Figures land in
   `output/figures/chapter_<NN>/` or `output/figures/extras/<topic>/`.
 * `PYTHONPATH` is set to the repo's `src/` so `import active_inference`

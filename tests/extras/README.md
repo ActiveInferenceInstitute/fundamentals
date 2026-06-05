@@ -1,7 +1,10 @@
 # `tests/extras/` - smoke tests for extras orchestrators
 
-Subprocess smoke tests that run every `extras/<topic>/visualize_<topic>.py`
-script with `--save` under `MPLBACKEND=Agg`.
+Subprocess smoke tests that run every non-interactive
+`extras/<topic>/{visualize,simulate,animation}_<topic>.py` script with `--save`
+under `MPLBACKEND=Agg`. Interactive extras launchers are validated through
+script-discovery/provenance tests and the shared visualization constructor
+tests, not as subprocess `--save` cases.
 
 | File | Coverage |
 |---|---|
@@ -15,7 +18,7 @@ pytest tests/extras -v
 
 ## What's Checked
 
-For each extras topic:
+For each non-interactive extras script:
 
 1. The script imports `active_inference` through the same subprocess path a
    user would use.
@@ -24,5 +27,7 @@ For each extras topic:
 4. A fresh NPZ+JSON sidecar pair is written under
    `output/data/extras/<topic>/`.
 
-Rendered PNG content is checked by
+The suite also checks registry invariants, source API references, README
+coverage, declared interactive wrappers, and finite/dynamic animation raw data.
+Rendered PNG/GIF content is checked by
 `scripts/validate_rendered_figures.py --root output/figures`.

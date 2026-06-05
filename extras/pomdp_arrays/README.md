@@ -12,6 +12,7 @@ D, A, B, C, and E arrays as discrete generative-model components.
 
 - `visualize_pomdp_arrays.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_pomdp_arrays.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_pomdp_arrays.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/po
 ```bash
 uv run python extras/pomdp_arrays/visualize_pomdp_arrays.py --save
 uv run python extras/pomdp_arrays/simulate_pomdp_arrays.py --save
+uv run python extras/pomdp_arrays/interactive_pomdp_arrays.py
 ```

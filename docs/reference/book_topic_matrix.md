@@ -2,6 +2,13 @@
 
 This matrix is the audit contract for the repo-root `extras/` curriculum. It maps the attached Namjoshi manuscript source spine to live extras topic folders and reusable `src/active_inference` APIs. The grouping is concept-level: a topic can cover several neighboring book sections when they teach one pedagogical unit.
 
+The "Artifact modes" column lists saveable rendered modes: `visualize`,
+`simulate`, and `animation`. Simulation-capable topics also expose
+`interactive_<topic>.py` GUI launchers through the same registry-backed source
+methods; those wrappers are validated by
+`scripts/validate_orchestrator_provenance.py` and tested through the shared
+`interactive_topic_demo` constructor rather than by saved PNG/GIF output.
+
 Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf` (1153 pages, LaTeX build dated 2025-03-20).
 
 ## Coverage By Family

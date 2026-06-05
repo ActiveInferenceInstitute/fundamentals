@@ -41,7 +41,7 @@ from .diagnostics import (
     plot_running_statistics,
     plot_score_trace,
 )
-from .interactive import interactive_inference, interactive_precision
+from .interactive import interactive_inference, interactive_precision, interactive_topic_demo
 from .style import (
     COLORS,
     DEFAULT_RC,
@@ -95,6 +95,7 @@ __all__ = [
     "save_or_show",
     "interactive_inference",
     "interactive_precision",
+    "interactive_topic_demo",
     "animate_sequential_posterior",
     "animate_gradient_descent",
     "animate_2d_posterior",

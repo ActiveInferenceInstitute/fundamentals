@@ -12,6 +12,7 @@ Forward and backward messages across hierarchical layers.
 
 - `visualize_hierarchical_message_passing.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_hierarchical_message_passing.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_hierarchical_message_passing.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 - `animation_hierarchical_message_passing.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
@@ -21,5 +22,6 @@ Run any script with `--save` to render artifacts under `output/figures/extras/hi
 ```bash
 uv run python extras/hierarchical_message_passing/visualize_hierarchical_message_passing.py --save
 uv run python extras/hierarchical_message_passing/simulate_hierarchical_message_passing.py --save
+uv run python extras/hierarchical_message_passing/interactive_hierarchical_message_passing.py
 uv run python extras/hierarchical_message_passing/animation_hierarchical_message_passing.py --save
 ```

@@ -84,7 +84,7 @@ flowchart TB
     X["utils<br/>grids, paths, logging, NPZ plus JSON export"]
     F["output/figures<br/>PNG and GIF artifacts"]
     D["output/data<br/>NPZ arrays plus JSON manifests"]
-    T["tests and validators<br/>pytest, validate_rendered_figures, validate_raw_data_exports"]
+    T["tests and validators<br/>pytest, raw/render/book/provenance validators"]
 
     U --> C
     U --> R
@@ -137,7 +137,7 @@ flowchart TB
 | `ThermodynamicState`         | `core/thermodynamics.py`        | Explicit `U`, `S`, `T`, `p`, `V` bridge; at `T=1,pV=0`, `U-TS` equals VFE. |
 | `FreeEnergyForm`             | `core/free_energy_forms.py`     | Named Part III free-energy teaching decomposition with scalar total and additive terms. |
 | `EntropyBound`               | `core/ergodic.py`               | Entropy quantity, VFE-like upper bound, and residual gap for FEP extras. |
-| `ExtraTopicSpec`             | `extra_topics.py`               | Registry metadata for a book-grounded extras topic, including family, sections, and artifact modes. |
+| `ExtraTopicSpec`             | `extra_topics.py`               | Registry metadata for a book-grounded extras topic, including family, sections, artifact modes, and source API references. |
 | `CalibrationCurve`           | `core/diagnostics.py`           | Empirical vs nominal coverage at chosen credible levels. |
 | `PosteriorPredictiveCheck`   | `core/diagnostics.py`           | Replicated-statistic Bayesian p-value. |
 | `BayesianLinearRegression`   | `estimators/linear_regression.py`| Conjugate Gaussian update with `fit`, `fit_sequential`, predictive bands. |
@@ -162,9 +162,11 @@ See [`reference/`](reference/) for a full per-subpackage API catalogue.
   examples.
 - Every chapter and extras script accepts `--save` for headless rendering;
   stochastic scripts also accept `--seed` for reproducibility.
-- Extras static, simulation, and animation scripts follow the
-  `visualize_*.py` / `simulate_*.py` / `animation_*.py` naming convention and
-  are validated against `docs/reference/book_topic_matrix.md`.
+- Extras static, simulation, interactive, and animation scripts follow the
+  `visualize_*.py` / `simulate_*.py` / `interactive_*.py` / `animation_*.py`
+  naming convention and are validated against
+  `docs/reference/book_topic_matrix.md` and
+  `docs/reference/orchestrator_provenance.md`.
 - Random number generators are passed in explicitly via `numpy.random.Generator`
   — no global state.
 - The `menu/` subpackage is stdlib-only — no `numpy`/`matplotlib` imports.
@@ -194,5 +196,6 @@ See [`reference/`](reference/) for a full per-subpackage API catalogue.
    `chapters/chapter_<N>/README.md`, or in `extras/<topic>/README.md` for an
    extras topic. The [`run.sh`](../run.sh) menu, chapter smoke tests, and
    extras smoke tests will pick it up automatically as long as it follows the
-   `example_*.py` / `animation_*.py` / `simulate_*.py` / `visualize_*.py`
+   `example_*.py` / `animation_*.py` / `simulate_*.py` / `interactive_*.py` /
+   `visualize_*.py`
    naming convention and accepts `--save`.

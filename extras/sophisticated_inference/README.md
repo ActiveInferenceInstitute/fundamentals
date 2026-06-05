@@ -12,6 +12,7 @@ Planning with beliefs over future belief updates.
 
 - `visualize_sophisticated_inference.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_sophisticated_inference.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_sophisticated_inference.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/so
 ```bash
 uv run python extras/sophisticated_inference/visualize_sophisticated_inference.py --save
 uv run python extras/sophisticated_inference/simulate_sophisticated_inference.py --save
+uv run python extras/sophisticated_inference/interactive_sophisticated_inference.py
 ```

@@ -12,6 +12,7 @@ State, velocity, and higher-order embedding orders.
 
 - `visualize_generalized_coordinates.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_generalized_coordinates.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_generalized_coordinates.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/ge
 ```bash
 uv run python extras/generalized_coordinates/visualize_generalized_coordinates.py --save
 uv run python extras/generalized_coordinates/simulate_generalized_coordinates.py --save
+uv run python extras/generalized_coordinates/interactive_generalized_coordinates.py
 ```

@@ -12,6 +12,7 @@ Entropy and VFE bounds for self-organizing systems.
 
 - `visualize_fep_entropy_bounds.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_fep_entropy_bounds.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_fep_entropy_bounds.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/fe
 ```bash
 uv run python extras/fep_entropy_bounds/visualize_fep_entropy_bounds.py --save
 uv run python extras/fep_entropy_bounds/simulate_fep_entropy_bounds.py --save
+uv run python extras/fep_entropy_bounds/interactive_fep_entropy_bounds.py
 ```

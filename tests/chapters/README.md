@@ -29,9 +29,9 @@ For each script under `chapters/chapter_0{1..10}/`:
 6. For animations, the timeout is bumped to 240 s to allow the pillow
    GIF encoder to finish.
 
-The smoke tests do **not** check the visual content of generated figures
-— that is left to manual review and the unit tests in
-`tests/visualizations/`.
+The smoke tests do **not** judge pedagogical layout directly; rendered files
+are checked by `scripts/validate_rendered_figures.py`, while visual helper
+structure and callbacks are covered in `tests/visualizations/`.
 
 ## Adding a new chapter script
 

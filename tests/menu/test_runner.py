@@ -89,6 +89,14 @@ class TestDiscovery:
         assert {"visualize", "simulate"}.issubset(kinds)
         assert all(script.topic == "entropy" for script in scripts)
 
+    def test_extra_topic_interactive_scripts_are_discovered_on_request(self) -> None:
+        scripts = runner.discover_extra_scripts("entropy", include_interactive=True)
+        names = [script.name for script in scripts]
+        interactive = next(script for script in scripts if script.name == "interactive_entropy.py")
+        assert "interactive_entropy.py" in names
+        assert interactive.kind == "interactive"
+        assert interactive.topic == "entropy"
+
     def test_unknown_extra_topic_raises(self) -> None:
         with pytest.raises(KeyError):
             runner.discover_extra_scripts("not_a_topic")

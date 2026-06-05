@@ -12,6 +12,7 @@ Contrasting the data-generating process with the agent's model.
 
 - `visualize_generative_process_model.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_generative_process_model.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_generative_process_model.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/ge
 ```bash
 uv run python extras/generative_process_model/visualize_generative_process_model.py --save
 uv run python extras/generative_process_model/simulate_generative_process_model.py --save
+uv run python extras/generative_process_model/interactive_generative_process_model.py
 ```

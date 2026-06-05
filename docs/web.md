@@ -31,9 +31,10 @@ expose it on the LAN (use cautiously: there is no authentication).
 
 ## What's on the page
 
-The sidebar lists every detected chapter and a small set of top-level
-docs (architecture, notation, cookbook, reading order, uv workflow).
-Each chapter tab is divided into:
+The sidebar lists every detected chapter, every registry-backed extras topic,
+and a small set of top-level docs (architecture, notation, cookbook, reading
+order, uv workflow). Each chapter or extras tab is divided into the relevant
+subset of:
 
 1. **Figure gallery** — every PNG / GIF in
    `output/figures/chapter_<N>/`. Click a thumbnail to open the full
@@ -47,8 +48,8 @@ Each chapter tab is divided into:
 3. **Animations** — same pattern, for `animation_*.py`.
 4. **Visualizations** — same pattern, for `visualize_*.py`.
 5. **Interactive scripts** — scripts containing `interactive` in the
-   name. The **Launch on host** button starts the slider window on the
-   machine running the server.
+   name, including registry-backed extras launchers. The **Launch on host**
+   button starts the slider window on the machine running the server.
 6. **Chapter documentation** — links to the matching pages under
    `docs/chapters/`, `docs/topics/`, and `docs/statistics/`. Clicking
    a link renders the Markdown inside the same tab.
@@ -69,7 +70,7 @@ All endpoints return JSON unless otherwise noted.
 | GET    | `/figures/<NN>/<file>`            | Static file under `output/figures/`. |
 | GET    | `/figures/extras/<topic>/<file>`  | Static file under `output/figures/extras/<topic>/`. |
 | GET    | `/docs-raw/<path>`                | Static file under `docs/`. |
-| POST   | `/api/run`                        | Render one chapter script (non-interactive). |
+| POST   | `/api/run`                        | Render one chapter or extras script (non-interactive). |
 | POST   | `/api/launch-interactive`         | Launch a slider script on the host. |
 
 Every static path is canonicalized and rejected if it escapes its
@@ -90,10 +91,11 @@ allowed base directory.
 - **Subprocess for execution.** The "Render" button reuses
   `active_inference.menu.runner.run_script`, so figures land in the
   same `output/figures/chapter_<NN>/` or `output/figures/extras/<topic>/`
-  directory as the CLI workflows. After rendering extras through the web UI,
-  `uv run python scripts/validate_book_topic_coverage.py --require-rendered`
-  checks the registry declarations against the resulting PNG/GIF media and
-  NPZ+JSON sidecars.
+  directory as the CLI workflows. Interactive extras launchers call tested
+  shared constructors but do not write media. After rendering extras through
+  the web UI, `uv run python scripts/validate_book_topic_coverage.py
+  --require-rendered` checks registry declarations against the resulting
+  PNG/GIF media and NPZ+JSON sidecars.
 
 ## Visual identity
 

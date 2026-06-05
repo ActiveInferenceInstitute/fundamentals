@@ -17,7 +17,8 @@ from active_inference import (
     variational_free_energy,
     vfe_thermodynamic_state,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,19 +56,31 @@ def main() -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
     iteration = np.arange(free_energy.size)
-    axes[0].plot(iteration, free_energy, lw=2, label="F")
-    axes[0].plot(iteration, surprisal, lw=2, ls="--", label="-log p(y)")
-    axes[0].fill_between(iteration, surprisal, free_energy, alpha=0.2, label="bound gap")
+    axes[0].plot(iteration, free_energy, lw=2, label="F", color=COLORS["posterior"])
+    axes[0].plot(
+        iteration, surprisal, lw=2, ls="--", label="-log p(y)",
+        color=COLORS["likelihood"],
+    )
+    axes[0].fill_between(
+        iteration,
+        surprisal,
+        free_energy,
+        alpha=0.2,
+        color=COLORS["posterior"],
+        label="bound gap",
+    )
     axes[0].set_xlabel("belief interpolation step")
     axes[0].set_ylabel("nats")
     axes[0].set_title("VFE upper-bounds surprisal")
     axes[0].grid(alpha=0.3)
     axes[0].legend(fontsize=8)
 
-    axes[1].plot(iteration, complexity, lw=2, label="complexity")
-    axes[1].plot(iteration, -accuracy, lw=2, label="-accuracy")
+    axes[1].plot(iteration, complexity, lw=2, label="complexity", color=COLORS["prior"])
+    axes[1].plot(
+        iteration, -accuracy, lw=2, label="-accuracy", color=COLORS["likelihood"]
+    )
     axes[1].plot(iteration, internal_energy - entropy, lw=2, ls=":",
-                 label="U - S")
+                 label="U - S", color=COLORS["posterior"])
     axes[1].set_xlabel("belief interpolation step")
     axes[1].set_ylabel("nats")
     axes[1].set_title("Equivalent decompositions")
@@ -93,7 +106,13 @@ def main() -> None:
                 "internal_energy": internal_energy,
                 "entropy": entropy,
             },
-            metadata={"script": "visualize_variational_free_energy.py", "y": args.y},
+            metadata={
+                "script": "visualize_variational_free_energy.py",
+                "y": args.y,
+                "source_apis": list(
+                    extra_topic_spec("variational_free_energy").source_apis
+                ),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

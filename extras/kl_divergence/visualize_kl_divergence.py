@@ -15,7 +15,8 @@ from active_inference import (
     grid_kl_divergence,
     save_extra_data,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,7 +52,11 @@ def main() -> None:
 
     labels = ["KL(p||p)", "KL(p||q)", "KL(q||p)"]
     values = [kl_self, kl_pq_grid, kl_qp_grid]
-    axes[1].bar(labels, values, color=["#6b7280", "#1f77b4", "#d62728"])
+    axes[1].bar(
+        labels,
+        values,
+        color=[COLORS["neutral"], COLORS["prior"], COLORS["likelihood"]],
+    )
     axes[1].set_ylabel("nats")
     axes[1].set_title("KL is non-negative and asymmetric")
     axes[1].grid(alpha=0.3, axis="y")
@@ -78,7 +83,10 @@ def main() -> None:
                 "kl_grid": np.array([kl_self, kl_pq_grid, kl_qp_grid]),
                 "kl_closed": np.array([0.0, kl_pq_closed, kl_qp_closed]),
             },
-            metadata={"script": "visualize_kl_divergence.py"},
+            metadata={
+                "script": "visualize_kl_divergence.py",
+                "source_apis": list(extra_topic_spec("kl_divergence").source_apis),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

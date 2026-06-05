@@ -56,6 +56,7 @@ def _expected_scripts(slug: str, *, simulation: bool, animation: bool) -> list[s
     scripts = [f"visualize_{slug}.py"]
     if simulation:
         scripts.append(f"simulate_{slug}.py")
+        scripts.append(f"interactive_{slug}.py")
     if animation:
         scripts.append(f"animation_{slug}.py")
     return scripts

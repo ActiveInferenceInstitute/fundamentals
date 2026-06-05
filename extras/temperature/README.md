@@ -12,6 +12,7 @@ Temperature-scaled canonical probabilities and U - T S.
 
 - `visualize_temperature.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_temperature.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_temperature.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/te
 ```bash
 uv run python extras/temperature/visualize_temperature.py --save
 uv run python extras/temperature/simulate_temperature.py --save
+uv run python extras/temperature/interactive_temperature.py
 ```

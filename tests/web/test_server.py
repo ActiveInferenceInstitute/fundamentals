@@ -113,6 +113,7 @@ class TestRoutes:
         names = {s["name"] for s in data["scripts"]}
         assert "visualize_entropy.py" in names
         assert "simulate_entropy.py" in names
+        assert "interactive_entropy.py" in names
         assert isinstance(data["figures"], list)
         assert data["readme_html"]
 

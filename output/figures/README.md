@@ -17,7 +17,7 @@ with `--save`. The directory is **fully regenerable** from source.
 | [`chapter_08/`](chapter_08/) | `chapters/chapter_08/*.py --save` | 3 PNGs + 1 GIF for learning/attention, hierarchy, and message passing. |
 | [`chapter_09/`](chapter_09/) | `chapters/chapter_09/*.py --save` | 5 PNGs + 2 GIFs for discrete POMDP inference, VFE, EFE, Grid World, and exploration. |
 | [`chapter_10/`](chapter_10/) | `chapters/chapter_10/*.py --save` | 9 PNGs + 3 GIFs for POMDP learning, precision, factorial, and hierarchical examples. |
-| [`extras/`](extras/) | `extras/<topic>/*.py --save` | 58 book-grounded extras topics with static PNGs, simulation PNGs, and GIFs when declared by `active_inference.extra_topics`. |
+| [`extras/`](extras/) | `extras/<topic>/*.py --save` | 58 book-grounded extras topics with static PNGs, simulation PNGs, and GIFs when declared by `active_inference.extra_topics`; interactive wrappers are GUI-only and do not write media. |
 
 ## Regenerate
 

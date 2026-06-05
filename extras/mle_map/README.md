@@ -12,6 +12,7 @@ Likelihood-only and prior-regularized point estimates.
 
 - `visualize_mle_map.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_mle_map.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_mle_map.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/ml
 ```bash
 uv run python extras/mle_map/visualize_mle_map.py --save
 uv run python extras/mle_map/simulate_mle_map.py --save
+uv run python extras/mle_map/interactive_mle_map.py
 ```

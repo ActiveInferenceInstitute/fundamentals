@@ -12,6 +12,7 @@ Factorized approximations and coordinate updates.
 
 - `visualize_mean_field_variational_inference.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_mean_field_variational_inference.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_mean_field_variational_inference.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/me
 ```bash
 uv run python extras/mean_field_variational_inference/visualize_mean_field_variational_inference.py --save
 uv run python extras/mean_field_variational_inference/simulate_mean_field_variational_inference.py --save
+uv run python extras/mean_field_variational_inference/interactive_mean_field_variational_inference.py
 ```

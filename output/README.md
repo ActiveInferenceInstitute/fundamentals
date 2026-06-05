@@ -62,6 +62,8 @@ python scripts/validate_rendered_figures.py --root output/figures
 # Validate raw-data NPZ+JSON sidecars
 python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
 python scripts/validate_raw_data_exports.py --root output/data
+python scripts/validate_book_topic_coverage.py --require-rendered
+python scripts/validate_orchestrator_provenance.py
 
 # Or by chapter
 python scripts/run_all_figures.py --chapters 1
@@ -104,4 +106,5 @@ extras topic. The raw-data files are written by `save_chapter_data`,
 Each data export has a compressed `NPZ` file for numeric arrays plus a `JSON`
 manifest containing script provenance, chapter or extras topic, CLI args, seed
 when present, linked figure paths, array shape/dtype contracts, and summary
-statistics.
+statistics. Extras manifests also carry registry source API references so the
+rendered data can be traced back to tested `active_inference` methods.

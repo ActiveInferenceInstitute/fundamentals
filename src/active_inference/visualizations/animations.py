@@ -32,7 +32,10 @@ def save_animation(
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     anim.save(path, writer=PillowWriter(fps=fps), dpi=dpi)
-    save_animation_data(anim, path, metadata={"fps": fps, "dpi": dpi})
+    animation_metadata = getattr(anim, "_metadata", {})
+    if not isinstance(animation_metadata, dict):
+        animation_metadata = {}
+    save_animation_data(anim, path, metadata={**animation_metadata, "fps": fps, "dpi": dpi})
     anim._draw_was_started = True
     plt.close(anim._fig)  # avoid leaking figure handles
     return path

@@ -22,8 +22,9 @@ chart-style decisions here, not in chapter orchestrators.
   save_path, show=show)` to dispatch — never duplicate that logic.
 - Animations always set `_fig` on the returned object so `save_animation`
   can close the figure handle cleanly afterwards.
-- Default to `matplotlib`'s `tab10` / `viridis` / `magma` palettes — they
-  print well in both color and grayscale.
+- Default to `style.COLORS`, the repo-wide Okabe-Ito colourblind-safe palette.
+  Use perceptually ordered colormaps only for scalar fields and heatmaps where
+  continuous value order is part of the concept.
 - Default `dpi=150`, `constrained_layout=True`.
 - No `seaborn`, `plotly`, or other plotting libraries — keep the
   dependency surface minimal.

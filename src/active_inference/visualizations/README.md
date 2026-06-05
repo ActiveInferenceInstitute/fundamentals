@@ -41,6 +41,7 @@ conventions:
 |---|---|---|
 | `interactive_inference(x_low, x_high, n_grid, beta0, beta1, sigma2_y_init, s2_x_init, m_x_init, y_init)` | `y`, `m_x`, `s2_x`, `sigma2_y` | Full 4-slider exploration of prior/likelihood/posterior |
 | `interactive_precision(x_low, x_high, beta0, beta1, y_obs, m_x)` | `log10(s2_x / sigma2_y)` | Single-slider precision ratio sweep |
+| `interactive_topic_demo(slug)` | `simulation blend` | Registry-driven extras slider over the topic's static and simulation demos |
 
 These use `matplotlib.widgets.Slider` (not ipywidgets), so they work in any
 environment with a display and matplotlib installed.
@@ -64,8 +65,8 @@ environment with a display and matplotlib installed.
 ## Testing
 
 Visualization code is exercised by dedicated unit tests in
-`tests/visualizations/` (plotting, animations, diagnostic figures) and
-indirectly by the chapter smoke tests in
+`tests/visualizations/` (plotting, animations, diagnostic figures, and
+interactive slider callbacks) and indirectly by the chapter smoke tests in
 `tests/chapters/test_smoke.py`, which run every orchestrator and verify
-it exits 0. Visual inspection remains the final arbiter for layout and
-colour decisions.
+it exits 0. Rendered-output checks catch blank/corrupt artifacts; visual
+review remains useful for final layout judgement when changing pedagogy.

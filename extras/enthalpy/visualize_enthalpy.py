@@ -14,7 +14,8 @@ from active_inference import (
     gibbs_free_energy,
     save_extra_data,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,8 +53,9 @@ def main() -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
     for i, volume in enumerate(volumes):
-        axes[0].plot(pressures, enthalpies[i], lw=2, label=f"V={volume:.1f}")
-        axes[1].plot(pressures, gibbs_values[i], lw=2, label=f"V={volume:.1f}")
+        color = list(COLORS.values())[i % len(COLORS)]
+        axes[0].plot(pressures, enthalpies[i], lw=2, color=color, label=f"V={volume:.1f}")
+        axes[1].plot(pressures, gibbs_values[i], lw=2, color=color, label=f"V={volume:.1f}")
     axes[0].set_xlabel("pressure p")
     axes[0].set_ylabel("H")
     axes[0].set_title("Enthalpy H = U + pV")
@@ -82,7 +84,10 @@ def main() -> None:
                 "entropy": np.array([entropy]),
                 "temperature": np.array([temperature]),
             },
-            metadata={"script": "visualize_enthalpy.py"},
+            metadata={
+                "script": "visualize_enthalpy.py",
+                "source_apis": list(extra_topic_spec("enthalpy").source_apis),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

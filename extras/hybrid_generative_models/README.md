@@ -12,6 +12,7 @@ Continuous and discrete state-space components in one model.
 
 - `visualize_hybrid_generative_models.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_hybrid_generative_models.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_hybrid_generative_models.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/hy
 ```bash
 uv run python extras/hybrid_generative_models/visualize_hybrid_generative_models.py --save
 uv run python extras/hybrid_generative_models/simulate_hybrid_generative_models.py --save
+uv run python extras/hybrid_generative_models/interactive_hybrid_generative_models.py
 ```

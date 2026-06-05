@@ -4,10 +4,12 @@ The `active_inference` package provides a clean, well-tested Python
 implementation of the core algorithms described in the book
 *Fundamentals of Active Inference* (Namjoshi, MIT Press 2026).
 
-Everything below is available via `from active_inference import <name>`.
-The canonical list is in
-[`__init__.py`](__init__.py)'s `__all__`; this README is the human-readable
-catalogue.
+Core, estimator, utility, menu, and web entry points below are available via
+`from active_inference import <name>`. Visualization helpers and the extras
+registry are public subpackage APIs imported from
+`active_inference.visualizations` or `active_inference.extra_topics`. The
+canonical top-level list is in [`__init__.py`](__init__.py)'s `__all__`; this
+README is the human-readable package catalogue.
 
 ## Import surface
 
@@ -153,6 +155,7 @@ catalogue.
 | `save_or_show` | same | Save figure or call `plt.show`. |
 | `interactive_inference` | `visualizations.interactive` | 4-slider widget for real-time Bayesian update. |
 | `interactive_precision` | same | 1-slider widget for precision-ratio sweep. |
+| `interactive_topic_demo` | same | Registry-driven extras topic slider backed by `extra_topics.build_topic_demo`. |
 | `animate_sequential_posterior` | `visualizations.animations` | Posterior tightening as N grows. |
 | `animate_gradient_descent` | same | Iterate rolling down NLL. |
 | `animate_2d_posterior` | same | 2-D MVN posterior collapse. |
@@ -192,7 +195,7 @@ its runner helpers directly through `active_inference.extra_topics`.
 | `ExtraTopicSpec` / `TopicDemo` | `extra_topics` | Frozen metadata and numerical-demo containers for one extras topic. |
 | `EXTRA_TOPICS` / `extra_topic_slugs` / `extra_topic_spec` / `extra_topics_by_family` | same | Registry and lookup helpers shared by docs, tests, menu, and web UI. |
 | `build_topic_demo` / `render_topic_figure` / `build_topic_animation` | same | Deterministic data and artifact builders for extras wrappers. |
-| `main_visualize` / `main_simulate` / `main_animation` / `topic_artifact_path` | same | Thin CLI entry points used by `extras/<topic>/` scripts. |
+| `main_visualize` / `main_simulate` / `main_animation` / `main_interactive` / `topic_artifact_path` | same | Thin CLI entry points used by `extras/<topic>/` scripts. |
 
 ### Web
 

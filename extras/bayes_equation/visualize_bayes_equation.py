@@ -15,7 +15,8 @@ from active_inference import (
     make_grid,
     save_extra_data,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,19 +45,24 @@ def main() -> None:
     normalized = unnormalized / evidence
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
-    axes[0].plot(x_grid, result.prior, label="prior p(x)", lw=2)
+    axes[0].plot(x_grid, result.prior, label="prior p(x)", lw=2, color=COLORS["prior"])
     axes[0].plot(x_grid, result.likelihood / np.max(result.likelihood),
-                 label="likelihood p(y|x), peak=1", lw=2)
-    axes[0].plot(x_grid, result.posterior, label="posterior p(x|y)", lw=2)
+                 label="likelihood p(y|x), peak=1", lw=2, color=COLORS["likelihood"])
+    axes[0].plot(
+        x_grid, result.posterior, label="posterior p(x|y)", lw=2,
+        color=COLORS["posterior"],
+    )
     axes[0].set_xlabel("hidden state x")
     axes[0].set_ylabel("density / scaled credibility")
     axes[0].set_title("Bayes update ingredients")
     axes[0].grid(alpha=0.3)
     axes[0].legend(fontsize=8)
 
-    axes[1].plot(x_grid, unnormalized, label="likelihood * prior", lw=2)
-    axes[1].plot(x_grid, normalized, label="normalized posterior", lw=2)
-    axes[1].fill_between(x_grid, normalized, alpha=0.2)
+    axes[1].plot(x_grid, unnormalized, label="likelihood * prior", lw=2,
+                 color=COLORS["likelihood"])
+    axes[1].plot(x_grid, normalized, label="normalized posterior", lw=2,
+                 color=COLORS["posterior"])
+    axes[1].fill_between(x_grid, normalized, alpha=0.2, color=COLORS["posterior"])
     axes[1].set_xlabel("hidden state x")
     axes[1].set_ylabel("density")
     axes[1].set_title(f"evidence normalizes area: p(y) = {evidence:.4f}")
@@ -80,7 +86,11 @@ def main() -> None:
                 "evidence": np.array([evidence]),
                 "log_evidence": np.array([result.log_evidence]),
             },
-            metadata={"script": "visualize_bayes_equation.py", "y_obs": args.y_obs},
+            metadata={
+                "script": "visualize_bayes_equation.py",
+                "y_obs": args.y_obs,
+                "source_apis": list(extra_topic_spec("bayes_equation").source_apis),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

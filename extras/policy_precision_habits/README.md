@@ -12,6 +12,7 @@ Policy precision and baseline habits in action selection.
 
 - `visualize_policy_precision_habits.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_policy_precision_habits.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_policy_precision_habits.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 - `animation_policy_precision_habits.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
@@ -21,5 +22,6 @@ Run any script with `--save` to render artifacts under `output/figures/extras/po
 ```bash
 uv run python extras/policy_precision_habits/visualize_policy_precision_habits.py --save
 uv run python extras/policy_precision_habits/simulate_policy_precision_habits.py --save
+uv run python extras/policy_precision_habits/interactive_policy_precision_habits.py
 uv run python extras/policy_precision_habits/animation_policy_precision_habits.py --save
 ```

@@ -122,6 +122,7 @@ uv run python scripts/validate_raw_data_exports.py --root output/data --chapters
 uv run python scripts/validate_raw_data_exports.py --root output/data
 uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
+uv run python scripts/validate_orchestrator_provenance.py
 
 # unit tests
 uv run pytest
@@ -141,6 +142,7 @@ uv run python chapters/chapter_02/example_2_2_linear_probabilistic.py --save
 uv run python chapters/chapter_03/example_3_5_bayesian_linear_regression.py --save
 uv run python chapters/chapter_02/interactive_explorer.py            # GUI window
 uv run python extras/temperature/visualize_temperature.py --save
+uv run python extras/temperature/interactive_temperature.py          # GUI window
 ```
 
 When a non-interactive script is run with `--save`, the saved visual is paired
@@ -151,7 +153,8 @@ summary statistics. The shared
 `save_or_show` and `save_animation` helpers export figure/animation data
 automatically; scripts with additional numerical traces can call
 `save_chapter_data` or `save_extra_data` directly. Validate a render with
-`scripts/validate_raw_data_exports.py`.
+`scripts/validate_raw_data_exports.py`. Validate the thin-wrapper source-method
+boundary with `scripts/validate_orchestrator_provenance.py`.
 
 ## What's inside
 
@@ -194,9 +197,9 @@ automatically; scripts with additional numerical traces can call
 | `utils.logging` | `get_logger` — lightweight, consistent logger factory |
 | `utils.io` | `default_figure_dir`, `default_data_dir`, `ensure_dir` |
 | `utils.export` | `save_chapter_data`, `save_extra_data`, `extract_figure_data`, `extract_animation_data`, `data_paths_for_figure`, `data_paths_for_extra_figure`; the NPZ+JSON raw-data contract used by `--save` |
-| `extra_topics` | `EXTRA_TOPICS`, `extra_topic_spec`, `extra_topics_by_family`, `build_topic_demo`, `main_visualize`, `main_simulate`, and `main_animation` — registry-driven extras curriculum runners |
+| `extra_topics` | `EXTRA_TOPICS`, `extra_topic_spec`, `extra_topics_by_family`, `build_topic_demo`, `main_visualize`, `main_simulate`, `main_animation`, and `main_interactive` — registry-driven extras curriculum runners |
 | `visualizations.plotting` | `plot_prior_likelihood_posterior`, `plot_generating_function`, `plot_likelihood_ridge`, `plot_joint_heatmap`, `plot_gradient_descent`, `plot_precision_comparison`, `plot_2d_gaussian`, `confidence_ellipse`, `save_or_show` |
-| `visualizations.interactive` | `interactive_inference`, `interactive_precision` — matplotlib slider widgets, no `ipywidgets` dependency |
+| `visualizations.interactive` | `interactive_inference`, `interactive_precision`, `interactive_topic_demo` — matplotlib slider widgets, no `ipywidgets` dependency |
 | `visualizations.variational` | `vfe_surface`, `plot_vfe_contour`, `plot_density_evolution`, `plot_vfe_decomposition`, `plot_surprisal_relationship` — Chapter 4 figures |
 | `visualizations.unified` | `plot_recognition_dynamics` (Ch.4 `FixedFormResult` or Ch.5 `PredictiveCodingResult`), `plot_prediction_errors`, `plot_hierarchical_pc`, `plot_correlated_embedding_precision`, `plot_generalized_vector_filter`, `plot_multivariate_active_inference`, `plot_learning_attention`, `plot_hierarchical_message_passing`, `panel_grid`, `finalize`, `layer_colors` — composable Ch.4–10 layer |
 | `visualizations.animations` | `animate_sequential_posterior`, `animate_gradient_descent`, `animate_2d_posterior`, `animate_em_convergence`, `animate_em_steps`, `animate_sufficient_statistics`, `animate_calibration_growth`, `animate_precision_sweep`, `animate_bimodal_emergence`, `animate_lgs_online`, `animate_blr_predictive_band`, `animate_vfe_descent`, `animate_recognition_dynamics`, `animate_hierarchical_pc`, `animate_multivariate_active_inference` (Ch.7 §7.5), `animate_learning_attention` (Ch.8), `animate_parameter_learning` (Ch.10 §10.1), `animate_policy_precision` (Ch.10 §10.2), `animate_two_armed_bandit` (Ch.10 §10.3), `save_animation` |
@@ -224,9 +227,12 @@ estimation, information theory, variational inference, predictive coding,
 continuous active inference, discrete POMDPs, Part III extensions, factor
 graphs, applications, ergodic density, and the thermodynamic/FEP bridge.
 
-Each folder has a `README.md`, a `visualize_<topic>.py` static orchestrator,
-and simulation or animation wrappers when the topic benefits from parameter
-sweeps or iterative trajectories. The source-spine audit lives in
+Each folder has a `README.md` and a `visualize_<topic>.py` static orchestrator;
+57 topics also have `simulate_<topic>.py` and `interactive_<topic>.py`, and 23
+topics have `animation_<topic>.py` for iterative trajectories. Saved extras
+JSON manifests include the registry's `source_apis` references so artifacts can
+be traced back to tested `active_inference` methods. The source-spine audit
+lives in
 [`docs/reference/book_topic_matrix.md`](docs/reference/book_topic_matrix.md)
 and is checked by `scripts/validate_book_topic_coverage.py`. After rendering,
 `scripts/validate_book_topic_coverage.py --require-rendered` additionally
@@ -390,8 +396,9 @@ The directory mirrors `src/active_inference/` one-for-one (see
 | `tests/core/` | `core/` | Univariate + multivariate densities, generative process/model, grid Bayesian inference, LGS, diagnostics, posterior protocol, validators, type asserts |
 | `tests/estimators/` | `estimators/` | MLE / MAP closed-form, gradient descent, OLS / BLR, factor-analysis EM monotonicity & subspace recovery |
 | `tests/utils/` | `utils/` | Grid validation, path/export conventions, logger factory |
-| `tests/visualizations/` | `visualizations/` | Figures save correctly, animations are valid `FuncAnimation` objects, diagnostic plots |
+| `tests/visualizations/` | `visualizations/` | Figures save correctly, animations are valid `FuncAnimation` objects, diagnostic plots, interactive slider callbacks |
 | `tests/chapters/` | `chapters/` | Subprocess smoke tests running every orchestrator with `--save` and checking raw-data sidecars |
+| `tests/extras/` | `extras/` | Smoke tests for every non-interactive extras wrapper, registry/source API invariants, animation raw data, and README coverage |
 
 ## Roadmap
 

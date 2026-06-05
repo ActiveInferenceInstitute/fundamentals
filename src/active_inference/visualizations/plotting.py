@@ -16,6 +16,19 @@ from matplotlib.patches import Ellipse
 
 from ..core.inference import InferenceResult
 from ..utils import save_figure_data
+from .style import COLORS, stat_box_bbox
+
+
+_SERIES_COLORS = (
+    COLORS["prior"],
+    COLORS["likelihood"],
+    COLORS["posterior"],
+    COLORS["state"],
+    COLORS["sensory"],
+    COLORS["truth"],
+    COLORS["data"],
+    COLORS["neutral"],
+)
 
 
 def save_or_show(
@@ -60,33 +73,37 @@ def plot_prior_likelihood_posterior(
     differential entropy, and (if ``truth`` is supplied) the bias.
     """
     fig, axes = plt.subplots(1, 3, figsize=figsize, constrained_layout=True)
-    axes[0].plot(result.x_grid, result.prior, color="#1f77b4", lw=2)
-    axes[0].fill_between(result.x_grid, result.prior, alpha=0.25, color="#1f77b4")
+    axes[0].plot(result.x_grid, result.prior, color=COLORS["prior"], lw=2)
+    axes[0].fill_between(result.x_grid, result.prior, alpha=0.25, color=COLORS["prior"])
     axes[0].set_title("Prior  p(x)")
     axes[0].set_ylabel("density")
 
-    axes[1].plot(result.x_grid, result.likelihood, color="#d62728", lw=2)
-    axes[1].fill_between(result.x_grid, result.likelihood, alpha=0.25, color="#d62728")
+    axes[1].plot(result.x_grid, result.likelihood, color=COLORS["likelihood"], lw=2)
+    axes[1].fill_between(
+        result.x_grid, result.likelihood, alpha=0.25, color=COLORS["likelihood"]
+    )
     axes[1].set_title("Likelihood  p(y | x)  (unnormalized)")
     axes[1].set_ylabel("credibility")
 
-    axes[2].plot(result.x_grid, result.posterior, color="#2ca02c", lw=2)
-    axes[2].fill_between(result.x_grid, result.posterior, alpha=0.25, color="#2ca02c")
+    axes[2].plot(result.x_grid, result.posterior, color=COLORS["posterior"], lw=2)
+    axes[2].fill_between(
+        result.x_grid, result.posterior, alpha=0.25, color=COLORS["posterior"]
+    )
 
     if annotate_stats:
         lo, hi = result.credible_interval(credible_mass)
         ci_mask = (result.x_grid >= lo) & (result.x_grid <= hi)
         axes[2].fill_between(result.x_grid[ci_mask],
                              result.posterior[ci_mask],
-                             alpha=0.45, color="#2ca02c",
+                             alpha=0.45, color=COLORS["posterior"],
                              label=f"{int(credible_mass * 100)}% CI")
-        axes[2].axvline(result.posterior_mean, color="#1f77b4", lw=1, ls="-",
+        axes[2].axvline(result.posterior_mean, color=COLORS["prior"], lw=1, ls="-",
                         label=f"mean = {result.posterior_mean:.3f}")
 
-    axes[2].axvline(result.posterior_mode, color="black", lw=1, ls="--",
+    axes[2].axvline(result.posterior_mode, color=COLORS["data"], lw=1, ls="--",
                     label=f"mode = {result.posterior_mode:.3f}")
     if truth is not None:
-        axes[2].axvline(truth, color="red", lw=1, ls=":",
+        axes[2].axvline(truth, color=COLORS["truth"], lw=1, ls=":",
                         label=f"x* = {truth:.3f}")
     axes[2].legend(loc="best", fontsize=8)
     axes[2].set_title("Posterior  p(x | y)")
@@ -102,7 +119,6 @@ def plot_prior_likelihood_posterior(
         )
         if truth is not None:
             text = f"bias = {result.posterior_mean - truth:+.3f}\n" + text
-        from .style import stat_box_bbox
         axes[2].text(0.02, 0.97, text, transform=axes[2].transAxes,
                      fontsize=8, va="top", ha="left",
                      bbox=stat_box_bbox(pad=0.3))
@@ -137,9 +153,9 @@ def plot_generating_function(
     how noisy the realized observations are around the noise-free curve.
     """
     fig, ax = plt.subplots(figsize=figsize, constrained_layout=True)
-    ax.plot(x_grid, f_x, color="#333", lw=2, label="g(x)")
+    ax.plot(x_grid, f_x, color=COLORS["data"], lw=2, label="g(x)")
     if samples_x is not None and samples_y is not None:
-        ax.scatter(samples_x, samples_y, s=22, color="#d2691e",
+        ax.scatter(samples_x, samples_y, s=22, color=COLORS["state"],
                    alpha=0.7, label="samples", edgecolor="white", lw=0.4)
         # Residual statistics: project each sample to the curve via interp.
         f_at_samples = np.interp(np.asarray(samples_x), x_grid, f_x)
@@ -158,7 +174,6 @@ def plot_generating_function(
                 f"residual std  = {residual_std}\n"
                 f"RMSE          = {float(np.sqrt((residuals ** 2).mean())):.3f}"
             )
-        from .style import stat_box_bbox
         ax.text(
             0.02, 0.97,
             residual_summary,
@@ -206,14 +221,13 @@ def plot_likelihood_ridge(
         fig, ax = plt.subplots(figsize=figsize, constrained_layout=True)
         ax_top = None
 
-    cmap = plt.get_cmap("viridis")
     offsets = np.linspace(0, n - 1, n)
     for i, lik in enumerate(likelihoods):
         scaled = lik / np.max(lik) if np.max(lik) > 0 else lik
+        color = _SERIES_COLORS[i % len(_SERIES_COLORS)]
         ax.fill_between(x_grid, offsets[i], offsets[i] + scaled,
-                        color=cmap(i / max(n - 1, 1)), alpha=0.7, lw=0.5)
-        ax.plot(x_grid, offsets[i] + scaled,
-                color=cmap(i / max(n - 1, 1)), lw=1)
+                        color=color, alpha=0.7, lw=0.5)
+        ax.plot(x_grid, offsets[i] + scaled, color=color, lw=1)
     if labels is None:
         labels = [f"sample {i + 1}" for i in range(n)]
     ax.set_yticks(offsets + 0.5)
@@ -222,7 +236,7 @@ def plot_likelihood_ridge(
     ax.set_ylabel("per-sample likelihood")
     ax.grid(alpha=0.3, axis="x")
     if truth is not None:
-        ax.axvline(truth, color="red", ls=":", lw=1.5, alpha=0.7)
+        ax.axvline(truth, color=COLORS["truth"], ls=":", lw=1.5, alpha=0.7)
 
     if ax_top is not None:
         # Cumulative likelihood = product of per-sample likelihoods,
@@ -234,13 +248,13 @@ def plot_likelihood_ridge(
         log_cum -= np.max(log_cum)
         cum = np.exp(log_cum)
         cum = cum / np.trapezoid(cum, x_grid)
-        ax_top.plot(x_grid, cum, color="#2ca02c", lw=2)
-        ax_top.fill_between(x_grid, cum, alpha=0.3, color="#2ca02c")
+        ax_top.plot(x_grid, cum, color=COLORS["posterior"], lw=2)
+        ax_top.fill_between(x_grid, cum, alpha=0.3, color=COLORS["posterior"])
         peak = float(x_grid[int(np.argmax(cum))])
-        ax_top.axvline(peak, color="black", ls="--", lw=1,
+        ax_top.axvline(peak, color=COLORS["data"], ls="--", lw=1,
                        label=f"argmax = {peak:.3f}")
         if truth is not None:
-            ax_top.axvline(truth, color="red", ls=":", lw=1.5,
+            ax_top.axvline(truth, color=COLORS["truth"], ls=":", lw=1.5,
                            label=f"x* = {truth:.3f}")
         ax_top.set_ylabel("joint p(y_{1:N}|x)")
         ax_top.legend(loc="upper right", fontsize=9)
@@ -302,13 +316,13 @@ def plot_joint_heatmap(
     # Marginals via trapezoid integration over the joint.
     p_x = np.trapezoid(joint, y_grid, axis=0)
     p_y = np.trapezoid(joint, x_grid, axis=1)
-    ax_top.plot(x_grid, p_x, color="#1f77b4", lw=2)
-    ax_top.fill_between(x_grid, p_x, alpha=0.3, color="#1f77b4")
+    ax_top.plot(x_grid, p_x, color=COLORS["prior"], lw=2)
+    ax_top.fill_between(x_grid, p_x, alpha=0.3, color=COLORS["prior"])
     ax_top.set_ylabel("p(x)")
     ax_top.tick_params(axis="x", labelbottom=False)
     ax_top.grid(alpha=0.3)
-    ax_right.plot(p_y, y_grid, color="#d62728", lw=2)
-    ax_right.fill_betweenx(y_grid, 0, p_y, alpha=0.3, color="#d62728")
+    ax_right.plot(p_y, y_grid, color=COLORS["likelihood"], lw=2)
+    ax_right.fill_betweenx(y_grid, 0, p_y, alpha=0.3, color=COLORS["likelihood"])
     ax_right.set_xlabel("p(y)")
     ax_right.tick_params(axis="y", labelleft=False)
     ax_right.grid(alpha=0.3)
@@ -324,7 +338,6 @@ def plot_joint_heatmap(
     cov_xy = float(np.trapezoid(cov_marg_y, y_grid))
     corr_xy = cov_xy / np.sqrt(var_x * var_y) if var_x * var_y > 0 else 0.0
 
-    from .style import stat_box_bbox
     ax_right.text(
         0.5, 1.02,
         f"E[x] = {ex:.3f}\n"
@@ -361,7 +374,7 @@ def plot_gradient_descent(
     ``truth`` is supplied) the residual bias against the true value.
     """
     fig, axes = plt.subplots(1, 2, figsize=figsize, constrained_layout=True)
-    axes[0].plot(losses, color="#1f77b4", lw=2)
+    axes[0].plot(losses, color=COLORS["prior"], lw=2)
     axes[0].set_xlabel("iteration")
     axes[0].set_ylabel("loss")
     axes[0].set_title("Loss")
@@ -371,7 +384,6 @@ def plot_gradient_descent(
         rel_drop = (
             (losses[0] - losses[-1]) / losses[0] if losses[0] != 0 else np.nan
         )
-        from .style import stat_box_bbox
         axes[0].text(
             0.97, 0.97,
             f"K = {len(losses) - 1}\n"
@@ -382,9 +394,9 @@ def plot_gradient_descent(
             ha="right", va="top", fontsize=9, bbox=stat_box_bbox(),
         )
 
-    axes[1].plot(history, color="#2ca02c", lw=2, label="iterate")
+    axes[1].plot(history, color=COLORS["posterior"], lw=2, label="iterate")
     if truth is not None:
-        axes[1].axhline(truth, color="red", ls=":", lw=1.5, label="x*")
+        axes[1].axhline(truth, color=COLORS["truth"], ls=":", lw=1.5, label="x*")
     axes[1].set_xlabel("iteration")
     axes[1].set_ylabel("estimate")
     axes[1].set_title("Hidden-state estimate")
@@ -392,7 +404,6 @@ def plot_gradient_descent(
     axes[1].legend(loc="lower right")
 
     if history.size:
-        from .style import stat_box_bbox
         bias_line = (
             f"\nbias = {history[-1] - truth:+.3g}"
             if truth is not None else ""
@@ -459,16 +470,20 @@ def plot_2d_gaussian(
         fig = ax.figure
     for n_std, alpha in zip((1, 2), (0.35, 0.15)):
         ax.add_patch(confidence_ellipse(
-            mean, cov, n_std=n_std, fc="#2ca02c", ec="#2ca02c",
+            mean,
+            cov,
+            n_std=n_std,
+            fc=COLORS["posterior"],
+            ec=COLORS["posterior"],
             alpha=alpha, lw=1.5,
         ))
-    ax.scatter(*mean, color="#2ca02c", s=40, zorder=5, label="posterior mean")
+    ax.scatter(*mean, color=COLORS["posterior"], s=40, zorder=5, label="posterior mean")
     if truth is not None:
-        ax.scatter(*truth, marker="x", color="red", s=80, lw=2.0,
+        ax.scatter(*truth, marker="x", color=COLORS["truth"], s=80, lw=2.0,
                    label=f"true ({truth[0]:.2f}, {truth[1]:.2f})")
     if samples is not None:
         ax.scatter(samples[:, 0], samples[:, 1], s=10, alpha=0.5,
-                   color="black", label="samples")
+                   color=COLORS["data"], label="samples")
     ax.set_aspect("equal")
     ax.grid(alpha=0.3)
     if xlim:
@@ -500,10 +515,9 @@ def plot_precision_comparison(
     axes[0].set_title("Prior")
     axes[1].set_title("Likelihood (unnormalized)")
     axes[2].set_title("Posterior")
-    cmap = plt.get_cmap("tab10")
     rows = []
     for i, (label, res) in enumerate(results):
-        c = cmap(i % 10)
+        c = _SERIES_COLORS[i % len(_SERIES_COLORS)]
         axes[0].plot(res.x_grid, res.prior, color=c, lw=2, label=label)
         axes[1].plot(res.x_grid, res.likelihood, color=c, lw=2, label=label)
         axes[2].plot(res.x_grid, res.posterior, color=c, lw=2, label=label)
@@ -514,7 +528,6 @@ def plot_precision_comparison(
         ax.legend(fontsize=9)
 
     if rows:
-        from .style import stat_box_bbox
         lines = ["mode    KL[post‖prior]"]
         for label, mode, kl in rows:
             short = label if len(label) <= 22 else label[:19] + "..."

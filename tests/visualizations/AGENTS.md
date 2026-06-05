@@ -9,9 +9,10 @@ Tests for `src/active_inference/visualizations/`. These tests run under
 src/active_inference/visualizations/<module>.py   ↔   tests/visualizations/test_<module>.py
 ```
 
-`interactive.py` is intentionally untested here — its sliders require a
-live event loop. Manual verification happens through
-`chapters/chapter_02/interactive_explorer.py`.
+`interactive.py` is tested here under `Agg`: constructors return figures,
+slider callbacks are triggered programmatically, and updated plotted values
+must remain finite. Live display behavior can still be checked through the
+chapter and extras interactive wrappers when changing GUI ergonomics.
 
 ## When you add a new figure helper
 

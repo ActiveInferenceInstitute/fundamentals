@@ -31,6 +31,7 @@ Slider-driven exploration with no `ipywidgets` dependency — purely
 |---|---|
 | `interactive_inference(...)` | Live sliders for observation, prior mean, prior variance, likelihood variance. |
 | `interactive_precision(...)` | Single-slider sweep of the prior-vs-data precision ratio. |
+| `interactive_topic_demo(slug)` | Registry-driven extras slider view backed by `active_inference.extra_topics.build_topic_demo`. |
 
 ```python
 from active_inference.visualizations import interactive_inference
@@ -146,5 +147,6 @@ language. See the [Chapter 5 concept map](../chapters/chapter_05.md).
   default and laid out with `constrained_layout=True`.
 - Animations always set `_fig` on the returned object so `save_animation`
   can close the figure cleanly afterwards.
-- Color choices follow matplotlib's `tab10` / `viridis` / `magma` palettes
-  to stay readable in print and on dark backgrounds.
+- Color choices route through `visualizations.style.COLORS`, an Okabe-Ito
+  colourblind-safe vocabulary. Use perceptually ordered colormaps only for
+  scalar fields and heatmaps where continuous value order is the message.

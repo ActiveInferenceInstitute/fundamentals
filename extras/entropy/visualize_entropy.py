@@ -13,7 +13,8 @@ from active_inference import (
     gaussian_entropy_univariate,
     save_extra_data,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,11 +33,12 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(7, 4.2), constrained_layout=True)
     ax.semilogx(variances, entropies, lw=2, label="H[N(mu, sigma2)]")
-    ax.axhline(0.0, color="black", lw=1, ls="--", label="zero entropy")
-    ax.axvline(zero_entropy_variance, color="#d62728", lw=1.5, ls=":",
+    ax.axhline(0.0, color=COLORS["data"], lw=1, ls="--", label="zero entropy")
+    ax.axvline(zero_entropy_variance, color=COLORS["likelihood"], lw=1.5, ls=":",
                label=f"sigma2 = {zero_entropy_variance:.4f}")
     ax.fill_between(variances, entropies, 0.0, where=entropies < 0.0,
-                    color="#d62728", alpha=0.18, label="negative differential entropy")
+                    color=COLORS["likelihood"], alpha=0.18,
+                    label="negative differential entropy")
     ax.set_xlabel("variance sigma2")
     ax.set_ylabel("differential entropy (nats)")
     ax.set_title("Differential entropy grows with variance")
@@ -54,7 +56,10 @@ def main() -> None:
                 "entropy": entropies,
                 "zero_entropy_variance": np.array([zero_entropy_variance]),
             },
-            metadata={"script": "visualize_entropy.py"},
+            metadata={
+                "script": "visualize_entropy.py",
+                "source_apis": list(extra_topic_spec("entropy").source_apis),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

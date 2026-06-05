@@ -12,6 +12,7 @@ Nested policies and slower contextual layers.
 
 - `visualize_hierarchical_depth.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_hierarchical_depth.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_hierarchical_depth.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/hi
 ```bash
 uv run python extras/hierarchical_depth/visualize_hierarchical_depth.py --save
 uv run python extras/hierarchical_depth/simulate_hierarchical_depth.py --save
+uv run python extras/hierarchical_depth/interactive_hierarchical_depth.py
 ```

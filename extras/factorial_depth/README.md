@@ -12,6 +12,7 @@ Multiple state factors and observation modalities.
 
 - `visualize_factorial_depth.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_factorial_depth.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_factorial_depth.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/fa
 ```bash
 uv run python extras/factorial_depth/visualize_factorial_depth.py --save
 uv run python extras/factorial_depth/simulate_factorial_depth.py --save
+uv run python extras/factorial_depth/interactive_factorial_depth.py
 ```

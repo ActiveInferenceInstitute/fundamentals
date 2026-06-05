@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
+from .core.distributions import gaussian_pdf, normalize_density
 from .core.ergodic import (
     density_entropy,
     entropy_upper_bound_from_vfe,
@@ -37,6 +38,68 @@ from .core.thermodynamics import (
 from .core.variational import GaussianBelief
 from .utils import default_figure_dir, ensure_dir, save_extra_data
 from .visualizations.animations import save_animation
+from .visualizations.style import COLORS, annotate_stat_box
+
+
+SOURCE_APIS_BY_DEMO_KIND: dict[str, tuple[str, ...]] = {
+    "foundation": (
+        "active_inference.core.distributions.gaussian_pdf",
+        "active_inference.core.distributions.normalize_density",
+        "active_inference.core.inference.GridBayesianInference",
+    ),
+    "estimation": (
+        "active_inference.estimators.gradient_descent.gradient_descent",
+        "active_inference.estimators.mle.mle_loss",
+        "active_inference.estimators.map.map_loss",
+    ),
+    "information": (
+        "active_inference.core.diagnostics.grid_entropy",
+        "active_inference.core.diagnostics.grid_kl_divergence",
+        "active_inference.core.thermodynamics.canonical_probabilities",
+    ),
+    "variational": (
+        "active_inference.core.variational.GaussianBelief",
+        "active_inference.core.variational.variational_free_energy",
+        "active_inference.core.variational.log_model_evidence",
+    ),
+    "continuous": (
+        "active_inference.core.predictive_coding.predictive_coding_free_energy",
+        "active_inference.core.generalized_filtering.generalized_free_energy",
+    ),
+    "pomdp": (
+        "active_inference.core.pomdp.infer_states",
+        "active_inference.core.pomdp.expected_free_energy",
+        "active_inference.core.pomdp.policy_posterior",
+    ),
+    "learning": (
+        "active_inference.core.pomdp.dirichlet_expected_value",
+        "active_inference.core.pomdp.parameter_novelty",
+        "active_inference.estimators.pomdp.simulate_learning_agent",
+    ),
+    "extension": (
+        "active_inference.core.free_energy_forms.free_energy_variant_table",
+        "active_inference.core.free_energy_forms.renyi_bound",
+    ),
+    "factor_graph": (
+        "active_inference.core.factor_graph.sum_product_chain",
+        "active_inference.core.factor_graph.categorical_factor_message",
+        "active_inference.core.factor_graph.variational_message_update",
+    ),
+    "application": (
+        "active_inference.estimators.pomdp.make_gridworld",
+        "active_inference.estimators.pomdp.simulate_pomdp_agent",
+    ),
+    "thermo": (
+        "active_inference.core.thermodynamics.canonical_probabilities",
+        "active_inference.core.thermodynamics.helmholtz_free_energy",
+        "active_inference.core.thermodynamics.enthalpy",
+    ),
+    "ergodic": (
+        "active_inference.core.ergodic.ergodic_density",
+        "active_inference.core.ergodic.density_entropy",
+        "active_inference.core.ergodic.entropy_upper_bound_from_vfe",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -74,6 +137,11 @@ class ExtraTopicSpec:
     demo_kind: str
     has_simulation: bool = False
     has_animation: bool = False
+
+    @property
+    def source_apis(self) -> tuple[str, ...]:
+        """Return tested library APIs that ground this topic's demo family."""
+        return SOURCE_APIS_BY_DEMO_KIND[self.demo_kind]
 
 
 @dataclass(frozen=True)
@@ -178,15 +246,12 @@ def _topic_index(slug: str) -> int:
 
 def _gaussian(x: np.ndarray, mean: float, variance: float) -> np.ndarray:
     """Evaluate a normalized one-dimensional Gaussian density."""
-    return np.exp(-0.5 * (x - mean) ** 2 / variance) / np.sqrt(2.0 * np.pi * variance)
+    return gaussian_pdf(x, mean, variance)
 
 
 def _normalize_grid(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """Normalize non-negative grid values to unit trapezoid mass."""
-    mass = float(np.trapezoid(y, x))
-    if mass <= 0.0:
-        raise ValueError("grid density must have positive mass")
-    return y / mass
+    return normalize_density(y, x)
 
 
 def _foundation_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
@@ -615,7 +680,27 @@ def build_topic_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
         "thermo": _thermo_demo,
         "ergodic": _ergodic_demo,
     }
-    return builders[spec.demo_kind](spec, mode)
+    demo = builders[spec.demo_kind](spec, mode)
+    metadata = {
+        "topic": spec.slug,
+        "title": spec.title,
+        "family": spec.family,
+        "chapters": list(spec.chapters),
+        "sections": list(spec.sections),
+        "summary": spec.summary,
+        "demo_kind": spec.demo_kind,
+        "mode": mode,
+        "source_apis": list(spec.source_apis),
+        **demo.metadata,
+    }
+    return TopicDemo(
+        spec,
+        demo.arrays,
+        metadata,
+        demo.line_keys,
+        heatmap_key=demo.heatmap_key,
+        bar_key=demo.bar_key,
+    )
 
 
 def _line_label(demo: TopicDemo, key: str) -> str:
@@ -626,49 +711,118 @@ def _line_label(demo: TopicDemo, key: str) -> str:
 def render_topic_figure(slug: str, *, mode: str = "visualize") -> tuple[plt.Figure, TopicDemo]:
     """Render a deterministic static figure for one extras topic."""
     demo = build_topic_demo(slug, mode=mode)
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.3), constrained_layout=True)
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(12.4, 4.8),
+        constrained_layout=True,
+        gridspec_kw={"width_ratios": (1.7, 1.0)},
+    )
     x = demo.arrays["x"]
+    plotted = 0
     for key in demo.line_keys:
         y = demo.arrays[key]
         if y.shape == x.shape and np.all(np.isfinite(y)):
-            axes[0].plot(x, y, lw=2, label=_line_label(demo, key))
-    axes[0].set_title(demo.spec.title)
+            color = list(COLORS.values())[plotted % len(COLORS)]
+            axes[0].plot(x, y, lw=2.6, label=_line_label(demo, key), color=color)
+            plotted += 1
+    axes[0].set_title(demo.spec.title, loc="left")
     axes[0].set_xlabel(str(demo.metadata.get("x_label", "axis")))
     axes[0].set_ylabel("value")
     axes[0].grid(alpha=0.3)
-    axes[0].legend(fontsize=8)
+    if plotted:
+        axes[0].legend(fontsize=10, framealpha=0.95)
 
     if demo.heatmap_key is not None:
         heatmap = demo.arrays[demo.heatmap_key]
         image = axes[1].imshow(heatmap, aspect="auto", origin="lower", cmap="viridis")
         fig.colorbar(image, ax=axes[1], fraction=0.046, pad=0.04)
-        axes[1].set_title("state-space surface")
+        axes[1].set_title("State-space Surface", loc="left")
     elif demo.bar_key is not None:
         values = np.ravel(demo.arrays[demo.bar_key])
-        axes[1].bar(np.arange(values.size), values, color="#4c78a8")
-        axes[1].set_title("diagnostic quantities")
+        axes[1].bar(np.arange(values.size), values, color=COLORS["posterior"])
+        axes[1].set_title("Diagnostic Quantities", loc="left")
         axes[1].set_xlabel("quantity")
         axes[1].set_ylabel("value")
         axes[1].grid(axis="y", alpha=0.25)
     else:
         axes[1].axis("off")
-    fig.suptitle(f"{demo.spec.family}: {demo.spec.summary}", fontsize=12)
+    source = str(demo.metadata["source_apis"][0]).split(".")[-1]
+    caption = (
+        f"{demo.spec.family} | sections {', '.join(demo.spec.sections)}\n"
+        f"source: {source} | {mode}"
+    )
+    annotate_stat_box(axes[1], caption, loc="lower left", fontsize=9, monospace=False)
+    fig.suptitle(f"{demo.spec.summary}", fontsize=14)
     return fig, demo
+
+
+_ANIMATION_KIND_BY_DEMO_KIND: dict[str, str] = {
+    "foundation": "sequential Bayesian update",
+    "estimation": "descent trace",
+    "information": "temperature and information sweep",
+    "variational": "variational bound descent",
+    "continuous": "recognition dynamics",
+    "pomdp": "categorical policy/belief dynamics",
+    "learning": "parameter learning trajectory",
+    "extension": "free-energy variant sweep",
+    "factor_graph": "message-passing trajectory",
+    "application": "control/path trajectory",
+    "thermo": "thermodynamic potential sweep",
+    "ergodic": "ergodic-density trajectory",
+}
+
+
+def _animation_base_demo(slug: str) -> TopicDemo:
+    """Return the most dynamic deterministic demo available for animation."""
+    spec = extra_topic_spec(slug)
+    if spec.has_simulation:
+        return build_topic_demo(slug, mode="simulate")
+    return build_topic_demo(slug, mode="visualize")
+
+
+def _topic_animation_traces(demo: TopicDemo, *, frames: int = 40) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build family-specific finite trajectories from a deterministic topic demo."""
+    x = np.asarray(demo.arrays["x"], dtype=float).reshape(-1)
+    primary = np.asarray(demo.arrays[demo.line_keys[0]], dtype=float).reshape(-1)
+    if primary.shape != x.shape:
+        x = np.linspace(0.0, 1.0, primary.size)
+    if len(demo.line_keys) > 1:
+        baseline = np.asarray(demo.arrays[demo.line_keys[1]], dtype=float).reshape(-1)
+        if baseline.shape != primary.shape:
+            baseline = np.full_like(primary, float(np.nanmean(primary)))
+    elif demo.bar_key is not None:
+        baseline = np.interp(
+            np.linspace(0.0, 1.0, primary.size),
+            np.linspace(0.0, 1.0, np.ravel(demo.arrays[demo.bar_key]).size),
+            np.ravel(demo.arrays[demo.bar_key]),
+        )
+    else:
+        baseline = np.zeros_like(primary) + float(np.nanmean(primary[: max(1, primary.size // 8)]))
+
+    weights = np.linspace(0.0, 1.0, frames)
+    kind = demo.spec.demo_kind
+    if kind in {"estimation", "variational", "continuous", "learning"}:
+        shaped = 1.0 - np.exp(-4.0 * weights)
+    elif kind in {"pomdp", "factor_graph", "extension"}:
+        shaped = weights ** 0.65
+    elif kind in {"thermo", "ergodic", "information"}:
+        shaped = 0.5 - 0.5 * np.cos(np.pi * weights)
+    else:
+        shaped = weights
+    traces = np.array([(1.0 - w) * baseline + w * primary for w in shaped])
+    target = primary
+    return x, target, traces, weights
 
 
 def build_topic_animation(slug: str) -> tuple[FuncAnimation, dict[str, np.ndarray], dict[str, object]]:
     """Build a lightweight animation for a dynamic extras topic."""
     spec = extra_topic_spec(slug)
-    base = build_topic_demo(slug, mode="visualize")
-    x = np.asarray(base.arrays["x"], dtype=float)
-    target = np.asarray(base.arrays[base.line_keys[0]], dtype=float)
-    if target.shape != x.shape:
-        x = np.linspace(0.0, 1.0, target.size)
-    start = np.zeros_like(target) + float(np.nanmean(target[: max(1, target.size // 12)]))
-    frames = 36
-    weights = np.linspace(0.0, 1.0, frames)
-    traces = np.array([(1.0 - w) * start + w * target for w in weights])
-    fig, ax = plt.subplots(figsize=(7.2, 4.2), constrained_layout=True)
+    base = _animation_base_demo(slug)
+    x, target, traces, weights = _topic_animation_traces(base)
+    frames = traces.shape[0]
+    trajectory_kind = _ANIMATION_KIND_BY_DEMO_KIND[spec.demo_kind]
+    fig, ax = plt.subplots(figsize=(7.8, 4.5), constrained_layout=True)
     ax.set_xlim(float(np.min(x)), float(np.max(x)))
     ymin = float(np.min([np.min(traces), np.min(target)]))
     ymax = float(np.max([np.max(traces), np.max(target)]))
@@ -676,12 +830,12 @@ def build_topic_animation(slug: str) -> tuple[FuncAnimation, dict[str, np.ndarra
     ax.set_ylim(ymin - pad, ymax + pad)
     ax.set_xlabel(str(base.metadata.get("x_label", "axis")))
     ax.set_ylabel(_line_label(base, base.line_keys[0]))
-    ax.set_title(f"{spec.title}: iterative trajectory")
+    ax.set_title(f"{spec.title}: {trajectory_kind}", loc="left")
     ax.grid(alpha=0.3)
-    target_line, = ax.plot(x, target, color="#999999", lw=1.4, ls="--", label="target")
-    line, = ax.plot([], [], color="#d62728", lw=2.2, label="current")
-    text = ax.text(0.02, 0.92, "", transform=ax.transAxes, fontsize=9)
-    ax.legend(fontsize=8)
+    target_line, = ax.plot(x, target, color=COLORS["neutral"], lw=1.5, ls="--", label="target")
+    line, = ax.plot([], [], color=COLORS["likelihood"], lw=2.6, label="current")
+    text = annotate_stat_box(ax, "", loc="upper left", fontsize=9, monospace=False)
+    ax.legend(fontsize=10)
 
     def init() -> tuple[object, ...]:
         """Initialize animated artists."""
@@ -692,13 +846,25 @@ def build_topic_animation(slug: str) -> tuple[FuncAnimation, dict[str, np.ndarra
     def update(frame: int) -> tuple[object, ...]:
         """Update animated artists for one frame."""
         line.set_data(x, traces[frame])
-        text.set_text(f"iteration {frame + 1}/{frames}")
+        text.set_text(
+            f"{trajectory_kind}\n"
+            f"frame {frame + 1}/{frames}\n"
+            f"source {base.metadata['source_apis'][0].split('.')[-1]}"
+        )
         return line, target_line, text
 
     anim = FuncAnimation(fig, update, frames=frames, init_func=init, interval=80)
     raw = {"x": x, "target": target, "traces": traces, "weights": weights}
+    metadata = {
+        "topic": slug,
+        "family": spec.family,
+        "summary": spec.summary,
+        "trajectory_kind": trajectory_kind,
+        "source_apis": list(spec.source_apis),
+    }
     anim._raw_data = raw  # type: ignore[attr-defined]
-    return anim, raw, {"topic": slug, "family": spec.family, "summary": spec.summary}
+    anim._metadata = metadata  # type: ignore[attr-defined]
+    return anim, raw, metadata
 
 
 def _parse_topic_args(argv: Sequence[str] | None, description: str) -> argparse.Namespace:
@@ -770,6 +936,20 @@ def main_animation(slug: str, argv: Sequence[str] | None = None) -> int:
     return 0
 
 
+def main_interactive(slug: str, argv: Sequence[str] | None = None) -> int:
+    """Run the interactive CLI for one extras topic."""
+    args = _parse_topic_args(argv, f"Interactively explore extras topic {slug}.")
+    from .visualizations.interactive import interactive_topic_demo
+
+    fig = interactive_topic_demo(slug)
+    if args.save:
+        print(f"interactive_{slug} is GUI-only; nothing to save.")
+        plt.close(fig)
+    else:
+        plt.show()
+    return 0
+
+
 __all__ = [
     "ExtraTopicSpec",
     "TopicDemo",
@@ -784,4 +964,5 @@ __all__ = [
     "main_visualize",
     "main_simulate",
     "main_animation",
+    "main_interactive",
 ]

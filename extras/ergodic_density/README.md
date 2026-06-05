@@ -12,6 +12,7 @@ Long-run occupancy as a density over viable states.
 
 - `visualize_ergodic_density.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_ergodic_density.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_ergodic_density.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 - `animation_ergodic_density.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
@@ -21,5 +22,6 @@ Run any script with `--save` to render artifacts under `output/figures/extras/er
 ```bash
 uv run python extras/ergodic_density/visualize_ergodic_density.py --save
 uv run python extras/ergodic_density/simulate_ergodic_density.py --save
+uv run python extras/ergodic_density/interactive_ergodic_density.py
 uv run python extras/ergodic_density/animation_ergodic_density.py --save
 ```

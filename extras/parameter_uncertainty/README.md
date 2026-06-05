@@ -12,6 +12,7 @@ Forgetting rates and uncertainty on learned parameters.
 
 - `visualize_parameter_uncertainty.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_parameter_uncertainty.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_parameter_uncertainty.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/pa
 ```bash
 uv run python extras/parameter_uncertainty/visualize_parameter_uncertainty.py --save
 uv run python extras/parameter_uncertainty/simulate_parameter_uncertainty.py --save
+uv run python extras/parameter_uncertainty/interactive_parameter_uncertainty.py
 ```

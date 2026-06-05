@@ -12,7 +12,8 @@ A single-page app at `http://127.0.0.1:8765/` with:
   Brain") and a per-chapter sidebar badge showing
   `cached-figures / scripts`.
 - **One tab per extras topic** with the topic README, script rows, cached
-  figure count, and render buttons.
+  figure count, render buttons for saved modes, and launch buttons for
+  interactive wrappers.
 - **Metric strip** at the top of every chapter tab: example count,
   animation count, visualization count, cached-figure count (red).
 - **Figure gallery** split into "Figures" (PNG/JPG/SVG) and
@@ -33,7 +34,7 @@ A single-page app at `http://127.0.0.1:8765/` with:
 - **Interactive launchers.** `interactive_*.py` scripts get a "Launch
   on host" button that starts the slider window on the machine
   running the server.
-- **Inline chapter README** is rendered server-side at the bottom of
+- **Inline chapter or extras README** is rendered server-side at the bottom of
   the tab.
 - **Docs sidebar** with the top-level cross-cutting pages plus a
   per-chapter docs list (concept map, topic walkthroughs, statistics
@@ -97,8 +98,9 @@ docs /chapters) via the `_safe_subpath` resolver.
   `re`, `urllib.parse`, `webbrowser`. No Flask, no Jinja, no JS
   framework. This matches the `menu/` constraint and keeps the install
   surface tiny.
-- **No domain logic.** All numerical work happens in the chapter
-  scripts, which the server invokes via `active_inference.menu.runner`.
+- **No domain logic.** All numerical work happens in `active_inference`
+  methods called by chapter and extras scripts, which the server invokes via
+  `active_inference.menu.runner`.
 - **Single-page app.** Tabs switch client-side; the server is pure JSON
   + static assets. Markdown → HTML conversion is done server-side by a
   small ~150-line converter in `server.py` so the browser doesn't need

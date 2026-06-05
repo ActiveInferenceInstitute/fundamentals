@@ -57,9 +57,9 @@ domain logic.
 | `chapters/chapter_09/` | discrete POMDP active inference (§9.1–§9.6) |
 | `chapters/chapter_10/` | learning & extensions (§10.1–10.4): 8 examples + 1 visualization + 3 animations |
 | `extras/` | cross-cutting topic orchestrators beyond the chapter spine, generated from the `active_inference.extra_topics` registry |
-| `tests/` | pytest unit tests + chapter smoke tests |
-| `docs/` | Architecture, notation, chapter concept maps, topic walkthroughs, uv workflow |
-| `scripts/` | Batch figure renderer (`run_all_figures.py`) + per-chapter shell wrappers |
+| `tests/` | pytest unit tests + chapter/extras smoke tests + provenance validators |
+| `docs/` | Architecture, notation, chapter concept maps, topic walkthroughs, uv workflow, coverage/provenance references |
+| `scripts/` | Batch figure renderer (`run_all_figures.py`), validators, and per-chapter shell wrappers |
 | `output/figures/` | Generated PNGs/GIFs (gitignored, regenerated via scripts) |
 | `output/data/` | Generated raw-data NPZ arrays plus JSON metadata/manifests for every saved non-interactive chapter or extras artifact |
 
@@ -73,6 +73,10 @@ domain logic.
   identifier.
 - **Architecture diagram:** `docs/architecture.md` contains the layered design
   and key types table.
+- **Extras registry and provenance:** `src/active_inference/extra_topics.py`
+  declares topic modes and source API references; `docs/reference/book_topic_matrix.md`
+  and `docs/reference/orchestrator_provenance.md` document the coverage and
+  source-method contracts.
 
 ## Conventions
 
@@ -90,6 +94,9 @@ domain logic.
   — no global state.
 - Chapter and extras scripts import only from `active_inference` or the Python
   standard library — never from other chapter or extras scripts.
+- Extras JSON manifests include registry source API references for saved
+  artifacts; update the registry and tests together when a topic's underlying
+  method changes.
 - `MPLBACKEND=Agg` is used in all CI and smoke-test contexts so no display is
   required.
 
@@ -110,6 +117,10 @@ uv run python scripts/validate_raw_data_exports.py --root output/data --chapters
 
 # Validate all generated chapter and extras raw-data sidecars
 uv run python scripts/validate_raw_data_exports.py --root output/data
+
+# Validate rendered extras coverage and source-method provenance
+uv run python scripts/validate_book_topic_coverage.py --require-rendered
+uv run python scripts/validate_orchestrator_provenance.py
 
 # Coverage
 uv run pytest --cov=active_inference --cov-report=term-missing
@@ -133,10 +144,9 @@ that mainly glue imports).
    call `save_chapter_data(chapter, stem, arrays, metadata, figures=...)` for
    chapter scripts or `save_extra_data(topic, stem, arrays, metadata,
    figures=...)` for extras.
-6. The `tests/chapters/test_smoke.py` parametrize globs and the
-   `active_inference.menu` discovery both pick the file up automatically
-   as long as it follows the `example_*.py` / `animation_*.py` /
-   `visualize_*.py` / `0N_*.py` naming convention.
+6. The smoke tests and `active_inference.menu` discovery pick the file up
+   automatically as long as it follows the `example_*.py` / `animation_*.py` /
+   `visualize_*.py` / `interactive_*.py` / `0N_*.py` naming convention.
 7. `scripts/run_all_figures.py` discovers the same way — no edit needed.
 
 ## Environment management

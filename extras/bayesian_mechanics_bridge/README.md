@@ -12,6 +12,7 @@ A careful bridge between active inference, FEP, and Bayesian mechanics.
 
 - `visualize_bayesian_mechanics_bridge.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_bayesian_mechanics_bridge.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_bayesian_mechanics_bridge.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/ba
 ```bash
 uv run python extras/bayesian_mechanics_bridge/visualize_bayesian_mechanics_bridge.py --save
 uv run python extras/bayesian_mechanics_bridge/simulate_bayesian_mechanics_bridge.py --save
+uv run python extras/bayesian_mechanics_bridge/interactive_bayesian_mechanics_bridge.py
 ```

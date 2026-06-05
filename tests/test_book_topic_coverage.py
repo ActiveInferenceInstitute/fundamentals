@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import importlib
 from pathlib import Path
 
 import numpy as np
@@ -57,6 +58,13 @@ def test_extra_topic_registry_invariants() -> None:
         assert spec.chapters
         assert spec.sections
         assert spec.summary.endswith(".")
+        assert spec.source_apis
+        for dotted_path in spec.source_apis:
+            module_name, _, attr = dotted_path.rpartition(".")
+            assert module_name, dotted_path
+            assert attr, dotted_path
+            module = importlib.import_module(module_name)
+            assert hasattr(module, attr), dotted_path
 
 
 def test_extra_topic_declared_modes_produce_finite_arrays() -> None:
@@ -69,6 +77,7 @@ def test_extra_topic_declared_modes_produce_finite_arrays() -> None:
             demo = build_topic_demo(spec.slug, mode=mode)
             assert demo.spec is spec
             assert demo.arrays
+            assert demo.metadata["source_apis"] == list(spec.source_apis)
             for name, array in demo.arrays.items():
                 values = np.asarray(array)
                 assert values.size > 0, f"{spec.slug}/{mode}/{name} is empty"

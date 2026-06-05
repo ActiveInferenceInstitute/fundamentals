@@ -16,7 +16,8 @@ from active_inference import (
     helmholtz_free_energy,
     save_extra_data,
 )
-from active_inference.visualizations import save_or_show
+from active_inference.extra_topics import extra_topic_spec
+from active_inference.visualizations import COLORS, save_or_show
 
 
 def parse_args() -> argparse.Namespace:
@@ -48,6 +49,7 @@ def main() -> None:
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
     for level in range(energies.size):
         axes[0].plot(temperatures, probabilities[:, level], lw=2,
+                     color=list(COLORS.values())[level % len(COLORS)],
                      label=f"E={energies[level]:.1f}")
     axes[0].set_xlabel("temperature T")
     axes[0].set_ylabel("canonical probability")
@@ -55,9 +57,21 @@ def main() -> None:
     axes[0].grid(alpha=0.3)
     axes[0].legend(fontsize=8)
 
-    axes[1].plot(temperatures, internal_energy, label="U", lw=2)
-    axes[1].plot(temperatures, temperatures * entropy, label="T S", lw=2)
-    axes[1].plot(temperatures, free_energy, label="A = U - T S", lw=2)
+    axes[1].plot(temperatures, internal_energy, label="U", lw=2, color=COLORS["prior"])
+    axes[1].plot(
+        temperatures,
+        temperatures * entropy,
+        label="T S",
+        lw=2,
+        color=COLORS["likelihood"],
+    )
+    axes[1].plot(
+        temperatures,
+        free_energy,
+        label="A = U - T S",
+        lw=2,
+        color=COLORS["posterior"],
+    )
     axes[1].set_xlabel("temperature T")
     axes[1].set_ylabel("nats / energy units")
     axes[1].set_title("Entropy-energy tradeoff")
@@ -79,7 +93,10 @@ def main() -> None:
                 "entropy": entropy,
                 "helmholtz_free_energy": free_energy,
             },
-            metadata={"script": "visualize_temperature.py"},
+            metadata={
+                "script": "visualize_temperature.py",
+                "source_apis": list(extra_topic_spec("temperature").source_apis),
+            },
             figures=[figure] if figure is not None else [],
         )
     else:

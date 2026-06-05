@@ -2,7 +2,8 @@
 
 This directory contains regenerable PNG and GIF artifacts for cross-cutting
 extras topics. Static and simulation scripts write PNGs; animation scripts
-write GIFs.
+write GIFs. Interactive extras wrappers are GUI launchers and are tested through
+their reusable constructors rather than saved here.
 
 The complete live topic registry is documented in
 [`../../../extras/README.md`](../../../extras/README.md). This output directory

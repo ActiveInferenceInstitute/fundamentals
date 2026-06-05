@@ -15,6 +15,7 @@ from matplotlib.widgets import Slider
 from ..core.generative_model import LinearGaussianModel
 from ..core.inference import GridBayesianInference
 from ..utils.grids import make_grid
+from .style import COLORS, annotate_stat_box, stat_box_bbox
 
 
 def interactive_inference(
@@ -36,7 +37,7 @@ def interactive_inference(
     """
     x_grid = make_grid(x_low, x_high, n_grid)
 
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5), constrained_layout=False)
     plt.subplots_adjust(left=0.07, right=0.97, top=0.85, bottom=0.32, wspace=0.35)
 
     def compute(y, m_x, s2_x, sigma2_y):
@@ -49,10 +50,10 @@ def interactive_inference(
 
     res = compute(y_init, m_x_init, s2_x_init, sigma2_y_init)
 
-    line_prior, = axes[0].plot(x_grid, res.prior, color="#1f77b4", lw=2)
-    line_lik, = axes[1].plot(x_grid, res.likelihood, color="#d62728", lw=2)
-    line_post, = axes[2].plot(x_grid, res.posterior, color="#2ca02c", lw=2)
-    mode_marker = axes[2].axvline(res.posterior_mode, color="black", ls="--", lw=1)
+    line_prior, = axes[0].plot(x_grid, res.prior, color=COLORS["prior"], lw=2)
+    line_lik, = axes[1].plot(x_grid, res.likelihood, color=COLORS["likelihood"], lw=2)
+    line_post, = axes[2].plot(x_grid, res.posterior, color=COLORS["posterior"], lw=2)
+    mode_marker = axes[2].axvline(res.posterior_mode, color=COLORS["data"], ls="--", lw=1)
     axes[0].set_title("Prior p(x)")
     axes[1].set_title("Likelihood p(y | x)")
     axes[2].set_title("Posterior p(x | y)")
@@ -61,7 +62,6 @@ def interactive_inference(
         ax.set_xlabel("x")
         ax.grid(alpha=0.3)
 
-    from .style import stat_box_bbox
     stat_text = axes[2].text(
         0.02, 0.97, "", transform=axes[2].transAxes, fontsize=8,
         va="top", ha="left", bbox=stat_box_bbox(pad=0.25),
@@ -136,16 +136,16 @@ def interactive_precision(
         )
         return GridBayesianInference(model, x_grid).infer(y_obs)
 
-    fig, ax = plt.subplots(figsize=(9, 5))
+    fig, ax = plt.subplots(figsize=(9, 5), constrained_layout=False)
     plt.subplots_adjust(bottom=0.22, top=0.9)
 
     res = compute(0.0)
     line_prior, = ax.plot(x_grid, res.prior / np.max(res.prior),
-                          lw=2, label="prior", color="#1f77b4")
+                          lw=2, label="prior", color=COLORS["prior"])
     line_lik, = ax.plot(x_grid, res.likelihood / np.max(res.likelihood),
-                        lw=2, label="likelihood", color="#d62728")
+                        lw=2, label="likelihood", color=COLORS["likelihood"])
     line_post, = ax.plot(x_grid, res.posterior / np.max(res.posterior),
-                         lw=2, label="posterior", color="#2ca02c")
+                         lw=2, label="posterior", color=COLORS["posterior"])
     ax.set_xlim(x_low, x_high)
     ax.set_ylim(0, 1.1)
     ax.set_xlabel("hidden state x")
@@ -157,7 +157,6 @@ def interactive_precision(
     ax_slider = plt.axes([0.15, 0.07, 0.7, 0.04])
     s = Slider(ax_slider, "log10(s2_x / sigma2_y)", -2.0, 2.0, valinit=0.0)
 
-    from .style import stat_box_bbox
     stat_text = ax.text(
         0.02, 0.97, "", transform=ax.transAxes, fontsize=9,
         va="top", ha="left", bbox=stat_box_bbox(pad=0.25),
@@ -180,4 +179,73 @@ def interactive_precision(
     update()
     s.on_changed(update)
     fig._slider = s
+    return fig
+
+
+def interactive_topic_demo(slug: str) -> plt.Figure:
+    """Interactive one-slider explorer for a simulation-capable extras topic.
+
+    The widget reuses :func:`active_inference.extra_topics.build_topic_demo`
+    in ``simulate`` mode and exposes a continuous blend between the baseline
+    and the main simulation curve. This keeps every extras interactive tied to
+    the same deterministic, validated data builder as the static and simulation
+    wrappers.
+    """
+    from active_inference.extra_topics import build_topic_demo, extra_topic_spec
+
+    spec = extra_topic_spec(slug)
+    if not spec.has_simulation:
+        raise ValueError(f"Extras topic {slug!r} does not declare a simulation mode")
+    demo = build_topic_demo(slug, mode="simulate")
+    x = np.asarray(demo.arrays["x"], dtype=float)
+    primary = np.asarray(demo.arrays[demo.line_keys[0]], dtype=float)
+    if primary.shape != x.shape:
+        x = np.linspace(0.0, 1.0, primary.size)
+    if len(demo.line_keys) > 1:
+        baseline = np.asarray(demo.arrays[demo.line_keys[1]], dtype=float)
+        if baseline.shape != primary.shape:
+            baseline = np.full_like(primary, float(np.nanmean(primary)))
+        baseline_label = str(demo.metadata.get(f"{demo.line_keys[1]}_label", "baseline"))
+    else:
+        baseline = np.zeros_like(primary) + float(np.nanmean(primary))
+        baseline_label = "baseline"
+
+    fig, ax = plt.subplots(figsize=(9.5, 5.2), constrained_layout=False)
+    plt.subplots_adjust(bottom=0.22, top=0.88)
+    ax.set_title(f"{spec.title}: interactive parameter sweep", loc="left")
+    ax.set_xlabel(str(demo.metadata.get("x_label", "parameter")))
+    ax.set_ylabel(str(demo.metadata.get(f"{demo.line_keys[0]}_label", "value")))
+    ax.grid(alpha=0.3)
+    baseline_line, = ax.plot(x, baseline, color=COLORS["neutral"], lw=2.0, ls="--", label=baseline_label)
+    target_line, = ax.plot(x, primary, color=COLORS["prior"], lw=2.0, alpha=0.55, label="target")
+    current_line, = ax.plot(x, baseline, color=COLORS["posterior"], lw=3.0, label="interactive blend")
+    ax.legend(fontsize=10)
+    values = np.concatenate([baseline, primary])
+    ymin = float(np.min(values))
+    ymax = float(np.max(values))
+    pad = 0.08 * max(ymax - ymin, 1e-6)
+    ax.set_ylim(ymin - pad, ymax + pad)
+
+    stat_text = annotate_stat_box(ax, "", loc="upper left", fontsize=9, monospace=False)
+    ax_slider = plt.axes([0.16, 0.08, 0.68, 0.04])
+    slider = Slider(ax_slider, "simulation blend", 0.0, 1.0, valinit=0.0)
+
+    def update(_event=None) -> None:
+        """Update the extras topic curve from the slider value."""
+        blend = float(slider.val)
+        current = (1.0 - blend) * baseline + blend * primary
+        current_line.set_ydata(current)
+        stat_text.set_text(
+            f"{spec.slug.replace('_', ' ')}\n"
+            f"blend = {blend:.2f}\n"
+            f"mean = {np.mean(current):.3f}\n"
+            f"source = {spec.source_apis[0].split('.')[-1]}"
+        )
+        fig.canvas.draw_idle()
+
+    update()
+    slider.on_changed(update)
+    fig._slider = slider  # type: ignore[attr-defined]
+    fig._topic_demo = demo  # type: ignore[attr-defined]
+    fig._interactive_lines = (baseline_line, target_line, current_line)  # type: ignore[attr-defined]
     return fig

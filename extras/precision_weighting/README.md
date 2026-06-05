@@ -12,6 +12,7 @@ Variance, precision, and their control over belief updates.
 
 - `visualize_precision_weighting.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_precision_weighting.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_precision_weighting.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/pr
 ```bash
 uv run python extras/precision_weighting/visualize_precision_weighting.py --save
 uv run python extras/precision_weighting/simulate_precision_weighting.py --save
+uv run python extras/precision_weighting/interactive_precision_weighting.py
 ```

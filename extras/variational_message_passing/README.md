@@ -12,6 +12,7 @@ Mean-field updates expressed as local messages.
 
 - `visualize_variational_message_passing.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
 - `simulate_variational_message_passing.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
+- `interactive_variational_message_passing.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
 
 ## Outputs
 
@@ -20,4 +21,5 @@ Run any script with `--save` to render artifacts under `output/figures/extras/va
 ```bash
 uv run python extras/variational_message_passing/visualize_variational_message_passing.py --save
 uv run python extras/variational_message_passing/simulate_variational_message_passing.py --save
+uv run python extras/variational_message_passing/interactive_variational_message_passing.py
 ```

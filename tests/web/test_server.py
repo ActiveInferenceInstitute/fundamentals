@@ -8,6 +8,7 @@ collide with any developer-launched instance. Requests go through
 from __future__ import annotations
 
 import json
+import os
 import time
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -20,17 +21,27 @@ from active_inference.extra_topics import extra_topic_slugs
 
 
 @pytest.fixture(scope="module")
-def server():
+def server(tmp_path_factory):
+    output_root = tmp_path_factory.mktemp("web-output") / "output"
+    old_output_root = os.environ.get("ACTIVE_INFERENCE_OUTPUT_ROOT")
+    os.environ["ACTIVE_INFERENCE_OUTPUT_ROOT"] = str(output_root)
     srv = web_server.run_server(
         host="127.0.0.1", port=0, open_browser=False, block=False,
     )
+    srv.test_output_root = output_root
     # Wait briefly for the thread to start accepting.
     time.sleep(0.2)
-    yield srv
-    srv.shutdown()
-    if srv.serve_thread is not None:
-        srv.serve_thread.join(timeout=2)
-    srv.server_close()
+    try:
+        yield srv
+    finally:
+        srv.shutdown()
+        if srv.serve_thread is not None:
+            srv.serve_thread.join(timeout=2)
+        srv.server_close()
+        if old_output_root is None:
+            os.environ.pop("ACTIVE_INFERENCE_OUTPUT_ROOT", None)
+        else:
+            os.environ["ACTIVE_INFERENCE_OUTPUT_ROOT"] = old_output_root
 
 
 def _url(server, path: str) -> str:
@@ -195,12 +206,17 @@ class TestRunEndpoint:
                              {"chapter": 1, "script": "04_inverse_problem.py"})
         assert status == 200
         assert data["returncode"] == 0
+        figure_dir = server.test_output_root / "figures" / "chapter_01"
+        assert (figure_dir / "04_inverse_curve.png").exists()
+        assert (figure_dir / "04_inverse_posterior.png").exists()
 
     def test_run_extra_script(self, server):
         status, data = _post(server, "/api/run",
                              {"topic": "entropy", "script": "visualize_entropy.py"})
         assert status == 200
         assert data["returncode"] == 0
+        figure_dir = server.test_output_root / "figures" / "extras" / "entropy"
+        assert (figure_dir / "visualize_entropy.png").exists()
 
 
 class TestTemplates:

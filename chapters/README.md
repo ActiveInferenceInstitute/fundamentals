@@ -84,12 +84,20 @@ chapters/
 ├── chapter_09/                ← Active Inference in POMDPs (Part II)
 │   ├── example_9_1_state_inference.py … example_9_6_exploration_exploitation.py
 │   └── animation_belief_filtering.py · animation_efe_tradeoff.py
-└── chapter_10/                ← Learning & extensions in POMDPs (Part II)
-    ├── example_10_1_learn_D.py … example_10_6_precision_learning.py   (§10.1–10.2)
-    ├── example_10_7_two_armed_bandit.py                              (§10.3 factorial)
-    ├── example_10_8_hierarchical.py                                  (§10.4 hierarchical)
-    ├── visualize_factorial_structure.py
-    └── animation_learning.py · animation_precision.py · animation_bandit.py
+├── chapter_10/                ← Learning & extensions in POMDPs (Part II)
+│   ├── example_10_1_learn_D.py … example_10_6_precision_learning.py   (§10.1–10.2)
+│   ├── example_10_7_two_armed_bandit.py                              (§10.3 factorial)
+│   ├── example_10_8_hierarchical.py                                  (§10.4 hierarchical)
+│   ├── visualize_factorial_structure.py
+│   └── animation_learning.py · animation_precision.py · animation_bandit.py
+├── chapter_11/                ← Planning extensions (Part III)
+│   └── example_11_1_free_energy_variants.py … example_11_4_hybrid_tree_structure.py
+├── chapter_12/                ← Factor graphs and message passing (Part III)
+│   └── example_12_1_factor_graph_messages.py … example_12_5_active_factor_learning_attention.py
+├── chapter_13/                ← Robotics and social applications (Part III)
+│   └── example_13_1_robotics_navigation.py … example_13_4_robotics_theory.py
+└── chapter_14/                ← Bayesian mechanics and Markov blankets (Part III)
+    └── example_14_1_ergodic_density.py … example_14_4_bayesian_mechanics.py
 ```
 
 ## Running a single script
@@ -120,7 +128,7 @@ The top-level [`run.sh`](../run.sh) menu is the simplest entry point:
 The older batch pipeline still works:
 
 ```bash
-uv run python scripts/run_all_figures.py              # chapters 1–10
+uv run python scripts/run_all_figures.py              # all discovered chapters
 uv run python scripts/run_all_figures.py --chapters 1
 uv run python scripts/run_all_figures.py --chapters 4 5
 uv run python scripts/run_all_figures.py --clean      # remove old generated media first
@@ -160,5 +168,9 @@ runs every script with `--save` and asserts exit code 0. The
 | Chapter 6 | 5 (§6.1 univariate + §6.2 multivariate + §6.3–6.6 generalized/correlated coordinates) | Complete through §6.6 |
 | Chapter 7 | 3 (§7.1–7.5 univariate + multivariate active generalized filtering)           | Complete through §7.5 |
 | Chapter 8 | 4 (2 examples + 1 visualization + 1 animation; §8.1 learning/attention · §8.2–§8.6 hierarchy/message passing) | Partial continuous increment complete; nonlinear hierarchy extensions remain |
-| Chapter 9 | 7 (5 examples + 2 animations; §9.1 state inference · §9.2–§9.3 dynamic filtering/VFE · §9.4–§9.6 EFE, Grid World, exploration/exploitation) | Core discrete POMDP increment complete; richer policy trees remain |
+| Chapter 9 | 7 (5 examples + 2 animations; §9.1 state inference · §9.2–§9.3 dynamic filtering/VFE · §9.4–§9.6 EFE, Grid World, exploration/exploitation) | Complete for declared scope |
 | Chapter 10 | 12 (8 examples + 1 visualization + 3 animations; §10.1 learning · §10.2 habit/precision · §10.3 factorial / two-armed bandit · §10.4 hierarchical) | Complete |
+| Chapter 11 | 4 (free-energy variants, sophisticated planning, preference/habit learning, hybrid tree/structure scoring) | PDF-grounded Part III companion demos |
+| Chapter 12 | 5 (factor-graph messages, smoothing, VMP/marginals, hybrid bridge, active-factor learning/attention) | PDF-grounded Part III companion demos |
+| Chapter 13 | 4 (robotics navigation, fault-tolerant control, social inference, robotics theory landscape) | PDF-grounded Part III companion demos |
+| Chapter 14 | 4 (ergodic density, survival/viability, entropy/VFE bounds, Bayesian mechanics) | PDF-grounded Part III companion demos |

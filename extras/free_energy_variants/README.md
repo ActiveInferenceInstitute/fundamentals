@@ -6,7 +6,7 @@ FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms.
 
 - Family: Part III Extensions
 - Chapters: 11
-- Sections: 11.1, D
+- Sections: 11.1, 11.1.1-11.1.8, D.4
 
 ## Scripts
 

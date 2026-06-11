@@ -91,14 +91,14 @@ Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Infer
 
 | Book chapters | Sections | Extras topic | Reusable APIs | Artifact modes |
 |---|---|---|---|---|
-| 11 | 11.1, D | [`free_energy_variants`](../../extras/free_energy_variants/) | `active_inference.core.free_energy_forms`; `active_inference.extra_topics` | visualize, simulate |
+| 11 | 11.1, 11.1.1-11.1.8, D.4 | [`free_energy_variants`](../../extras/free_energy_variants/) | `active_inference.core.free_energy_forms`; `active_inference.extra_topics` | visualize, simulate |
 | 11 | 11.2.1 | [`sophisticated_inference`](../../extras/sophisticated_inference/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
 | 11 | 11.2.2 | [`inductive_planning`](../../extras/inductive_planning/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
 | 11 | 11.2.3, 11.2.5 | [`state_preferences`](../../extras/state_preferences/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
 | 11 | 11.2.6, 11.2.7 | [`parameter_uncertainty`](../../extras/parameter_uncertainty/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
 | 11, 12 | 11.2.9, 12.3 | [`backward_smoothing`](../../extras/backward_smoothing/) | `active_inference.core.factor_graph`; `active_inference.extra_topics` | visualize, simulate, animation |
 | 11, 12 | 11.3, 12.6 | [`hybrid_generative_models`](../../extras/hybrid_generative_models/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
-| 11 | 11.4 | [`tree_policy_search`](../../extras/tree_policy_search/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate, animation |
+| 11 | 11.2.8, 11.4 | [`tree_policy_search`](../../extras/tree_policy_search/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate, animation |
 | 11 | 11.5 | [`structure_learning`](../../extras/structure_learning/) | `active_inference.extra_topics`; `src/active_inference/core` | visualize, simulate |
 
 ### Factor Graphs And Applications
@@ -117,9 +117,48 @@ Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Infer
 |---|---|---|---|---|
 | 14 | 14.1, 14.2 | [`ergodic_density`](../../extras/ergodic_density/) | `active_inference.core.ergodic`; `active_inference.extra_topics` | visualize, simulate, animation |
 | 14 | 14.3 | [`fep_entropy_bounds`](../../extras/fep_entropy_bounds/) | `active_inference.core.ergodic`; `active_inference.extra_topics` | visualize, simulate |
-| 4, 14 | D, 14.3 | [`temperature`](../../extras/temperature/) | `active_inference.core.thermodynamics`; `active_inference.extra_topics` | visualize, simulate |
-| 4, 14 | D | [`enthalpy`](../../extras/enthalpy/) | `active_inference.core.thermodynamics`; `active_inference.extra_topics` | visualize, simulate |
-| 14 | 14.1, 14.4, A | [`bayesian_mechanics_bridge`](../../extras/bayesian_mechanics_bridge/) | `active_inference.core.ergodic`; `active_inference.extra_topics` | visualize, simulate |
+| 4, 14 | D.3, 14.3 | [`temperature`](../../extras/temperature/) | `active_inference.core.thermodynamics`; `active_inference.extra_topics` | visualize, simulate |
+| 4, 14 | D.4 | [`enthalpy`](../../extras/enthalpy/) | `active_inference.core.thermodynamics`; `active_inference.extra_topics` | visualize, simulate |
+| 14 | 14.1, 14.4 | [`bayesian_mechanics_bridge`](../../extras/bayesian_mechanics_bridge/) | `active_inference.core.ergodic`; `active_inference.extra_topics` | visualize, simulate |
+
+## PDF Source Spine Contract
+
+Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf`
+has 1153 pages, LaTeX build date 2025-03-20, Chapters 1-14, and Appendices
+A-D. It has no Chapter 15; `chapter_15` must remain absent unless a different
+source manuscript is supplied.
+
+### Part III Explicit Subsection Coverage
+
+| Book chapters | Sections | Extras topic | Reusable APIs | Artifact modes |
+|---|---|---|---|---|
+| 11 | 11.1, 11.1.1, 11.1.2, 11.1.3, 11.1.4, 11.1.5, 11.1.6, 11.1.7, 11.1.8, D.4 | [`free_energy_variants`](../../extras/free_energy_variants/) | `active_inference.core.free_energy_forms` | visualize, simulate |
+| 11 | 11.2.4 | [`preference_habit_learning`](../../extras/preference_habit_learning/) | `active_inference.core.pomdp_extensions`; `active_inference.estimators.pomdp_extensions` | visualize |
+| 11 | 11.2.8, 11.4 | [`tree_policy_search`](../../extras/tree_policy_search/) | `active_inference.core.pomdp_extensions`; `active_inference.estimators.pomdp_extensions` | visualize, simulate, animation |
+| 12 | 12.4, 12.4.1 | [`variational_message_passing`](../../extras/variational_message_passing/) | `active_inference.core.factor_graph` | visualize, simulate |
+| 12 | 12.7 | [`hierarchical_message_passing`](../../extras/hierarchical_message_passing/) | `active_inference.core.factor_graph`; `active_inference.core.continuous_learning` | visualize, simulate, animation |
+| 13 | 13.4 | [`robotics_theory`](../../extras/robotics_theory/) | `active_inference.estimators.applications` | visualize |
+
+### Appendix A Historical/Future Coverage
+
+| Appendix | Sections | Extras topic | Reusable APIs | Artifact modes |
+|---|---|---|---|---|
+| A | A.1, A.1.1, A.1.2, A.1.3, A.1.4, A.1.5, A.1.6, A.1.7 | [`active_inference_history`](../../extras/active_inference_history/) | `active_inference.source_spine` | visualize |
+| A | A.2, A.2.5 | [`active_inference_future`](../../extras/active_inference_future/) | `active_inference.source_spine` | visualize |
+| A | A.2.1 | [`deep_generative_models`](../../extras/deep_generative_models/) | `active_inference.source_spine` | visualize |
+| A | A.2.2 | [`cybernetics_control`](../../extras/cybernetics_control/) | `active_inference.source_spine` | visualize |
+| A | A.2.3 | [`information_theory_lineage`](../../extras/information_theory_lineage/) | `active_inference.source_spine` | visualize |
+| A | A.2.4 | [`reinforcement_learning_lineage`](../../extras/reinforcement_learning_lineage/) | `active_inference.source_spine` | visualize |
+
+### Appendix B-D Executable Math Coverage
+
+| Appendix | Sections | Extras topic | Reusable APIs | Artifact modes |
+|---|---|---|---|---|
+| B | B.1, B.2, B.3, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.11, B.12 | [`appendix_notation_model_setup`](../../extras/appendix_notation_model_setup/) | `active_inference.core.appendix_math`; `active_inference.core.pomdp`; `active_inference.core.factor_graph` | visualize |
+| C | C.1, C.1.1, C.1.2, C.1.3, C.1.4, C.2, C.2.1, C.2.2, C.2.2.1, C.2.2.2, C.2.2.3, C.2.2.4, C.2.2.5, C.2.3, C.2.4, C.2.5, C.2.6, C.3, C.3.1, C.3.2, C.4, C.4.1, C.4.2, C.4.3, C.4.4, C.5, C.5.1, C.5.2, C.5.3, C.5.4, C.6, C.6.1, C.6.2, C.7, C.7.1, C.7.2, C.7.3, C.8, C.8.1, C.8.2, C.8.3, C.10, C.10.1, C.10.2, C.10.3, C.10.4, C.10.5, C.10.6, C.10.7, C.12, C.13, C.13.1, C.13.2 | [`appendix_math_fundamentals`](../../extras/appendix_math_fundamentals/) | `active_inference.core.appendix_math` | visualize |
+| C | C.9 | [`colored_noise`](../../extras/colored_noise/) | `active_inference.core.noise` | visualize |
+| C | C.11, C.11.1, C.11.2, C.11.3, C.11.4 | [`bayesian_model_selection`](../../extras/bayesian_model_selection/) | `active_inference.core.model_comparison` | visualize |
+| D | D.1, D.2, D.3, D.3.1, D.3.2, D.3.3, D.3.4, D.4 | [`appendix_free_energy_forms`](../../extras/appendix_free_energy_forms/) | `active_inference.core.free_energy_forms` | visualize |
 
 ## Validation
 
@@ -128,6 +167,7 @@ Run the matrix validator after changing topic registry entries or extras folders
 ```bash
 uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
+uv run python scripts/validate_source_spine.py --require-pdf
 ```
 
 The default validator requires each registered topic to have a folder, README, static script, declared simulation/animation scripts, and one coverage-matrix row. The `--require-rendered` mode is the post-render gate: every declared static, simulation, and animation wrapper must also have its expected PNG/GIF artifact plus paired NPZ+JSON sidecars.

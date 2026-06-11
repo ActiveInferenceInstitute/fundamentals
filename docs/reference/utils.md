@@ -44,8 +44,8 @@ scripts.
 
 | Symbol | Role |
 |---|---|
-| `default_figure_dir()` | `<repo>/output/figures/` |
-| `default_data_dir()` | `<repo>/output/data/` |
+| `default_figure_dir()` | `<repo>/output/figures/`, or `ACTIVE_INFERENCE_FIGURE_DIR` / `ACTIVE_INFERENCE_OUTPUT_ROOT/figures` when overridden. |
+| `default_data_dir()` | `<repo>/output/data/`, or `ACTIVE_INFERENCE_DATA_DIR` / `ACTIVE_INFERENCE_OUTPUT_ROOT/data` when overridden. |
 | `ensure_dir(path)` | `mkdir -p` semantics; returns the resolved `Path`. |
 
 ```python
@@ -80,7 +80,7 @@ the extraction helpers automatically for paths under
 Validate generated sidecars with:
 
 ```bash
-uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 uv run python scripts/validate_raw_data_exports.py --root output/data
 ```
 

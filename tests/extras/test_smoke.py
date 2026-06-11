@@ -25,9 +25,14 @@ SCRIPT_CASES = [
 ]
 
 
-def _fresh_data_pairs(topic: str, stem: str, started_ns: int) -> list[tuple[Path, Path]]:
+def _fresh_data_pairs(
+    data_root: Path,
+    topic: str,
+    stem: str,
+    started_ns: int,
+) -> list[tuple[Path, Path]]:
     """Return JSON/NPZ sidecars for ``topic`` written after ``started_ns``."""
-    data_dir = REPO_ROOT / "output" / "data" / "extras" / topic
+    data_dir = data_root / "extras" / topic
     pairs: list[tuple[Path, Path]] = []
     for json_path in data_dir.glob(f"{stem}.json"):
         npz_path = json_path.with_suffix(".npz")
@@ -39,13 +44,19 @@ def _fresh_data_pairs(topic: str, stem: str, started_ns: int) -> list[tuple[Path
 
 
 @pytest.mark.parametrize("topic,script_name", SCRIPT_CASES, ids=[f"{t}/{s}" for t, s in SCRIPT_CASES])
-def test_extra_topic_script_runs_and_exports_raw_data(topic: str, script_name: str) -> None:
+def test_extra_topic_script_runs_and_exports_raw_data(
+    topic: str,
+    script_name: str,
+    tmp_path: Path,
+) -> None:
     """Every extras script runs headlessly and writes fresh NPZ+JSON sidecars."""
     script = EXTRAS_ROOT / topic / script_name
+    output_root = tmp_path / "output"
     env = os.environ.copy()
     env["MPLBACKEND"] = "Agg"
     env["PYTHONWARNINGS"] = "error"
     env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    env["ACTIVE_INFERENCE_OUTPUT_ROOT"] = str(output_root)
     started_ns = time.time_ns()
 
     result = subprocess.run(
@@ -53,11 +64,12 @@ def test_extra_topic_script_runs_and_exports_raw_data(topic: str, script_name: s
         capture_output=True,
         text=True,
         env=env,
+        cwd=tmp_path,
         timeout=180,
     )
 
     assert result.returncode == 0, result.stderr
-    assert _fresh_data_pairs(topic, script.stem, started_ns), (
+    assert _fresh_data_pairs(output_root / "data", topic, script.stem, started_ns), (
         f"{topic}/{script_name} did not export fresh raw data"
     )
 

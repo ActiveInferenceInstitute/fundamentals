@@ -14,6 +14,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from active_inference.extra_topics import EXTRA_TOPICS  # noqa: E402
+from active_inference.source_spine import appendix_section_ids, chapter_numbers, has_section  # noqa: E402
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -121,6 +122,8 @@ def validate_coverage(
         if f"`{spec.slug}`" not in text:
             errors.append(f"{matrix}: missing coverage row for {spec.slug!r}")
         for section in spec.sections:
+            if not has_section(section):
+                errors.append(f"{spec.slug}: section {section!r} is not in the PDF source spine")
             if section not in text:
                 errors.append(f"{matrix}: missing section {section!r} for {spec.slug!r}")
         if require_rendered:
@@ -144,6 +147,17 @@ def validate_coverage(
                     errors,
                     "extras JSON sidecar",
                 )
+    for section in appendix_section_ids():
+        if section not in text:
+            errors.append(f"{matrix}: missing appendix source-spine section {section!r}")
+    chapter_dirs = sorted(
+        int(path.name.removeprefix("chapter_"))
+        for path in (REPO_ROOT / "chapters").glob("chapter_*")
+        if path.is_dir()
+    )
+    expected = list(chapter_numbers())
+    if chapter_dirs != expected:
+        errors.append(f"{REPO_ROOT / 'chapters'}: expected chapter directories {expected}, found {chapter_dirs}")
     return errors
 
 

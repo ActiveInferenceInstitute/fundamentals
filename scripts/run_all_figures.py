@@ -1,4 +1,4 @@
-"""Render every figure for Chapters 1–10.
+"""Render every figure for all discovered chapters.
 
 Run::
 
@@ -24,20 +24,12 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from active_inference.menu.runner import discover_extra_scripts, discover_extras  # noqa: E402
-
-CHAPTER_DIRS = {
-    1: REPO_ROOT / "chapters" / "chapter_01",
-    2: REPO_ROOT / "chapters" / "chapter_02",
-    3: REPO_ROOT / "chapters" / "chapter_03",
-    4: REPO_ROOT / "chapters" / "chapter_04",
-    5: REPO_ROOT / "chapters" / "chapter_05",
-    6: REPO_ROOT / "chapters" / "chapter_06",
-    7: REPO_ROOT / "chapters" / "chapter_07",
-    8: REPO_ROOT / "chapters" / "chapter_08",
-    9: REPO_ROOT / "chapters" / "chapter_09",
-    10: REPO_ROOT / "chapters" / "chapter_10",
-}
+from active_inference.menu.runner import (  # noqa: E402
+    discover_chapters,
+    discover_extra_scripts,
+    discover_extras,
+    discover_scripts,
+)
 OUTPUT_DIR = REPO_ROOT / "output" / "figures"
 DATA_DIR = REPO_ROOT / "output" / "data"
 GENERATED_SUFFIXES = {".gif", ".mp4", ".pdf", ".png", ".svg", ".webm"}
@@ -46,10 +38,11 @@ GENERATED_DATA_SUFFIXES = {".csv", ".json", ".npz"}
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line options for this executable entry point."""
+    discovered_chapters = [entry.number for entry in discover_chapters()]
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--chapters", nargs="+", type=int,
-                   default=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                   choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+                   default=discovered_chapters,
+                   choices=discovered_chapters)
     p.add_argument("--extras", nargs="*", default=None,
                    help="Extras topic slugs to render; pass without values for all extras")
     p.add_argument("--no-chapters", action="store_true",
@@ -95,14 +88,8 @@ def clean_data_dir(root: Path = DATA_DIR) -> int:
 
 
 def chapter_scripts(ch: int, *, include_animations: bool = True) -> list[Path]:
-    """Support this repository command-line validation or rendering script."""
-    if ch not in CHAPTER_DIRS:
-        raise ValueError(ch)
-    base = CHAPTER_DIRS[ch]
-    if ch == 1:
-        return sorted(base.glob("0*.py"))
-    out = sorted(p for p in base.glob("*.py")
-                 if "interactive" not in p.name)
+    """Return non-interactive scripts for one discovered chapter."""
+    out = [entry.path for entry in discover_scripts(ch)]
     if not include_animations:
         out = [p for p in out if not p.name.startswith("animation_")]
     return out

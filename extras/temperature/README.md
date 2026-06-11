@@ -6,7 +6,7 @@ Temperature-scaled canonical probabilities and U - T S.
 
 - Family: Thermodynamic/FEP Bridge
 - Chapters: 4, 14
-- Sections: D, 14.3
+- Sections: D.3, 14.3
 
 ## Scripts
 

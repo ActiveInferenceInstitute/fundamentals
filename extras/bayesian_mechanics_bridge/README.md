@@ -6,7 +6,7 @@ A careful bridge between active inference, FEP, and Bayesian mechanics.
 
 - Family: Thermodynamic/FEP Bridge
 - Chapters: 14
-- Sections: 14.1, 14.4, A
+- Sections: 14.1, 14.4
 
 ## Scripts
 

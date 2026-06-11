@@ -14,7 +14,7 @@ domain computation that belongs in `src/`.
 
 ## Chapter Wrappers
 
-Chapter scripts mirror the Chapter 1-10 spine. A typical script constructs a
+Chapter scripts mirror the Chapter 1-14 source spine. A typical script constructs a
 process, model, estimator, or visualization from `active_inference`, then calls
 `save_or_show`, `save_animation`, or `save_chapter_data` when `--save` is set.
 The chapter smoke tests execute every non-interactive wrapper in a subprocess,
@@ -61,6 +61,7 @@ Use these gates together when changing orchestration, rendering, or docs:
 ```bash
 uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
+uv run python scripts/validate_source_spine.py --require-pdf
 uv run python scripts/validate_raw_data_exports.py --root output/data
 uv run python scripts/validate_rendered_figures.py --root output/figures
 ```
@@ -70,4 +71,6 @@ and extras scripts route through `active_inference`, avoid sibling-wrapper
 imports, and that registry-declared extras wrappers exist. The book-topic
 coverage validator checks the documentation matrix and, with
 `--require-rendered`, confirms declared PNG/GIF artifacts and NPZ+JSON sidecars
-exist for every rendered extras mode.
+exist for every rendered extras mode. The source-spine validator checks that
+the inspected PDF remains Chapters 1-14 plus Appendices A-D and that Chapter 15
+is not introduced without a new source.

@@ -19,10 +19,11 @@ metadata, figures=...)`.
 ## Validation
 
 ```bash
-python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 python scripts/validate_raw_data_exports.py --root output/data
 python scripts/validate_book_topic_coverage.py
 python scripts/validate_book_topic_coverage.py --require-rendered
+python scripts/validate_source_spine.py --require-pdf
 ```
 
 The validator rejects missing JSON/NPZ partners, empty arrays, object arrays,
@@ -31,7 +32,7 @@ non-finite values, and shape/dtype manifest drift.
 ## Regenerate
 
 ```bash
-python scripts/run_all_figures.py --clean --chapters 1 2 3 4 5 6 7 8 9 10
+python scripts/run_all_figures.py --clean --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 python scripts/run_all_figures.py --no-chapters --extras
 python -m active_inference.menu --extras
 ```

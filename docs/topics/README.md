@@ -20,6 +20,7 @@ broader and is indexed in
 | [`free_energy_principle.md`](free_energy_principle.md) | The Free Energy Principle and how variational free energy operationalizes it. |
 | [`thermodynamic_bridge.md`](thermodynamic_bridge.md) | The explicit `U`, `S`, `T`, `H`, and `G` analogy layer used by extras. |
 | [`bayesian_mechanics.md`](bayesian_mechanics.md) | Bayesian mechanics — the triangle linking Bayesian inference, the FEP, and active inference. |
+| [`source_spine_and_appendices.md`](source_spine_and_appendices.md) | PDF source-spine status, no Chapter 15, Appendix A source map, and Appendix B-D executable helpers. |
 
 ## How to read these pages
 

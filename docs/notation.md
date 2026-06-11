@@ -39,6 +39,12 @@ descriptive — it explains how the symbols map to identifiers in the package.
 | `Π̃(γ)`    | `correlated_embedding_precision(...)` | Generalized precision with correlated embedding orders. |
 | `S(γ)`     | `gaussian_temporal_covariance(...)` | Gaussian temporal covariance over embedding orders. |
 | `γ`        | `gamma`                 | Smoothness/roughness parameter controlling embedding-order correlations. |
+| `A`        | `A`                     | Discrete likelihood matrix in POMDP and factor-graph examples. |
+| `B`        | `B`, `transition`       | Discrete transition matrix or transition-factor stack. |
+| `C`        | `C`, `preferences`      | Observation preferences, either raw log preferences or normalized probabilities depending on context. |
+| `D`        | `D`, `prior`            | Initial categorical state prior. |
+| `π`        | `policy`, `policies`    | Candidate action sequence in POMDP planning and policy-tree search. |
+| `α`        | `alpha`, `counts`       | Dirichlet/Gamma concentration or pseudocount parameters, depending on context. |
 
 ## Densities
 
@@ -69,6 +75,13 @@ descriptive — it explains how the symbols map to identifiers in the package.
 | GF (Ch.6) | `generalized_filter`, `generalized_filter_gc`, `generalized_vector_filter`, `correlated_embedding_precision` | `core/generalized_filtering.py`, `estimators/generalized_filtering.py` |
 | AIF (Ch.7) | `simulate_active_inference`, `simulate_multivariate_active_inference`, `multivariate_action_gradient` | `core/active_inference.py`, `estimators/active_inference.py` |
 | AGF learning/attention (Ch.8) | `learning_attention_free_energy`, `simulate_learning_attention`, `hierarchical_message_terms` | `core/continuous_learning.py`, `estimators/continuous_learning.py` |
+| POMDP planning (Ch.9–11) | `tree_policy_search`, `sophisticated_policy_trace`, `simulate_sophisticated_planning` | `core/pomdp.py`, `core/pomdp_extensions.py`, `estimators/pomdp_extensions.py` |
+| Appendix probability/math (App. B-C) | `normalize_categorical`, `joint_from_likelihood_prior`, `gamma_pdf`, `dirichlet_mean`, `mutual_information`, `euler_integrate` | `core/appendix_math.py` |
+| Colored noise (App. C.9) | `squared_exponential_covariance`, `colored_noise_precision`, `sample_colored_noise` | `core/noise.py` |
+| Model comparison (App. C.11) | `model_posterior`, `bayes_factor`, `bayesian_model_average`, `bayesian_model_reduction` | `core/model_comparison.py` |
+| Factor graph messages (Ch.12) | `sum_product_chain`, `forward_backward_smoothing`, `variational_message_update`, `marginal_message_passing`, `active_inference_factor_messages` | `core/factor_graph.py` |
+| Applications (Ch.13) | `simulate_robot_navigation`, `simulate_fault_tolerant_control`, `simulate_social_inference`, `robotics_theory_landscape` | `estimators/applications.py` |
+| Bayesian mechanics (Ch.14) | `bayesian_mechanics_summary`, `simulate_markov_blanket_flow`, `blanket_coupling_matrix`, `viability_indicator`, `entropy_vfe_bound_curve` | `core/bayesian_mechanics.py` |
 
 ## Information-theoretic / FEP quantities
 
@@ -77,6 +90,9 @@ descriptive — it explains how the symbols map to identifiers in the package.
 | ``H[p]``    | `grid_entropy`, `gaussian_entropy_univariate/_mvn`, `InferenceResult.entropy` | Differential entropy in nats. |
 | ``KL[p‖q]`` | `grid_kl_divergence`, `gaussian_kl_univariate/_mvn`, `InferenceResult.kl_from_prior` | Non-negative; asymmetric. |
 | ``F[q]``    | derived: `−result.log_evidence + result.kl_from_prior()` | Variational free energy. |
+| ``G(π)``    | `expected_free_energy`, `evaluate_policy`, `tree_policy_search.expected_free_energies` | Expected free energy of a future state or action sequence. |
+| static/dynamic/expected free energy | `static_vfe_decomposition`, `dynamic_vfe_decomposition`, `expected_free_energy_decomposition` | Appendix D executable free-energy forms. |
+| ``H[p] <= F`` | `entropy_upper_bound_from_vfe`, `bayesian_mechanics_summary` | Chapter 14 entropy/VFE-style bound summary. |
 | log-score   | `log_score_gaussian` | Higher is better. |
 | CRPS        | `crps_gaussian` | Lower is better. |
 | ESS         | `effective_sample_size` | Kish ESS in log space. |
@@ -89,3 +105,5 @@ descriptive — it explains how the symbols map to identifiers in the package.
 - Parameters that the book denotes with a star (``*``) — i.e. quantities of
   the *generative process* — are spelled out in code as ``x_star``,
   ``beta0_true``, etc., to avoid confusion with Python's unpacking operator.
+- The inspected PDF source spine is explicit in `active_inference.source_spine`:
+  Chapters 1-14 and Appendices A-D are present; Chapter 15 is absent.

@@ -11,7 +11,7 @@ output/
 ├── README.md          ← this file
 ├── data/              ← raw numerical results (NPZ arrays + JSON manifests)
 │   ├── chapter_01/    ← raw-data sidecars for Chapter 1 artifacts
-│   ├── ... chapter_10/
+│   ├── ... chapter_14/
 │   └── extras/        ← raw-data sidecars for extras topic artifacts
 └── figures/           ← rendered figures (.png) + animations (.gif)
     ├── chapter_01/    ← figures from Chapter 1 orchestrators
@@ -24,6 +24,7 @@ output/
     ├── chapter_08/    ← learning / attention / hierarchy figures
     ├── chapter_09/    ← discrete POMDP figures + GIFs
     ├── chapter_10/    ← POMDP learning / extension figures + GIFs
+    ├── ... chapter_14/
     └── extras/        ← cross-cutting topic figures
 ```
 
@@ -53,17 +54,18 @@ reproducible from source.
 # Clean old generated media/data first (optional; docs are preserved)
 python scripts/run_all_figures.py --clean
 
-# Render all figures (chapters 1–10)
+# Render all figures (chapters 1–14)
 python scripts/run_all_figures.py
 
 # Validate rendered PNG/GIF artifacts
 python scripts/validate_rendered_figures.py --root output/figures
 
 # Validate raw-data NPZ+JSON sidecars
-python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 python scripts/validate_raw_data_exports.py --root output/data
 python scripts/validate_book_topic_coverage.py --require-rendered
 python scripts/validate_orchestrator_provenance.py
+python scripts/validate_source_spine.py --require-pdf
 
 # Or by chapter
 python scripts/run_all_figures.py --chapters 1

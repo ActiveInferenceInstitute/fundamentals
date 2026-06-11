@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 
 from active_inference.utils.io import (
     default_data_dir,
@@ -25,6 +27,17 @@ class TestPaths:
 
     def test_default_dirs_share_parent(self) -> None:
         assert default_data_dir().parent == default_figure_dir().parent
+
+    def test_output_root_override(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ACTIVE_INFERENCE_OUTPUT_ROOT", str(tmp_path / "out"))
+        assert default_figure_dir() == tmp_path / "out" / "figures"
+        assert default_data_dir() == tmp_path / "out" / "data"
+
+    def test_specific_output_overrides(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ACTIVE_INFERENCE_FIGURE_DIR", str(tmp_path / "figs"))
+        monkeypatch.setenv("ACTIVE_INFERENCE_DATA_DIR", str(tmp_path / "raw"))
+        assert default_figure_dir() == tmp_path / "figs"
+        assert default_data_dir() == tmp_path / "raw"
 
 
 class TestEnsureDir:

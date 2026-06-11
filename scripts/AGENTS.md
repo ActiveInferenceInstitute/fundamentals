@@ -13,6 +13,7 @@ in `chapters/` and validation utilities for chapter/extras artifacts.
 | `validate_orchestrator_provenance.py` | Validate that chapter/extras wrappers are thin, import `active_inference`, avoid sibling-wrapper imports, and match registry-declared extras scripts. |
 | `validate_rendered_figures.py` | Validate generated PNG/GIF artifacts for corruption, blank output, tiny dimensions, and trivial GIFs. |
 | `validate_raw_data_exports.py` | Validate generated NPZ+JSON raw-data sidecars for missing partners, invalid arrays, manifest drift, and required extras topics. |
+| `validate_source_spine.py` | Validate the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `run_all_chapter_01.sh` | Bash wrapper invoking `run_all_figures.py --chapters 1`. |
 | `run_all_chapter_02.sh` | Same for Chapter 2. |
 | `run_all_chapter_03.sh` | Same for Chapter 3. |

@@ -29,6 +29,15 @@ from .core.factor_graph import (
     variational_message_update,
 )
 from .core.free_energy_forms import free_energy_variant_table, renyi_bound
+from .core.appendix_math import (
+    dirichlet_mean,
+    gamma_pdf,
+    maximum_entropy_distribution,
+    mutual_information,
+)
+from .core.model_comparison import model_posterior
+from .core.noise import sample_colored_noise, squared_exponential_covariance
+from .source_spine import APPENDICES
 from .core.thermodynamics import (
     boltzmann_entropy,
     canonical_probabilities,
@@ -98,6 +107,23 @@ SOURCE_APIS_BY_DEMO_KIND: dict[str, tuple[str, ...]] = {
         "active_inference.core.ergodic.ergodic_density",
         "active_inference.core.ergodic.density_entropy",
         "active_inference.core.ergodic.entropy_upper_bound_from_vfe",
+    ),
+    "history": (
+        "active_inference.source_spine.APPENDICES",
+        "active_inference.source_spine.appendix_section_ids",
+    ),
+    "appendix_math": (
+        "active_inference.core.appendix_math.gamma_pdf",
+        "active_inference.core.appendix_math.dirichlet_mean",
+        "active_inference.core.appendix_math.mutual_information",
+    ),
+    "model_comparison": (
+        "active_inference.core.model_comparison.model_posterior",
+        "active_inference.core.model_comparison.bayes_factor",
+    ),
+    "noise": (
+        "active_inference.core.noise.squared_exponential_covariance",
+        "active_inference.core.noise.sample_colored_noise",
     ),
 }
 
@@ -185,7 +211,7 @@ EXTRA_TOPICS: tuple[ExtraTopicSpec, ...] = (
     ExtraTopicSpec("generalized_coordinates", "Generalized Coordinates", "Predictive Coding And Continuous Dynamics", (6,), ("6.3", "6.5", "6.6"), "State, velocity, and higher-order embedding orders.", "continuous", True),
     ExtraTopicSpec("active_generalized_filtering", "Active Generalized Filtering", "Active Inference Core", (7,), ("7.2", "7.4", "7.5"), "Action and perception as coupled free-energy descent.", "continuous", True, True),
     ExtraTopicSpec("learning_attention", "Learning And Attention", "Active Inference Core", (8,), ("8.1",), "Learning first- and second-order parameters through precision.", "learning", True, True),
-    ExtraTopicSpec("hierarchical_message_passing", "Hierarchical Message Passing", "Active Inference Core", (8, 12), ("8.5", "12.5"), "Forward and backward messages across hierarchical layers.", "factor_graph", True, True),
+    ExtraTopicSpec("hierarchical_message_passing", "Hierarchical Message Passing", "Active Inference Core", (8, 12), ("8.5", "12.5", "12.7"), "Forward and backward messages across hierarchical layers.", "factor_graph", True, True),
     ExtraTopicSpec("pomdp_arrays", "POMDP Arrays", "Discrete POMDP Active Inference", (9, 10), ("9.1", "B.10"), "D, A, B, C, and E arrays as discrete generative-model components.", "pomdp", True),
     ExtraTopicSpec("discrete_belief_filtering", "Discrete Belief Filtering", "Discrete POMDP Active Inference", (9,), ("9.2",), "Dynamic categorical belief updates over time.", "pomdp", True, True),
     ExtraTopicSpec("discrete_vfe", "Discrete VFE", "Discrete POMDP Active Inference", (9,), ("9.3",), "Discrete free energy for hidden-state estimation.", "pomdp", True),
@@ -196,25 +222,38 @@ EXTRA_TOPICS: tuple[ExtraTopicSpec, ...] = (
     ExtraTopicSpec("policy_precision_habits", "Policy Precision And Habits", "Learning And Depth", (10,), ("10.2",), "Policy precision and baseline habits in action selection.", "pomdp", True, True),
     ExtraTopicSpec("factorial_depth", "Factorial Depth", "Learning And Depth", (10,), ("10.3", "12.6"), "Multiple state factors and observation modalities.", "factor_graph", True),
     ExtraTopicSpec("hierarchical_depth", "Hierarchical Depth", "Learning And Depth", (10, 12), ("10.4", "12.6"), "Nested policies and slower contextual layers.", "factor_graph", True),
-    ExtraTopicSpec("free_energy_variants", "Free-Energy Variants", "Part III Extensions", (11,), ("11.1", "D"), "FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms.", "extension", True),
+    ExtraTopicSpec("free_energy_variants", "Free-Energy Variants", "Part III Extensions", (11,), ("11.1", "11.1.1", "11.1.2", "11.1.3", "11.1.4", "11.1.5", "11.1.6", "11.1.7", "11.1.8", "D.4"), "FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms.", "extension", True),
     ExtraTopicSpec("sophisticated_inference", "Sophisticated Inference", "Part III Extensions", (11,), ("11.2.1",), "Planning with beliefs over future belief updates.", "pomdp", True),
     ExtraTopicSpec("inductive_planning", "Inductive Planning", "Part III Extensions", (11,), ("11.2.2",), "Policy search that reuses substructure across paths.", "application", True),
     ExtraTopicSpec("state_preferences", "State Preferences", "Part III Extensions", (11,), ("11.2.3", "11.2.5"), "Preferences over states and time-dependent preference schedules.", "pomdp", True),
+    ExtraTopicSpec("preference_habit_learning", "Preference And Habit Learning", "Part III Extensions", (11,), ("11.2.4",), "Learning preference and habit-style pseudocounts for C and E.", "learning"),
     ExtraTopicSpec("parameter_uncertainty", "Parameter Uncertainty", "Part III Extensions", (11,), ("11.2.6", "11.2.7"), "Forgetting rates and uncertainty on learned parameters.", "learning", True),
     ExtraTopicSpec("backward_smoothing", "Backward Smoothing", "Part III Extensions", (11, 12), ("11.2.9", "12.3"), "Backward messages that refine earlier state beliefs.", "factor_graph", True, True),
     ExtraTopicSpec("hybrid_generative_models", "Hybrid Generative Models", "Part III Extensions", (11, 12), ("11.3", "12.6"), "Continuous and discrete state-space components in one model.", "application", True),
-    ExtraTopicSpec("tree_policy_search", "Tree Policy Search", "Part III Extensions", (11,), ("11.4",), "Tree-based optimization and receding policy search.", "application", True, True),
+    ExtraTopicSpec("tree_policy_search", "Tree Policy Search", "Part III Extensions", (11,), ("11.2.8", "11.4"), "Path-based policy computation, tree optimization, and receding search.", "application", True, True),
     ExtraTopicSpec("structure_learning", "Structure Learning", "Part III Extensions", (11,), ("11.5",), "Comparing candidate model structures through evidence-like scores.", "variational", True),
-    ExtraTopicSpec("factor_graphs", "Factor Graphs", "Factor Graphs And Applications", (12,), ("12.1", "12.5"), "Forney factor graphs as model diagrams for message passing.", "factor_graph", True),
+    ExtraTopicSpec("factor_graphs", "Factor Graphs", "Factor Graphs And Applications", (12,), ("12.1", "12.5", "B.12"), "Forney factor graphs as model diagrams for message passing.", "factor_graph", True),
     ExtraTopicSpec("belief_propagation", "Belief Propagation", "Factor Graphs And Applications", (12,), ("12.2", "12.3"), "Sum-product messages for state-space models.", "factor_graph", True, True),
-    ExtraTopicSpec("variational_message_passing", "Variational Message Passing", "Factor Graphs And Applications", (12,), ("12.4",), "Mean-field updates expressed as local messages.", "factor_graph", True),
+    ExtraTopicSpec("variational_message_passing", "Variational Message Passing", "Factor Graphs And Applications", (12,), ("12.4", "12.4.1"), "Mean-field and marginal updates expressed as local messages.", "factor_graph", True),
     ExtraTopicSpec("robotics_navigation", "Robotics Navigation", "Factor Graphs And Applications", (13,), ("13.1", "13.2"), "Navigation and control as preference-seeking active inference.", "application", True, True),
     ExtraTopicSpec("social_robotics", "Social Robotics", "Factor Graphs And Applications", (13,), ("13.3",), "Belief updates over another agent's hidden intention.", "pomdp", True),
+    ExtraTopicSpec("robotics_theory", "Robotics Theory", "Factor Graphs And Applications", (13,), ("13.4",), "Theory-facing robotics themes connecting control and active inference.", "application"),
     ExtraTopicSpec("ergodic_density", "Ergodic Density", "Thermodynamic/FEP Bridge", (14,), ("14.1", "14.2"), "Long-run occupancy as a density over viable states.", "ergodic", True, True),
     ExtraTopicSpec("fep_entropy_bounds", "FEP Entropy Bounds", "Thermodynamic/FEP Bridge", (14,), ("14.3",), "Entropy and VFE bounds for self-organizing systems.", "ergodic", True),
-    ExtraTopicSpec("temperature", "Temperature", "Thermodynamic/FEP Bridge", (4, 14), ("D", "14.3"), "Temperature-scaled canonical probabilities and U - T S.", "thermo", True),
-    ExtraTopicSpec("enthalpy", "Enthalpy", "Thermodynamic/FEP Bridge", (4, 14), ("D",), "H = U + pV and G = H - T S as explicit analogy-layer quantities.", "thermo", True),
-    ExtraTopicSpec("bayesian_mechanics_bridge", "Bayesian Mechanics Bridge", "Thermodynamic/FEP Bridge", (14,), ("14.1", "14.4", "A"), "A careful bridge between active inference, FEP, and Bayesian mechanics.", "ergodic", True),
+    ExtraTopicSpec("temperature", "Temperature", "Thermodynamic/FEP Bridge", (4, 14), ("D.3", "14.3"), "Temperature-scaled canonical probabilities and U - T S.", "thermo", True),
+    ExtraTopicSpec("enthalpy", "Enthalpy", "Thermodynamic/FEP Bridge", (4, 14), ("D.4",), "H = U + pV and G = H - T S as explicit analogy-layer quantities.", "thermo", True),
+    ExtraTopicSpec("bayesian_mechanics_bridge", "Bayesian Mechanics Bridge", "Thermodynamic/FEP Bridge", (14,), ("14.1", "14.4"), "A careful bridge between active inference, FEP, and Bayesian mechanics.", "ergodic", True),
+    ExtraTopicSpec("active_inference_history", "Active Inference History", "Appendix A", (14,), ("A.1", "A.1.1", "A.1.2", "A.1.3", "A.1.4", "A.1.5", "A.1.6", "A.1.7"), "Historical lineage from neuroimaging through discrete active inference.", "history"),
+    ExtraTopicSpec("active_inference_future", "Active Inference Future", "Appendix A", (14,), ("A.2", "A.2.5"), "Future-facing active inference research directions.", "history"),
+    ExtraTopicSpec("deep_generative_models", "Deep Generative Models", "Appendix A", (14,), ("A.2.1",), "Deep learning and generative-model context for active inference.", "history"),
+    ExtraTopicSpec("cybernetics_control", "Cybernetics And Control", "Appendix A", (14,), ("A.2.2",), "Cybernetics and control-theory context for active inference.", "history"),
+    ExtraTopicSpec("information_theory_lineage", "Information Theory Lineage", "Appendix A", (14,), ("A.2.3",), "Information-theory context for active inference and FEP.", "history"),
+    ExtraTopicSpec("reinforcement_learning_lineage", "Reinforcement Learning Lineage", "Appendix A", (14,), ("A.2.4",), "Reinforcement-learning context for active inference.", "history"),
+    ExtraTopicSpec("appendix_notation_model_setup", "Notation And Model Setup", "Appendices", (2, 9, 12), ("B.1", "B.2", "B.3", "B.4", "B.5", "B.6", "B.7", "B.8", "B.9", "B.10", "B.11", "B.12"), "Appendix B notation, dimensions, and model-setup conventions.", "appendix_math"),
+    ExtraTopicSpec("appendix_math_fundamentals", "Mathematical Fundamentals", "Appendices", (2, 3, 4), ("C.1", "C.1.1", "C.1.2", "C.1.3", "C.1.4", "C.2", "C.2.1", "C.2.2", "C.2.2.1", "C.2.2.2", "C.2.2.3", "C.2.2.4", "C.2.2.5", "C.2.3", "C.2.4", "C.2.5", "C.2.6", "C.3", "C.3.1", "C.3.2", "C.4", "C.4.1", "C.4.2", "C.4.3", "C.4.4", "C.5", "C.5.1", "C.5.2", "C.5.3", "C.5.4", "C.6", "C.6.1", "C.6.2", "C.7", "C.7.1", "C.7.2", "C.7.3", "C.8", "C.8.1", "C.8.2", "C.8.3", "C.10", "C.10.1", "C.10.2", "C.10.3", "C.10.4", "C.10.5", "C.10.6", "C.10.7", "C.12", "C.13", "C.13.1", "C.13.2"), "Appendix C mathematical fundamentals used across the companion.", "appendix_math"),
+    ExtraTopicSpec("colored_noise", "Colored Noise", "Appendices", (6, 8), ("C.9",), "Smooth colored-noise covariance and trajectory intuition.", "noise"),
+    ExtraTopicSpec("bayesian_model_selection", "Bayesian Model Selection", "Appendices", (4, 11), ("C.11", "C.11.1", "C.11.2", "C.11.3", "C.11.4"), "Bayes factors, model averaging, reduction, and expansion.", "model_comparison"),
+    ExtraTopicSpec("appendix_free_energy_forms", "Appendix Free-Energy Forms", "Appendices", (4, 9, 11), ("D.1", "D.2", "D.3", "D.3.1", "D.3.2", "D.3.3", "D.3.4", "D.4"), "Appendix D static, dynamic, expected, and variant free-energy forms.", "extension"),
 )
 
 
@@ -661,6 +700,116 @@ def _ergodic_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
     )
 
 
+def _history_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
+    """Build Appendix A historical/future context as source-spine timelines."""
+    appendix_a = next(app for app in APPENDICES if app.letter == "A")
+    x = np.arange(len(spec.sections), dtype=float)
+    emphasis = np.linspace(0.35, 1.0, max(1, x.size))
+    if spec.slug == "active_inference_history":
+        primary = emphasis
+        secondary = np.linspace(1.0, 0.45, x.size)
+    elif spec.slug == "active_inference_future":
+        primary = np.linspace(0.45, 1.0, x.size)
+        secondary = np.linspace(0.35, 0.8, x.size)
+    else:
+        primary = np.array([0.65 + 0.05 * (_topic_index(spec.slug) % 5)])
+        secondary = np.array([0.45 + 0.04 * (_topic_index(spec.slug) % 4)])
+        x = np.array([0.0])
+    if mode == "simulate":
+        horizon = np.linspace(0.0, 1.0, 80)
+        primary = primary[-1] * (0.5 + 0.5 * horizon)
+        secondary = secondary[-1] * np.sqrt(horizon + 1e-9)
+        x = horizon
+    return TopicDemo(
+        spec,
+        {"x": x, "primary": primary, "secondary": secondary, "bar_y": np.array([len(appendix_a.sections), len(spec.sections), _topic_index(spec.slug)])},
+        {"x_label": "source-spine position", "primary_label": "AIF emphasis", "secondary_label": "adjacent-field emphasis"},
+        ("primary", "secondary"),
+        bar_key="bar_y",
+    )
+
+
+def _appendix_math_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
+    """Build Appendix B/C math-support arrays from reusable helpers."""
+    x = np.linspace(0.01, 8.0, 220)
+    gamma = gamma_pdf(x, shape=2.5, rate=1.1)
+    categorical = maximum_entropy_distribution(4)
+    dmean = dirichlet_mean(np.array([1.0, 2.0, 3.0, 4.0]))
+    joint = np.array([[0.28, 0.12], [0.18, 0.42]])
+    mi = mutual_information(joint)
+    if mode == "simulate":
+        concentration = np.linspace(1.0, 20.0, 120)
+        entropy = np.log(concentration + 1.0)
+        precision = concentration / np.max(concentration)
+        return TopicDemo(
+            spec,
+            {"x": concentration, "primary": entropy, "secondary": precision, "bar_y": dmean},
+            {"x_label": "concentration", "primary_label": "log concentration", "secondary_label": "scaled precision"},
+            ("primary", "secondary"),
+            bar_key="bar_y",
+        )
+    return TopicDemo(
+        spec,
+        {"x": x, "primary": gamma, "secondary": np.full_like(x, mi), "bar_y": np.concatenate([categorical, dmean])},
+        {"x_label": "value", "primary_label": "Gamma density", "secondary_label": "mutual information"},
+        ("primary", "secondary"),
+        bar_key="bar_y",
+    )
+
+
+def _model_comparison_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
+    """Build Appendix C.11 model-comparison arrays."""
+    x = np.arange(5, dtype=float)
+    log_evidence = np.array([-3.0, -1.6, -1.1, -1.4, -2.2])
+    posterior = model_posterior(log_evidence)
+    if mode == "simulate":
+        complexity = np.linspace(0.0, 1.5, 120)
+        selected = []
+        for value in complexity:
+            selected.append(np.argmax(model_posterior(log_evidence - value * x)))
+        selected_arr = np.asarray(selected, dtype=float)
+        return TopicDemo(
+            spec,
+            {"x": complexity, "primary": selected_arr, "secondary": np.max(posterior) - 0.05 * complexity, "bar_y": posterior},
+            {"x_label": "complexity penalty", "primary_label": "selected model", "secondary_label": "best posterior"},
+            ("primary", "secondary"),
+            bar_key="bar_y",
+        )
+    return TopicDemo(
+        spec,
+        {"x": x, "primary": log_evidence, "secondary": posterior, "bar_y": posterior},
+        {"x_label": "model", "primary_label": "log evidence", "secondary_label": "posterior"},
+        ("primary", "secondary"),
+        bar_key="bar_y",
+    )
+
+
+def _noise_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
+    """Build Appendix C.9 smooth colored-noise arrays."""
+    x = np.linspace(0.0, 6.0, 160)
+    cov = squared_exponential_covariance(x, length_scale=0.65, variance=1.0)
+    sample = sample_colored_noise(x, length_scale=0.65, variance=0.4, rng=np.random.default_rng(7))
+    if mode == "simulate":
+        length = np.linspace(0.15, 2.0, 120)
+        smoothness = np.array(
+            [np.mean(squared_exponential_covariance(x[:20], length_scale=scale)) for scale in length]
+        )
+        return TopicDemo(
+            spec,
+            {"x": length, "primary": smoothness, "secondary": 1.0 / length, "bar_y": np.diag(cov)[:8]},
+            {"x_label": "length scale", "primary_label": "mean covariance", "secondary_label": "inverse length"},
+            ("primary", "secondary"),
+            bar_key="bar_y",
+        )
+    return TopicDemo(
+        spec,
+        {"x": x, "primary": sample, "secondary": cov[len(cov) // 2], "bar_y": np.linalg.eigvalsh(cov[:8, :8])},
+        {"x_label": "time", "primary_label": "colored-noise sample", "secondary_label": "covariance row"},
+        ("primary", "secondary"),
+        bar_key="bar_y",
+    )
+
+
 def build_topic_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
     """Build deterministic numeric arrays for one topic and artifact mode."""
     spec = extra_topic_spec(slug)
@@ -679,6 +828,10 @@ def build_topic_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
         "application": _application_demo,
         "thermo": _thermo_demo,
         "ergodic": _ergodic_demo,
+        "history": _history_demo,
+        "appendix_math": _appendix_math_demo,
+        "model_comparison": _model_comparison_demo,
+        "noise": _noise_demo,
     }
     demo = builders[spec.demo_kind](spec, mode)
     metadata = {
@@ -708,13 +861,21 @@ def _line_label(demo: TopicDemo, key: str) -> str:
     return str(demo.metadata.get(f"{key}_label", key.replace("_", " ")))
 
 
+def _sections_caption(sections: tuple[str, ...]) -> str:
+    """Return a compact section list for figure captions."""
+    if len(sections) <= 8:
+        return ", ".join(sections)
+    head = ", ".join(sections[:4])
+    return f"{head}, ... ({len(sections)} sections)"
+
+
 def render_topic_figure(slug: str, *, mode: str = "visualize") -> tuple[plt.Figure, TopicDemo]:
     """Render a deterministic static figure for one extras topic."""
     demo = build_topic_demo(slug, mode=mode)
     fig, axes = plt.subplots(
         1,
         2,
-        figsize=(12.4, 4.8),
+        figsize=(13.2, 5.2),
         constrained_layout=True,
         gridspec_kw={"width_ratios": (1.7, 1.0)},
     )
@@ -749,7 +910,7 @@ def render_topic_figure(slug: str, *, mode: str = "visualize") -> tuple[plt.Figu
         axes[1].axis("off")
     source = str(demo.metadata["source_apis"][0]).split(".")[-1]
     caption = (
-        f"{demo.spec.family} | sections {', '.join(demo.spec.sections)}\n"
+        f"{demo.spec.family} | sections {_sections_caption(demo.spec.sections)}\n"
         f"source: {source} | {mode}"
     )
     annotate_stat_box(axes[1], caption, loc="lower left", fontsize=9, monospace=False)
@@ -770,6 +931,10 @@ _ANIMATION_KIND_BY_DEMO_KIND: dict[str, str] = {
     "application": "control/path trajectory",
     "thermo": "thermodynamic potential sweep",
     "ergodic": "ergodic-density trajectory",
+    "history": "source-spine context sweep",
+    "appendix_math": "appendix math parameter sweep",
+    "model_comparison": "model evidence sweep",
+    "noise": "colored-noise smoothness sweep",
 }
 
 

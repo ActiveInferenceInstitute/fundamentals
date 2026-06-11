@@ -17,7 +17,11 @@ with `--save`. The directory is **fully regenerable** from source.
 | [`chapter_08/`](chapter_08/) | `chapters/chapter_08/*.py --save` | 3 PNGs + 1 GIF for learning/attention, hierarchy, and message passing. |
 | [`chapter_09/`](chapter_09/) | `chapters/chapter_09/*.py --save` | 5 PNGs + 2 GIFs for discrete POMDP inference, VFE, EFE, Grid World, and exploration. |
 | [`chapter_10/`](chapter_10/) | `chapters/chapter_10/*.py --save` | 9 PNGs + 3 GIFs for POMDP learning, precision, factorial, and hierarchical examples. |
-| [`extras/`](extras/) | `extras/<topic>/*.py --save` | 58 book-grounded extras topics with static PNGs, simulation PNGs, and GIFs when declared by `active_inference.extra_topics`; interactive wrappers are GUI-only and do not write media. |
+| [`chapter_11/`](chapter_11/) | `chapters/chapter_11/*.py --save` | 4 PNGs for Part III planning extensions, preferences/habits, and hybrid tree/structure diagnostics. |
+| [`chapter_12/`](chapter_12/) | `chapters/chapter_12/*.py --save` | 5 PNGs for factor-graph messages, smoothing, VMP, marginal messages, learning/attention, and hybrid bridges. |
+| [`chapter_13/`](chapter_13/) | `chapters/chapter_13/*.py --save` | 4 PNGs for robotics navigation, fault-tolerant control, social inference, and robotics theory. |
+| [`chapter_14/`](chapter_14/) | `chapters/chapter_14/*.py --save` | 4 PNGs for ergodic density, survival/viability, entropy/VFE bounds, Bayesian mechanics, and Markov blankets. |
+| [`extras/`](extras/) | `extras/<topic>/*.py --save` | 71 book-grounded extras topics with static PNGs, simulation PNGs, and GIFs when declared by `active_inference.extra_topics`; interactive wrappers are GUI-only and do not write media. |
 
 ## Regenerate
 
@@ -36,6 +40,9 @@ python scripts/validate_rendered_figures.py --root output/figures
 
 # check extras registry declarations against rendered PNG/GIF and NPZ+JSON artifacts
 python scripts/validate_book_topic_coverage.py --require-rendered
+
+# check the inspected PDF ledger: Ch.1-14, Appendices A-D, no Ch.15
+python scripts/validate_source_spine.py --require-pdf
 
 # render all extras through the shared menu runner
 python -m active_inference.menu --extras

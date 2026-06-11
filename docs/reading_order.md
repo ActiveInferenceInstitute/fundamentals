@@ -35,7 +35,16 @@ trying to do.
    examples: state inference, dynamic filtering, discrete VFE, Grid World, and EFE.
 10. [`chapters/chapter_10.md`](chapters/chapter_10.md) → run POMDP learning,
     habit/precision, factorial bandit, and hierarchical examples.
-11. When a concept is unfamiliar, jump to the matching `topics/` page
+11. [`chapters/chapter_11.md`](chapters/chapter_11.md) → run Part III planning
+    extensions: free-energy variants, sophisticated inference, policy-tree
+    search, preferences, forgetting, and structure learning.
+12. [`chapters/chapter_12.md`](chapters/chapter_12.md) → run factor-graph
+    message passing, smoothing, VMP, and hybrid bridge examples.
+13. [`chapters/chapter_13.md`](chapters/chapter_13.md) → run robotics
+    navigation and social-inference application demos.
+14. [`chapters/chapter_14.md`](chapters/chapter_14.md) → run ergodic-density,
+    entropy-bound, Bayesian-mechanics, and Markov-blanket demos.
+15. When a concept is unfamiliar, jump to the matching `topics/` page
    and come back.
 
 ## Path B — *I want a deep dive on a concept*

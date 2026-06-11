@@ -24,6 +24,16 @@ from .active_inference import (
     MultivariateActiveInferenceResult,
     simulate_multivariate_active_inference,
 )
+from .applications import (
+    FaultTolerantControlResult,
+    NavigationResult,
+    RoboticsTheoryResult,
+    SocialInferenceResult,
+    robotics_theory_landscape,
+    simulate_fault_tolerant_control,
+    simulate_robot_navigation,
+    simulate_social_inference,
+)
 from .gradient_descent import gradient_descent, GradientDescentResult
 from .linear_regression import (
     BLRPosterior,
@@ -37,6 +47,20 @@ from .linear_regression import (
 )
 from .map import map_analytic_linear, map_grad_x, map_loss
 from .mle import mle_analytic_linear, mle_grad_x, mle_loss
+from .pomdp_extensions import (
+    ParameterForgettingResult,
+    PathPolicyResult,
+    PreferenceHabitLearningResult,
+    StatePreferenceResult,
+    StructureLearningResult,
+    make_line_world,
+    simulate_parameter_forgetting,
+    simulate_path_policy_computation,
+    simulate_preference_habit_learning,
+    simulate_sophisticated_planning,
+    simulate_state_preference_schedule,
+    simulate_structure_learning,
+)
 
 __all__ = [
     "mle_analytic_linear",
@@ -67,4 +91,24 @@ __all__ = [
     "GeneralizedVectorFilterResult",
     "simulate_multivariate_active_inference",
     "MultivariateActiveInferenceResult",
+    "NavigationResult",
+    "FaultTolerantControlResult",
+    "RoboticsTheoryResult",
+    "SocialInferenceResult",
+    "robotics_theory_landscape",
+    "simulate_fault_tolerant_control",
+    "simulate_robot_navigation",
+    "simulate_social_inference",
+    "ParameterForgettingResult",
+    "PathPolicyResult",
+    "PreferenceHabitLearningResult",
+    "StatePreferenceResult",
+    "StructureLearningResult",
+    "make_line_world",
+    "simulate_parameter_forgetting",
+    "simulate_path_policy_computation",
+    "simulate_preference_habit_learning",
+    "simulate_sophisticated_planning",
+    "simulate_state_preference_schedule",
+    "simulate_structure_learning",
 ]

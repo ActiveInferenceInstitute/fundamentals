@@ -10,14 +10,20 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from matplotlib.animation import FuncAnimation
 
 from active_inference.utils import (
     data_paths_for_figure,
     data_paths_for_extra_figure,
     extra_data_dir,
+    extract_animation_data,
     extract_figure_data,
+    infer_chapter_from_path,
+    infer_extra_topic_from_path,
+    save_animation_data,
     save_chapter_data,
     save_extra_data,
+    save_figure_data,
 )
 
 
@@ -64,6 +70,23 @@ def test_save_chapter_data_writes_npz_and_json_manifest(tmp_path: Path) -> None:
     assert manifest["arrays"]["beliefs"]["dtype"].startswith("float")
     assert manifest["summary"]["time"]["finite_fraction"] == pytest.approx(1.0)
     assert manifest["metadata"]["summary"]["final_error"] == pytest.approx(0.125)
+
+
+def test_save_chapter_data_extracts_seed_from_argv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CLI seed provenance is recovered when metadata omits an explicit seed."""
+    monkeypatch.setattr(sys, "argv", ["demo.py", "--seed", "42"])
+    _, json_path = save_chapter_data(
+        1,
+        "seeded",
+        arrays={"x": np.arange(3, dtype=float)},
+        metadata={"script": "demo.py"},
+        root=tmp_path,
+    )
+    manifest = json.loads(json_path.read_text(encoding="utf-8"))
+    assert manifest["seed"] == 42
 
 
 def test_save_extra_data_writes_topic_npz_and_json_manifest(tmp_path: Path) -> None:
@@ -165,6 +188,73 @@ def test_data_paths_for_extra_figure_maps_output_figures_to_output_data() -> Non
     assert npz_path == REPO_ROOT / "output" / "data" / "extras" / "entropy" / "demo.npz"
     assert json_path == REPO_ROOT / "output" / "data" / "extras" / "entropy" / "demo.json"
     assert extra_data_dir("entropy") == REPO_ROOT / "output" / "data" / "extras" / "entropy"
+
+
+def test_infer_path_helpers_reject_unmatched_paths() -> None:
+    """Inference helpers fail closed when a path lacks a chapter/extras marker."""
+    with pytest.raises(ValueError):
+        infer_chapter_from_path("figures/demo.png")
+    with pytest.raises(ValueError):
+        infer_extra_topic_from_path("figures/demo.png")
+
+
+def test_save_figure_data_routes_chapter_and_extras_sidecars(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Automatic figure extraction writes sidecars for chapter and extras paths."""
+    monkeypatch.setenv("ACTIVE_INFERENCE_OUTPUT_ROOT", str(tmp_path / "output"))
+    fig, ax = plt.subplots()
+    ax.plot([0, 1], [1, 0], label="line")
+    chapter_result = save_figure_data(
+        fig,
+        tmp_path / "output" / "figures" / "chapter_11" / "demo.png",
+        {"script": "demo.py"},
+    )
+    extras_result = save_figure_data(
+        fig,
+        tmp_path / "output" / "figures" / "extras" / "entropy" / "demo.png",
+        {"script": "demo.py"},
+    )
+    ignored = save_figure_data(fig, tmp_path / "elsewhere" / "demo.png")
+    assert chapter_result is not None and chapter_result[0].exists()
+    assert extras_result is not None and extras_result[0].exists()
+    assert ignored is None
+    plt.close(fig)
+
+
+def test_extract_and_save_animation_data(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Animation extraction captures raw data and writes chapter sidecars."""
+    monkeypatch.setenv("ACTIVE_INFERENCE_OUTPUT_ROOT", str(tmp_path / "output"))
+    fig, ax = plt.subplots()
+    (line,) = ax.plot([], [])
+    xs = np.linspace(0.0, 1.0, 4)
+    ys = np.vstack([xs * i for i in range(3)])
+
+    def update(frame: int):
+        line.set_data(xs, ys[frame])
+        return (line,)
+
+    anim = FuncAnimation(fig, update, frames=3)
+    anim._raw_data = {"xs": xs, "ys": ys}  # type: ignore[attr-defined]
+    arrays, metadata = extract_animation_data(anim)
+    assert "raw_xs" in arrays
+    assert "raw_ys" in arrays
+    assert metadata["animation_class"] == "FuncAnimation"
+
+    result = save_animation_data(
+        anim,
+        tmp_path / "output" / "figures" / "chapter_12" / "demo.gif",
+        {"script": "demo.py"},
+    )
+    assert result is not None and result[0].exists()
+    ignored = save_animation_data(anim, tmp_path / "elsewhere" / "demo.gif")
+    assert ignored is None
+    anim._draw_was_started = True
+    plt.close(fig)
 
 
 def test_validate_raw_data_exports_accepts_good_and_rejects_bad(

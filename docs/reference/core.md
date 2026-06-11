@@ -56,6 +56,51 @@ Statistical diagnostics. The full statistical-tool reference lives in
 | `oracle_agreement(estimate, oracle, *, tol=1e-2)` | floats → `OracleAgreement` | Compares an estimate to an independent oracle (e.g. PC fixed point vs grid posterior mean). |
 | `OracleAgreement` | dataclass | `estimate`, `oracle`, `abs_error`, `agree`. |
 
+## `core.appendix_math`
+
+Executable Appendix B/C probability, information, and dynamical-system helpers.
+
+| Symbol | Role |
+|---|---|
+| `normalize_categorical(values, axis=None)` | Validate and normalize non-negative categorical weights. |
+| `joint_from_likelihood_prior(likelihood, prior)` | Build `p(y, x) = p(y | x) p(x)` from an Appendix B/C likelihood orientation. |
+| `marginalize(joint, axis)` | Sum out one tensor axis. |
+| `bayes_posterior_from_likelihood(likelihood, prior, observation_index)` | Categorical Bayes update for one observed outcome. |
+| `gamma_pdf(x, shape, rate)` | Gamma density in shape-rate parameterization. |
+| `dirichlet_mean(alpha)` | Dirichlet mean vector. |
+| `dirichlet_variance(alpha)` | Per-component Dirichlet variance. |
+| `mutual_information(joint)` | Discrete mutual information from a joint probability table. |
+| `maximum_entropy_distribution(n)` | Uniform `n`-category maximum-entropy distribution. |
+| `euler_integrate(flow, x0, *, dt, steps)` | Deterministic Euler integration for small dynamical examples. |
+| `jensen_gap(fn, samples)` | Mean `f(x)` minus `f(mean x)` for Jensen-inequality diagnostics. |
+| `kronecker_delta(i, j)` | Discrete identity helper. |
+| `dirac_delta_grid(grid, location)` | Grid-normalized delta proxy for Appendix C identity demos. |
+
+## `core.model_comparison`
+
+Appendix C.11 model evidence, Bayes factor, and model-reduction helpers.
+
+| Symbol | Role |
+|---|---|
+| `model_posterior(log_evidence, log_prior=None)` | Softmax posterior over candidate models. |
+| `log_bayes_factor(log_evidence_a, log_evidence_b)` | Log Bayes factor. |
+| `bayes_factor(log_evidence_a, log_evidence_b)` | Bayes factor in ordinary scale. |
+| `bayesian_model_average(values, log_evidence, log_prior=None)` | Evidence-weighted average over model-specific values. |
+| `bayesian_model_reduction(full_log_evidence, reduced_log_prior, full_log_prior=None)` | Score reduced models by replacing priors under full-model evidence. |
+| `bayesian_model_expansion(reduced_log_evidence, expansion_gain)` | Score expanded models from reduced evidence plus a gain term. |
+
+## `core.noise`
+
+Colored-noise and finite-difference utilities used by Appendix C and
+generalized-coordinate demos.
+
+| Symbol | Role |
+|---|---|
+| `squared_exponential_covariance(time, *, length_scale, variance=1.0)` | Smooth covariance over time points. |
+| `colored_noise_precision(time, *, length_scale, variance=1.0, jitter=1e-8)` | Symmetric inverse covariance with diagonal jitter. |
+| `sample_colored_noise(time, *, length_scale, variance=1.0, rng=None)` | Reproducible smooth colored-noise sample. |
+| `finite_difference_derivative(values, time)` | Stable first derivative on a strictly increasing grid. |
+
 ## `core.free_energy_forms`
 
 Pedagogical decompositions for comparing free-energy variants without claiming
@@ -69,6 +114,12 @@ one universal literature convention for every form.
 | `observed_predicted_free_energy(observed_free_energy, predicted_free_energy, observation_weight=0.5)` | Convex blend of observed and predicted terms. |
 | `generalized_free_energy_form(present_free_energy, future_free_energy, information_gain=0.0)` | Returns `present + future - information_gain`. |
 | `bethe_free_energy_form(factor_energy, variable_entropy, consistency_penalty=0.0)` | Bethe-style energy-minus-entropy form with caller-supplied consistency penalty. |
+| `constrained_bethe_free_energy_form(factor_energy, variable_entropy, constraint_violation, constraint_weight=1.0)` | Bethe-style form with an explicit weighted constraint penalty. |
+| `action_perception_divergence_form(perception_error, action_error, coupling=0.0)` | Coupled action-perception divergence teaching form. |
+| `free_energy_of_expected_future(expected_free_energy, temporal_precision=1.0)` | Scale a future free-energy trajectory by temporal precision. |
+| `static_vfe_decomposition(energy, entropy)` | Appendix D static VFE `energy - entropy`. |
+| `dynamic_vfe_decomposition(state_error, sensory_error, flow_complexity=0.0)` | Appendix D dynamic VFE components. |
+| `expected_free_energy_decomposition(risk, ambiguity, epistemic_value=0.0)` | Appendix D EFE components and total. |
 | `renyi_bound(probabilities, energies, alpha)` | Renyi-style certainty-equivalent energy for `alpha != 1`. |
 | `renyi_limit_energy(probabilities, energies)` | Alpha-to-one Renyi limit, equal to probability-weighted expected energy. |
 | `free_energy_variant_table(risk, ambiguity, epistemic_value)` | Returns comparable policy-indexed arrays for EFE, FEF, and GFE sweeps. |
@@ -83,6 +134,32 @@ Small categorical factor-graph helpers for extras and teaching examples.
 | `categorical_factor_message(factor, incoming, target_axis)` | Sum-product factor-to-variable message for one categorical target axis. |
 | `sum_product_chain(prior, transitions, likelihoods)` | Normalized forward messages for a categorical state-space chain. |
 | `variational_message_update(log_factor, incoming_expectations, target_axis)` | VMP-style categorical softmax update for one variable. |
+| `FactorGraphChain` | Frozen categorical chain container with normalized prior, transition, and likelihood messages. |
+| `backward_smoothing_messages(transitions, likelihoods)` | Normalized backward messages for a categorical chain. |
+| `forward_backward_smoothing(prior, transitions, likelihoods)` | Forward-backward smoothed categorical state beliefs. |
+| `marginal_message_passing(factors, incoming)` | Approximate marginal messages from local factors and incoming beliefs. |
+| `active_inference_factor_messages(likelihood, prior, preferences)` | Preference-weighted categorical messages for active-inference factor graphs. |
+| `learning_attention_message(evidence, precision)` | Precision-weighted evidence message for learning/attention examples. |
+| `hybrid_model_bridge(continuous_state, discrete_belief)` | Outer-product bridge from continuous features to a categorical belief. |
+
+## `core.pomdp_extensions`
+
+Small Chapter 11 helpers that build on `core.pomdp` without changing the
+established `POMDPModel` import surface.
+
+| Symbol | Role |
+|---|---|
+| `time_dependent_preferences(preferences)` | Softmax-normalize a `(T, O)` schedule of future observation preferences. |
+| `forget_dirichlet_counts(counts, *, rate, floor=1.0)` | Apply bounded exponential forgetting to Dirichlet pseudocounts. |
+| `structure_log_evidence(scores, complexity=0.0)` | Penalize candidate structure scores by model complexity. |
+| `structure_posterior(scores, complexity=0.0)` | Softmax posterior over candidate structures. |
+| `update_preference_counts(counts, observations, learning_rate=1.0)` | Accumulate categorical preference pseudocounts from observations. |
+| `habit_prior_from_counts(counts, concentration=1.0)` | Convert action-count evidence into a normalized habit prior. |
+| `path_based_policy_scores(paths, preferences, transition_cost=0.0)` | Score candidate state paths by preferences minus transition cost. |
+| `TreePolicySearchResult` | Policies, expected free energies, posterior probabilities, and selected best policy. |
+| `tree_policy_search(model, belief, policies, preferences, *, gamma=4.0)` | Score bounded policy trees by EFE and return a policy posterior. |
+| `SophisticatedInferenceTrace` | Policy rollout, future beliefs, belief entropies, and total expected free energy. |
+| `sophisticated_policy_trace(model, belief, policy, preferences)` | Roll one policy forward to expose future-belief diagnostics. |
 
 ## `core.ergodic`
 
@@ -95,6 +172,23 @@ Ergodic-density and entropy-bound helpers for FEP extras topics.
 | `density_entropy(x_grid, density)` | Differential entropy `-int p(x) log p(x) dx` on a grid. |
 | `entropy_upper_bound_from_vfe(entropy, vfe_upper_bound)` | Build an `EntropyBound` from an entropy and VFE-like upper bound. |
 | `ergodic_ou_trajectory(n_steps=500, drift=0.08, diffusion=0.25, initial=2.5)` | Deterministic-noise OU teaching trajectory for reproducible demos. |
+
+## `core.bayesian_mechanics`
+
+Compact Chapter 14 helpers for ergodic-density, entropy-bound, and
+Markov-blanket demonstrations.
+
+| Symbol | Role |
+|---|---|
+| `MarkovBlanketFlow` | Time, external, blanket, and internal trajectories for a simple blanket flow. |
+| `simulate_markov_blanket_flow(n_steps=160)` | Deterministic coupled trajectories with phase-separated external, blanket, and internal states. |
+| `BayesianMechanicsSummary` | Ergodic-density grid, density, entropy, upper bound, and residual gap. |
+| `bayesian_mechanics_summary(trajectory, *, bins=80, vfe_margin=0.5)` | Convert a trajectory into an ergodic density plus entropy/VFE-bound summary. |
+| `blanket_coupling_matrix(flow)` | Correlation matrix among external, blanket, and internal trajectories. |
+| `viability_indicator(states, lower, upper)` | Binary viability mask for survival/viability demos. |
+| `survival_probability(viable)` | Fraction of time spent in viable states. |
+| `entropy_vfe_bound_curve(entropies, margins)` | Entropy, upper-bound, and residual-gap arrays. |
+| `phase1_fep_bridge(entropy, vfe, action_flow)` | Compact Phase-I FEP bridge summary over entropy, VFE, and action flow. |
 
 ## `core.generative_process`
 

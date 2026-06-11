@@ -15,19 +15,10 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[2]   # tests/chapters/ → repo root
-CHAPTER_DIRS = {
-    1: REPO_ROOT / "chapters" / "chapter_01",
-    2: REPO_ROOT / "chapters" / "chapter_02",
-    3: REPO_ROOT / "chapters" / "chapter_03",
-    4: REPO_ROOT / "chapters" / "chapter_04",
-    5: REPO_ROOT / "chapters" / "chapter_05",
-    6: REPO_ROOT / "chapters" / "chapter_06",
-    7: REPO_ROOT / "chapters" / "chapter_07",
-    8: REPO_ROOT / "chapters" / "chapter_08",
-    9: REPO_ROOT / "chapters" / "chapter_09",
-    10: REPO_ROOT / "chapters" / "chapter_10",
-}
+from active_inference.menu.runner import discover_chapters, discover_scripts
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]   # tests/chapters/ -> repo root
 
 
 def _is_interactive(p: Path) -> bool:
@@ -55,6 +46,7 @@ def _fresh_data_pairs(data_dir: Path, started_ns: int) -> list[tuple[Path, Path]
 def _run(
     script: Path,
     *extra: str,
+    output_root: Path,
     env_extra: dict | None = None,
     timeout: int = 120,
 ) -> None:
@@ -63,14 +55,15 @@ def _run(
     env["MPLBACKEND"] = "Agg"
     env["PYTHONWARNINGS"] = "error"
     env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    env["ACTIVE_INFERENCE_OUTPUT_ROOT"] = str(output_root)
     if env_extra:
         env.update(env_extra)
     chapter = _chapter_number(script)
-    data_dir = REPO_ROOT / "output" / "data" / f"chapter_{chapter:02d}"
+    data_dir = output_root / "data" / f"chapter_{chapter:02d}"
     started_ns = time.time_ns()
     cmd = [sys.executable, str(script), "--save", *extra]
     result = subprocess.run(cmd, capture_output=True, text=True, env=env,
-                            timeout=timeout)
+                            timeout=timeout, cwd=output_root.parent)
     if result.returncode != 0:
         raise AssertionError(
             f"Script {script.name} failed.\nSTDOUT:\n{result.stdout}\n"
@@ -80,195 +73,32 @@ def _run(
     assert pairs, f"Script {script.name} did not write a fresh NPZ+JSON data export"
 
 
-CHAPTER_1_SCRIPTS = sorted(CHAPTER_DIRS[1].glob("0*.py"))
-CHAPTER_2_EXAMPLES = sorted(p for p in CHAPTER_DIRS[2].glob("example_*.py")
-                            if not _is_interactive(p))
-CHAPTER_2_AUX = [CHAPTER_DIRS[2] / "visualize_generative_model.py"]
-CHAPTER_2_ANIMATIONS = sorted(CHAPTER_DIRS[2].glob("animation_*.py"))
-CHAPTER_3_EXAMPLES = sorted(CHAPTER_DIRS[3].glob("example_*.py"))
-CHAPTER_3_ANIMATIONS = sorted(CHAPTER_DIRS[3].glob("animation_*.py"))
-CHAPTER_3_VISUALIZATIONS = sorted(
-    p for p in CHAPTER_DIRS[3].glob("visualize_*.py")
-    if not _is_interactive(p)
+def _all_chapter_scripts() -> list[Path]:
+    """Return every non-interactive chapter script discovered by the menu layer."""
+    scripts: list[Path] = []
+    for chapter in discover_chapters():
+        scripts.extend(entry.path for entry in discover_scripts(chapter.number))
+    return scripts
+
+
+CHAPTER_ALL_SCRIPTS = _all_chapter_scripts()
+
+
+def _timeout(script: Path) -> int:
+    """Return a smoke-test timeout appropriate for one script kind."""
+    if script.name.startswith("animation_") or script.name.startswith("visualize_"):
+        return 240
+    if script.parent.name in {"chapter_04", "chapter_05", "chapter_06", "chapter_07",
+                              "chapter_08", "chapter_09", "chapter_10"}:
+        return 240
+    return 120
+
+
+@pytest.mark.parametrize(
+    "script",
+    CHAPTER_ALL_SCRIPTS,
+    ids=[str(s.relative_to(REPO_ROOT)) for s in CHAPTER_ALL_SCRIPTS],
 )
-CHAPTER_4_EXAMPLES = sorted(CHAPTER_DIRS[4].glob("example_*.py"))
-CHAPTER_4_ANIMATIONS = sorted(CHAPTER_DIRS[4].glob("animation_*.py"))
-CHAPTER_4_VISUALIZATIONS = sorted(
-    p for p in CHAPTER_DIRS[4].glob("visualize_*.py")
-    if not _is_interactive(p)
-)
-CHAPTER_5_EXAMPLES = sorted(CHAPTER_DIRS[5].glob("example_*.py"))
-CHAPTER_5_ANIMATIONS = sorted(CHAPTER_DIRS[5].glob("animation_*.py"))
-CHAPTER_6_EXAMPLES = sorted(CHAPTER_DIRS[6].glob("example_*.py"))
-CHAPTER_6_VISUALIZATIONS = sorted(CHAPTER_DIRS[6].glob("visualize_*.py"))
-CHAPTER_7_EXAMPLES = sorted(CHAPTER_DIRS[7].glob("example_*.py"))
-CHAPTER_7_ANIMATIONS = sorted(CHAPTER_DIRS[7].glob("animation_*.py"))
-CHAPTER_8_EXAMPLES = sorted(CHAPTER_DIRS[8].glob("example_*.py"))
-CHAPTER_8_ANIMATIONS = sorted(CHAPTER_DIRS[8].glob("animation_*.py"))
-CHAPTER_8_VISUALIZATIONS = sorted(
-    p for p in CHAPTER_DIRS[8].glob("visualize_*.py")
-    if not _is_interactive(p)
-)
-CHAPTER_9_EXAMPLES = sorted(CHAPTER_DIRS[9].glob("example_*.py"))
-CHAPTER_9_ANIMATIONS = sorted(CHAPTER_DIRS[9].glob("animation_*.py"))
-CHAPTER_10_EXAMPLES = sorted(CHAPTER_DIRS[10].glob("example_*.py"))
-CHAPTER_10_ANIMATIONS = sorted(CHAPTER_DIRS[10].glob("animation_*.py"))
-CHAPTER_10_VISUALIZATIONS = sorted(CHAPTER_DIRS[10].glob("visualize_*.py"))
-
-
-@pytest.mark.parametrize("script", CHAPTER_1_SCRIPTS,
-                         ids=[s.name for s in CHAPTER_1_SCRIPTS])
-def test_chapter_1_scripts_run(script: Path) -> None:
-    _run(script)
-
-
-@pytest.mark.parametrize("script", CHAPTER_2_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_2_EXAMPLES])
-def test_chapter_2_scripts_run(script: Path) -> None:
-    _run(script)
-
-
-@pytest.mark.parametrize("script", CHAPTER_2_AUX,
-                         ids=[s.name for s in CHAPTER_2_AUX])
-def test_chapter_2_auxiliary_scripts(script: Path) -> None:
-    _run(script)
-
-
-@pytest.mark.parametrize("script", CHAPTER_2_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_2_ANIMATIONS])
-def test_chapter_2_animations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_3_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_3_EXAMPLES])
-def test_chapter_3_scripts_run(script: Path) -> None:
-    _run(script)
-
-
-@pytest.mark.parametrize("script", CHAPTER_3_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_3_ANIMATIONS])
-def test_chapter_3_animations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_3_VISUALIZATIONS,
-                         ids=[s.name for s in CHAPTER_3_VISUALIZATIONS])
-def test_chapter_3_visualizations(script: Path) -> None:
-    # Diagnostic visualizations run a small Monte Carlo loop; allow some headroom.
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_4_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_4_EXAMPLES])
-def test_chapter_4_scripts_run(script: Path) -> None:
-    # VFE grid sweeps (contour surfaces) are integration-heavy; allow headroom.
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_4_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_4_ANIMATIONS])
-def test_chapter_4_animations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_4_VISUALIZATIONS,
-                         ids=[s.name for s in CHAPTER_4_VISUALIZATIONS])
-def test_chapter_4_visualizations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_5_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_5_EXAMPLES])
-def test_chapter_5_scripts_run(script: Path) -> None:
-    # Predictive-coding recognition dynamics + grid sweeps; allow headroom.
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_5_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_5_ANIMATIONS])
-def test_chapter_5_animations(script: Path) -> None:
-    # Recognition-descent + hierarchical-convergence GIFs (rendering is slower).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_6_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_6_EXAMPLES])
-def test_chapter_6_scripts_run(script: Path) -> None:
-    # Generalized filtering for perception (online dynamic simulation).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_6_VISUALIZATIONS,
-                         ids=[s.name for s in CHAPTER_6_VISUALIZATIONS])
-def test_chapter_6_visualizations(script: Path) -> None:
-    # Correlated embedding-order precision visualization (§6.6).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_7_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_7_EXAMPLES])
-def test_chapter_7_scripts_run(script: Path) -> None:
-    # Active inference: the coupled action-perception loop.
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_7_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_7_ANIMATIONS])
-def test_chapter_7_animations(script: Path) -> None:
-    # Vector action-perception GIF (§7.5).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_8_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_8_EXAMPLES])
-def test_chapter_8_scripts_run(script: Path) -> None:
-    # Learning, attention, and hierarchy in continuous state spaces.
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_8_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_8_ANIMATIONS])
-def test_chapter_8_animations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_8_VISUALIZATIONS,
-                         ids=[s.name for s in CHAPTER_8_VISUALIZATIONS])
-def test_chapter_8_visualizations(script: Path) -> None:
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_9_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_9_EXAMPLES])
-def test_chapter_9_scripts_run(script: Path) -> None:
-    # Discrete POMDP active inference (categorical state inference).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_9_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_9_ANIMATIONS])
-def test_chapter_9_animations(script: Path) -> None:
-    # Dynamic categorical filtering GIFs (§9.2).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_10_EXAMPLES,
-                         ids=[s.name for s in CHAPTER_10_EXAMPLES])
-def test_chapter_10_scripts_run(script: Path) -> None:
-    # Learning the POMDP parameters (Dirichlet A/B/D + novelty, Alg. 10.1.1).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_10_ANIMATIONS,
-                         ids=[s.name for s in CHAPTER_10_ANIMATIONS])
-def test_chapter_10_animations(script: Path) -> None:
-    # Dirichlet learning, precision sweep, and two-armed bandit animations (GIFs).
-    _run(script, timeout=240)
-
-
-@pytest.mark.parametrize("script", CHAPTER_10_VISUALIZATIONS,
-                         ids=[s.name for s in CHAPTER_10_VISUALIZATIONS])
-def test_chapter_10_visualizations(script: Path) -> None:
-    # Factorial likelihood structure heatmaps (§10.3, Fig 10.3.4).
-    _run(script, timeout=240)
+def test_chapter_script_runs_and_exports_raw_data(script: Path, tmp_path: Path) -> None:
+    """Every discovered chapter script runs headlessly and writes fresh raw-data sidecars."""
+    _run(script, output_root=tmp_path / "output", timeout=_timeout(script))

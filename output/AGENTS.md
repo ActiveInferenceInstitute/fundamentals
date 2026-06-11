@@ -18,6 +18,10 @@ README/AGENTS files as hand-maintained documentation.
 | `output/figures/chapter_08/` | `chapters/chapter_08/*.py --save` | PNGs + GIF for Chapter 8 (learning, attention, hierarchy). |
 | `output/figures/chapter_09/` | `chapters/chapter_09/*.py --save` | PNGs + GIFs for Chapter 9 (discrete POMDP active inference). |
 | `output/figures/chapter_10/` | `chapters/chapter_10/*.py --save` | PNGs + GIFs for Chapter 10 (POMDP learning and extensions). |
+| `output/figures/chapter_11/` | `chapters/chapter_11/*.py --save` | PNGs for Chapter 11 (planning extensions, preference/habit learning, hybrid tree/structure diagnostics). |
+| `output/figures/chapter_12/` | `chapters/chapter_12/*.py --save` | PNGs for Chapter 12 (factor graphs, smoothing, VMP, learning/attention, hybrid bridges). |
+| `output/figures/chapter_13/` | `chapters/chapter_13/*.py --save` | PNGs for Chapter 13 (robotics and social applications). |
+| `output/figures/chapter_14/` | `chapters/chapter_14/*.py --save` | PNGs for Chapter 14 (Bayesian mechanics, viability, entropy bounds). |
 | `output/data/chapter_NN/` | `--save` chapter runs via `save_chapter_data` | raw numerical NPZ arrays plus JSON manifests. |
 | `output/figures/extras/<topic>/` | `extras/<topic>/visualize_<topic>.py --save` | PNG figures for cross-cutting extras topics. |
 | `output/data/extras/<topic>/` | `--save` extras runs via `save_extra_data` | raw numerical NPZ arrays plus JSON manifests. |
@@ -46,8 +50,9 @@ README/AGENTS files as hand-maintained documentation.
   python scripts/run_all_figures.py --clean
   python -m active_inference.menu --extras
   python scripts/validate_rendered_figures.py --root output/figures
-  python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+  python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
   python scripts/validate_raw_data_exports.py --root output/data
+  python scripts/validate_source_spine.py --require-pdf
   ```
 
 ## Don't put

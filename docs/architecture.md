@@ -39,7 +39,8 @@ class so chapter scripts can mix and match them.
 │   mle.py, map.py, gradient_descent.py,                       │  variational / PC
 │   linear_regression.py, em.py, variational.py,               │  (analytic + iterative)
 │   predictive_coding.py, continuous_learning.py,              │
-│   generalized_filtering.py, active_inference.py, pomdp.py    │
+│   generalized_filtering.py, active_inference.py, pomdp.py,   │
+│   pomdp_extensions.py, applications.py                       │
 └──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
@@ -51,7 +52,9 @@ class so chapter scripts can mix and match them.
 │   types.py, validators.py, variational.py, thermodynamics.py,│
 │   free_energy_forms.py, factor_graph.py, ergodic.py,         │
 │   predictive_coding.py, continuous_learning.py,              │
-│   generalized_filtering.py, active_inference.py, pomdp.py    │
+│   generalized_filtering.py, active_inference.py, pomdp.py,   │
+│   appendix_math.py, model_comparison.py, noise.py,           │
+│   pomdp_extensions.py, bayesian_mechanics.py                 │
 └──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
@@ -76,6 +79,7 @@ flowchart TB
     U["User entry points<br/>run.sh, active-inference-menu, active-inference-web"]
     C["chapters/chapter_NN<br/>thin orchestrators"]
     R["extras/topic<br/>thin topic orchestrators"]
+    S["source_spine<br/>PDF ledger, no Ch.15"]
     B["extra_topics<br/>registry, demos, runners"]
     W["menu and web<br/>discovery plus subprocess runners"]
     V["visualizations<br/>figures, animations, diagnostics"]
@@ -97,6 +101,7 @@ flowchart TB
     C --> X
     R --> V
     R --> B
+    B --> S
     R --> K
     R --> X
     B --> V
@@ -136,7 +141,15 @@ flowchart TB
 | `Posterior` (protocol)       | `core/posterior.py`             | Structural type satisfied by `InferenceResult`, `LGSPosterior`, `BLRPosterior`. |
 | `ThermodynamicState`         | `core/thermodynamics.py`        | Explicit `U`, `S`, `T`, `p`, `V` bridge; at `T=1,pV=0`, `U-TS` equals VFE. |
 | `FreeEnergyForm`             | `core/free_energy_forms.py`     | Named Part III free-energy teaching decomposition with scalar total and additive terms. |
+| `TreePolicySearchResult`     | `core/pomdp_extensions.py`      | Chapter 11 policy-tree scores, posterior probabilities, and selected best policy. |
+| `SophisticatedInferenceTrace`| `core/pomdp_extensions.py`      | Future beliefs, entropies, and EFE for one lookahead policy. |
+| `FactorGraphChain`           | `core/factor_graph.py`          | Chapter 12 categorical chain container for forward/backward message passing. |
 | `EntropyBound`               | `core/ergodic.py`               | Entropy quantity, VFE-like upper bound, and residual gap for FEP extras. |
+| `BayesianMechanicsSummary`   | `core/bayesian_mechanics.py`    | Chapter 14 ergodic density, entropy, upper-bound, and residual-gap summary. |
+| `MarkovBlanketFlow`          | `core/bayesian_mechanics.py`    | External, blanket, and internal trajectories for Markov-blanket demos. |
+| `SourceChapter` / `SourceAppendix` | `source_spine.py`       | Static PDF-ledger records for Chapters 1-14 and Appendices A-D; Chapter 15 is absent. |
+| `PreferenceHabitLearningResult` | `estimators/pomdp_extensions.py` | Chapter 11 learned preference counts and habit-prior traces. |
+| `PathPolicyResult`           | `estimators/pomdp_extensions.py` | Chapter 11 path-based policy scores and posterior probabilities. |
 | `ExtraTopicSpec`             | `extra_topics.py`               | Registry metadata for a book-grounded extras topic, including family, sections, artifact modes, and source API references. |
 | `CalibrationCurve`           | `core/diagnostics.py`           | Empirical vs nominal coverage at chosen credible levels. |
 | `PosteriorPredictiveCheck`   | `core/diagnostics.py`           | Replicated-statistic Bayesian p-value. |
@@ -150,6 +163,10 @@ flowchart TB
 | `GeneralizedVectorModel`     | `core/generalized_filtering.py` | Chapter 6 vector generalized-coordinate model with correlated embedding-order precision. |
 | `MultivariateActiveInferenceAgent` | `core/active_inference.py` | Chapter 7 vector action-perception agent in generalized coordinates. |
 | `MultivariateActiveInferenceResult` | `estimators/active_inference.py` | Vector state, belief, action, generalized measurement, error, and VFE traces. |
+| `NavigationResult`           | `estimators/applications.py`    | Chapter 13 robotics path, goal, distance, and preference traces. |
+| `FaultTolerantControlResult` | `estimators/applications.py`    | Chapter 13 desired, efficacy, compensated action, output, and error traces. |
+| `SocialInferenceResult`      | `estimators/applications.py`    | Chapter 13 observation and belief trace over a hidden intention. |
+| `RoboticsTheoryResult`       | `estimators/applications.py`    | Chapter 13 controllability, epistemic value, preference satisfaction, and combined score landscape. |
 | `ChapterEntry` / `ExtraTopicEntry` / `ScriptEntry` | `menu/runner.py` | Discovered chapter or extras folder + runnable script descriptor. |
 
 See [`reference/`](reference/) for a full per-subpackage API catalogue.

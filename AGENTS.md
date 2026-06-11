@@ -15,7 +15,10 @@ restructure them.
 This repo provides a tested Python implementation of the algorithms described in
 Sanjeev V. Namjoshi's *Fundamentals of Active Inference* (MIT Press, 2026),
 plus thin orchestrator scripts that reproduce the figures and numerical examples
-of Chapters 1–10 (Part I §1–5, plus Part II §6–10).
+of Chapters 1–14 and source-map Appendix A-D coverage where executable.
+Chapters 1–10 are the stable Part I/II spine; Chapters 11–14 are first-class
+Part III companion implementations that must stay source-backed as manuscript
+examples are audited into tests.
 
 ## Architecture
 
@@ -26,7 +29,7 @@ The codebase follows a two-layer architecture:
   `visualizations`, `utils`, plus the strict-UI peers `menu` (stdlib text
   menu) and `web` (stdlib local web server).
 - **Layer 2 (orchestrators):** `chapters/chapter_01/` through
-  `chapters/chapter_10/` plus `extras/<topic>/` — thin scripts (≤ ~120
+  `chapters/chapter_14/` plus `extras/<topic>/` — thin scripts (≤ ~120
   lines each) that wire library components together to produce figures and
   numerical results.
 
@@ -40,7 +43,8 @@ domain logic.
 | `run.sh` | Top-level thin wrapper around the chapter-runner text menu. |
 | `pyproject.toml` / `uv.lock` | PEP 621 metadata; uv is the recommended package manager. |
 | `src/active_inference/` | Python package (import as `active_inference`) |
-| `src/active_inference/core/` | Distributions, generative process/model, exact inference, LGS, diagnostics, composition, posterior protocol, validators, variational free energy (Ch.4), thermodynamic/FEP bridge helpers, predictive coding (Ch.5), generalized filtering (Ch.6), continuous active inference (Ch.7), continuous learning/attention/hierarchy (Ch.8), discrete POMDP + learning + factorial/hierarchical depth (Ch.9–10) in `pomdp.py` |
+| `src/active_inference/source_spine.py` | Static PDF-derived ledger: Ch.1–14 and Appendices A-D; explicitly no Ch.15 for the inspected source. |
+| `src/active_inference/core/` | Distributions, generative process/model, exact inference, LGS, diagnostics, composition, posterior protocol, validators, Appendix math/noise/model comparison, variational free energy (Ch.4), thermodynamic/FEP bridge helpers, predictive coding (Ch.5), generalized filtering (Ch.6), continuous active inference (Ch.7), continuous learning/attention/hierarchy (Ch.8), discrete POMDP + learning + factorial/hierarchical depth (Ch.9–10) in `pomdp.py`, and Part III helpers. |
 | `src/active_inference/estimators/` | MLE, MAP, gradient descent, linear regression, EM/factor analysis, variational inference (Ch.4), predictive coding (Ch.5), generalized filtering (Ch.6), active inference (Ch.7), continuous learning/attention (Ch.8), POMDP planning + learning + two-armed bandit + hierarchical agent (Ch.9–10) |
 | `src/active_inference/visualizations/` | Static plots, Ch.4 variational figures, the composable Ch.4–10 `unified` layer, interactive slider widgets, matplotlib animations, diagnostic figures, repo-wide colourblind-safe style |
 | `src/active_inference/utils/` | Grid constructors, logger factory, path helpers, and `save_chapter_data` / `save_extra_data` NPZ+JSON export helpers |
@@ -56,17 +60,28 @@ domain logic.
 | `chapters/chapter_08/` | learning, attention, and hierarchy in continuous state-spaces (§8.1–8.6) |
 | `chapters/chapter_09/` | discrete POMDP active inference (§9.1–§9.6) |
 | `chapters/chapter_10/` | learning & extensions (§10.1–10.4): 8 examples + 1 visualization + 3 animations |
+| `chapters/chapter_11/` | Part III planning extensions: free-energy variants, sophisticated inference, tree search, preferences, forgetting, structure learning |
+| `chapters/chapter_12/` | factor graphs, belief propagation, smoothing, VMP, and hybrid message bridges |
+| `chapters/chapter_13/` | robotics navigation/control and social-inference application examples |
+| `chapters/chapter_14/` | ergodic density, entropy bounds, Bayesian mechanics, and Markov blankets |
 | `extras/` | cross-cutting topic orchestrators beyond the chapter spine, generated from the `active_inference.extra_topics` registry |
 | `tests/` | pytest unit tests + chapter/extras smoke tests + provenance validators |
 | `docs/` | Architecture, notation, chapter concept maps, topic walkthroughs, uv workflow, coverage/provenance references |
-| `scripts/` | Batch figure renderer (`run_all_figures.py`), validators, and per-chapter shell wrappers |
+| `scripts/` | Batch figure renderer (`run_all_figures.py`), source-spine/raw-data/rendered/provenance validators, and per-chapter shell wrappers |
 | `output/figures/` | Generated PNGs/GIFs (gitignored, regenerated via scripts) |
 | `output/data/` | Generated raw-data NPZ arrays plus JSON metadata/manifests for every saved non-interactive chapter or extras artifact |
 
 ## Ground Truth Sources
 
-- **Active chapter list:** Chapters 1–10 are present on disk; each chapter's scripts mirror the manuscript examples and are
-  covered by smoke tests.
+- **Source spine:** `src/active_inference/source_spine.py` records the inspected
+  PDF as Chapters 1–14 and Appendices A-D, with no Chapter 15. Run
+  `uv run python scripts/validate_source_spine.py --require-pdf` after edits
+  that touch chapter/appendix source status.
+- **Active chapter list:** Chapters 1–14 are present on disk; each chapter's
+  non-interactive scripts are covered by smoke tests. Ch.1–10 are the stable
+  declared scope; Ch.11–14 are PDF-grounded Part III companion demos and should
+  not be described as manuscript-complete until source-backed worked-example
+  tests exist.
 - **Canonical import surface:** Defined in `src/active_inference/__init__.py`
   and its `__all__` list.
 - **Notation mapping:** `docs/notation.md` maps every symbol to its Python
@@ -113,7 +128,7 @@ uv run pytest tests/core tests/estimators tests/utils tests/visualizations
 uv run pytest tests/chapters -v
 
 # Validate generated raw-data sidecars
-uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 
 # Validate all generated chapter and extras raw-data sidecars
 uv run python scripts/validate_raw_data_exports.py --root output/data
@@ -121,6 +136,7 @@ uv run python scripts/validate_raw_data_exports.py --root output/data
 # Validate rendered extras coverage and source-method provenance
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
+uv run python scripts/validate_source_spine.py --require-pdf
 
 # Coverage
 uv run pytest --cov=active_inference --cov-report=term-missing

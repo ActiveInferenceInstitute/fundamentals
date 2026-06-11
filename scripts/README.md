@@ -14,6 +14,7 @@ historical batch workflow.
 | `validate_orchestrator_provenance.py` | Check that chapter and extras wrappers route through `active_inference`, avoid sibling-wrapper imports, and expose every registry-declared extras wrapper. |
 | `validate_rendered_figures.py` | Check rendered PNG/GIF artifacts for corruption, blank output, tiny dimensions, and trivial GIFs. |
 | `validate_raw_data_exports.py` | Check `output/data/` NPZ+JSON sidecars for missing partners, invalid arrays, and manifest drift. |
+| `validate_source_spine.py` | Check the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
 | `run_all_chapter_03.sh` | Shell shortcut for `--chapters 3`. |
@@ -21,7 +22,7 @@ historical batch workflow.
 ## Usage
 
 ```bash
-# Render everything (chapters 1–10)
+# Render everything (all discovered chapters)
 uv run python scripts/run_all_figures.py
 
 # Render specific chapters
@@ -46,7 +47,8 @@ uv run python scripts/validate_rendered_figures.py --root output/figures
 uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
-uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+uv run python scripts/validate_source_spine.py --require-pdf
+uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 uv run python scripts/validate_raw_data_exports.py --root output/data
 
 # Combine flags
@@ -78,8 +80,8 @@ with the system `python`.
 - Chapter 1: runs files matching `0*.py` in `chapters/chapter_01/`.
 - Chapter 2: runs all `example_*.py` + `visualize_*.py` + `animation_*.py`
   files, skipping anything with `interactive` in the name.
-- Chapters 3–10: same conventions as chapter 2 (`--chapters` accepts any
-  of 1–10).
+- Chapters 3 and later: same conventions as chapter 2 (`--chapters` accepts
+  every chapter discovered under `chapters/chapter_NN/`).
 - Reports success/failure per script and exits non-zero on first failure
   (unless `--keep-going`).
 
@@ -107,6 +109,7 @@ surface fits the situation:
 | CI / nightly figure regen | `scripts/run_all_figures.py` |
 | Book-topic coverage QA | `scripts/validate_book_topic_coverage.py` |
 | Book-topic rendered extras QA | `scripts/validate_book_topic_coverage.py --require-rendered` |
+| PDF source-spine QA | `scripts/validate_source_spine.py --require-pdf` |
 | Orchestrator/source-method QA | `scripts/validate_orchestrator_provenance.py` |
 | Artifact QA after render | `scripts/validate_rendered_figures.py` |
 | Raw-data QA after render | `scripts/validate_raw_data_exports.py` |

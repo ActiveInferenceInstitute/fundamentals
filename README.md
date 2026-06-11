@@ -22,7 +22,8 @@ fundamentals/
 │   ├── visualizations/        ← static plots, slider explorers, animations, diagnostic figures, style
 │   ├── utils/                 ← grids, logging, paths, NPZ+JSON data exports
 │   ├── menu/                  ← stdlib text menu used by run.sh
-│   └── web/                   ← stdlib local web UI launched by run.sh --web
+│   ├── web/                   ← stdlib local web UI launched by run.sh --web
+│   └── source_spine.py        ← PDF ledger: Ch.1-14, Appendices A-D, no Ch.15
 ├── chapters/
 │   ├── chapter_01/            ← 4 concept orchestrators
 │   ├── chapter_02/            ← examples 2.1–2.10 + auxiliary + 2 animations
@@ -33,7 +34,11 @@ fundamentals/
 │   ├── chapter_07/            ← active generalized filtering (Part II): 2 examples + 1 animation (§7.1–§7.5)
 │   ├── chapter_08/            ← learning, attention, and hierarchy (Part II): 2 examples + 1 visualization + 1 animation (§8.1–8.6)
 │   ├── chapter_09/            ← active inference in POMDPs (Part II): 5 examples + 2 animations (§9.1–9.6, discrete)
-│   └── chapter_10/            ← learning & extensions in POMDPs (Part II): 8 examples + 1 visualization + 3 animations (§10.1 Dirichlet A/B/D + novelty, §10.2 habit + precision, §10.3 factorial / two-armed bandit, §10.4 hierarchical)
+│   ├── chapter_10/            ← learning & extensions in POMDPs (Part II): 8 examples + 1 visualization + 3 animations (§10.1 Dirichlet A/B/D + novelty, §10.2 habit + precision, §10.3 factorial / two-armed bandit, §10.4 hierarchical)
+│   ├── chapter_11/            ← planning extensions (Part III): free-energy variants + sophisticated planning
+│   ├── chapter_12/            ← factor graphs and message passing (Part III)
+│   ├── chapter_13/            ← robotics and social applications (Part III)
+│   └── chapter_14/            ← ergodic density, Bayesian mechanics, and Markov blankets (Part III)
 ├── extras/                    ← cross-cutting topic orchestrators beyond the chapter spine
 ├── docs/                      ← architecture, notation, chapter prose, topic walkthroughs, reference, statistics
 ├── scripts/                   ← batch runners, figure pipeline
@@ -110,7 +115,7 @@ notes.
 The older batch pipeline still works and is exercised by CI:
 
 ```bash
-# render every figure from Chapters 1–10
+# render every figure from all discovered chapters
 uv run python scripts/run_all_figures.py
 uv run python scripts/run_all_figures.py --chapters 1
 uv run python scripts/run_all_figures.py --chapters 2 --no-animations
@@ -118,11 +123,12 @@ uv run python scripts/run_all_figures.py --chapters 4 --clean
 uv run python scripts/run_all_figures.py --no-chapters --extras entropy expected_free_energy
 uv run python scripts/run_all_figures.py --no-chapters --extras
 uv run python scripts/validate_rendered_figures.py --root output/figures
-uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10
+uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 uv run python scripts/validate_raw_data_exports.py --root output/data
 uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
+uv run python scripts/validate_source_spine.py --require-pdf
 
 # unit tests
 uv run pytest
@@ -162,7 +168,11 @@ boundary with `scripts/validate_orchestrator_provenance.py`.
 
 | Subpackage | What it provides |
 |---|---|
+| `source_spine` | `SOURCE_PDF_PATH`, `SOURCE_PDF_PAGES`, `SOURCE_PDF_BUILD_DATE`, `CHAPTERS`, `APPENDICES`, `chapter_numbers`, `appendix_section_ids`, `has_chapter`, `has_section` — the inspected PDF ledger: Chapters 1-14, Appendices A-D, no Chapter 15 |
 | `core.distributions` | `gaussian_pdf`, `gaussian_log_pdf`, `uniform_pdf`, `dirac_like_pdf`, `normalize_density`, plus the multivariate set `mvn_pdf`, `mvn_log_pdf`, `mvn_sample`, `mahalanobis_squared`, `diagonal_cov`, `isotropic_cov` — numerically stable, fully vectorized |
+| `core.appendix_math` | `normalize_categorical`, `joint_from_likelihood_prior`, `marginalize`, `bayes_posterior_from_likelihood`, `gamma_pdf`, `dirichlet_mean`, `dirichlet_variance`, `mutual_information`, `maximum_entropy_distribution`, `euler_integrate`, `jensen_gap`, `kronecker_delta`, and `dirac_delta_grid` — Appendix B/C executable math helpers |
+| `core.model_comparison` | `model_posterior`, `bayes_factor`, `log_bayes_factor`, `bayesian_model_average`, `bayesian_model_reduction`, and `bayesian_model_expansion` — Appendix C model-selection/reduction helpers |
+| `core.noise` | `squared_exponential_covariance`, `colored_noise_precision`, `sample_colored_noise`, and `finite_difference_derivative` — Appendix C colored-noise and generalized-coordinate utilities |
 | `core.generative_process` | `GenerativeProcess` (abstract), `LinearGaussianProcess`, `LinearGaussianMVProcess` — samples observations from a chosen generating function |
 | `core.generative_model` | `GenerativeModel` (abstract), `LinearGaussianModel`, `LinearGaussianMVModel` — agent-side model with Gaussian or uniform prior, optional nonlinear `psi(x)` |
 | `core.inference` | `GridBayesianInference` — exact posterior via grid + trapezoid integration; `InferenceResult` with mode, mean, variance, credible interval, entropy, KL from prior |
@@ -170,9 +180,10 @@ boundary with `scripts/validate_orchestrator_provenance.py`.
 | `core.compose` | `Pipeline` (one-line process + model wiring), `running_stats` / `RunningPosteriorStats` |
 | `core.diagnostics` | `calibration_curve`, `coverage_from_intervals`, `crps_gaussian`, `effective_sample_size`, `gaussian_entropy_*`, `gaussian_kl_*`, `grid_entropy`, `grid_kl_divergence`, `log_score_gaussian`, `logsumexp`, `normal_ci`, `posterior_predictive_check`, `standardize` |
 | `core.posterior` | `Posterior` protocol + `summarize_posterior`, `posterior_mean`, `posterior_std`, `has_*` helpers — works across grid / LGS / BLR posteriors |
-| `core.free_energy_forms` | `FreeEnergyForm`, EFE/FEF/GFE/Bethe/Renyi teaching decompositions, and `free_energy_variant_table` for policy-indexed comparisons |
-| `core.factor_graph` | `normalize_message`, `categorical_factor_message`, `sum_product_chain`, and `variational_message_update` for categorical factor-graph demos |
+| `core.free_energy_forms` | `FreeEnergyForm`, EFE/FEF/GFE/Bethe/Renyi teaching decompositions, static/dynamic/expected VFE decompositions, constrained Bethe, action-perception divergence, and `free_energy_variant_table` for policy-indexed comparisons |
+| `core.factor_graph` | `normalize_message`, `categorical_factor_message`, `sum_product_chain`, `backward_smoothing_messages`, `forward_backward_smoothing`, `variational_message_update`, `marginal_message_passing`, `active_inference_factor_messages`, `learning_attention_message`, `FactorGraphChain`, and `hybrid_model_bridge` for categorical factor-graph demos |
 | `core.ergodic` | `EntropyBound`, `ergodic_density`, `density_entropy`, `entropy_upper_bound_from_vfe`, and `ergodic_ou_trajectory` for FEP/ergodicity extras |
+| `core.bayesian_mechanics` | `BayesianMechanicsSummary`, `MarkovBlanketFlow`, `bayesian_mechanics_summary`, `simulate_markov_blanket_flow`, `blanket_coupling_matrix`, `viability_indicator`, `survival_probability`, `entropy_vfe_bound_curve`, and `phase1_fep_bridge` — Chapter 14 |
 | `core.thermodynamics` | `ThermodynamicState`, `canonical_probabilities`, `expected_energy`, `boltzmann_entropy`, `helmholtz_free_energy`, `enthalpy`, `gibbs_free_energy`, `vfe_thermodynamic_state` — explicit FEP thermodynamic bridge |
 | `core.types` | `assert_cov`, `assert_probabilities` — shape / PSD checks |
 | `core.validators` | `require_1d`, `require_2d`, `require_design_matrix`, `require_finite_array`, `require_in_unit_interval`, `require_int_at_least`, `require_monotone`, `require_non_negative_scalar`, `require_positive_scalar`, `require_same_length` |
@@ -192,7 +203,10 @@ boundary with `scripts/validate_orchestrator_provenance.py`.
 | `core.active_inference` / `estimators.active_inference` | `ActiveInferenceAgent`, `action_gradient`, `perception_gradient`; `ActiveEnvironment`, `simulate_active_inference`, `ActiveInferenceResult`; §7.5 `MultivariateActiveInferenceAgent`, `multivariate_action_gradient`, `MultivariateActiveEnvironment`, `simulate_multivariate_active_inference`, `MultivariateActiveInferenceResult` — Chapter 7 (continuous-state AIF) |
 | `estimators.continuous_learning` | `simulate_learning_attention`, `LearningAttentionResult` — Chapter 8 perception, learning, and attention |
 | `core.pomdp` | `POMDPModel`, `infer_states`, `predict_state`, `efe_components`, `EFEComponents`, `evaluate_policy_components`, `PolicyEFETrace`, `efe_risk`, `efe_ambiguity`, `expected_free_energy`, `evaluate_policy`, `policy_posterior`, `action_posterior`, `forward_filter`, `predict_beliefs`, `discrete_vfe`, `softmax`, `one_hot`, `is_stochastic_matrix` — Chapter 9; `dirichlet_expected_value`, `expected_A/B/D`, `accumulate_a/b/d_counts`, `novelty_matrix`, `parameter_novelty`, `efe_with_novelty` — Ch.10 §10.1; `policy_posterior_full`, `precision_gradient`, `learn_precision` — Ch.10 §10.2; `FactorialPOMDP`, `factorial_infer_states`, `factorial_efe`, `factorial_expected_observation`, `factorial_likelihood_message`, `factorial_modality_ambiguity`, `factorial_predict_states` — Ch.10 §10.3 (factorial); `HierarchicalPOMDP`, `hierarchical_layer_vfe`, `hierarchical_layer_efe`, `hierarchical_policy_posterior` — Ch.10 §10.4 (hierarchical) |
+| `core.pomdp_extensions` | `TreePolicySearchResult`, `SophisticatedInferenceTrace`, `time_dependent_preferences`, `tree_policy_search`, `sophisticated_policy_trace`, `forget_dirichlet_counts`, `structure_log_evidence`, `structure_posterior`, `update_preference_counts`, `habit_prior_from_counts`, and `path_based_policy_scores` — Chapter 11 |
 | `estimators.pomdp` | `make_gridworld`, `enumerate_policies`, `simulate_pomdp_agent`, `GridWorldResult` — Chapter 9 §9.5 (Grid World planning); `DirichletParameters`, `LearningResult`, `learn_D_vector`, `simulate_array_learning`, `simulate_learning_agent` — Ch.10 §10.1; `precision_policy_sweep` — Ch.10 §10.2; `make_two_armed_bandit`, `simulate_two_armed_bandit`, `TwoArmedBanditResult` — Ch.10 §10.3 (two-armed bandit); `simulate_hierarchical_agent`, `HierarchicalResult` — Ch.10 §10.4 |
+| `estimators.pomdp_extensions` | `make_line_world`, `simulate_sophisticated_planning`, `simulate_state_preference_schedule`, `simulate_parameter_forgetting`, `simulate_structure_learning`, `simulate_preference_habit_learning`, `simulate_path_policy_computation`, and their result dataclasses — Chapter 11 demos |
+| `estimators.applications` | `simulate_robot_navigation`, `NavigationResult`, `simulate_fault_tolerant_control`, `FaultTolerantControlResult`, `simulate_social_inference`, `SocialInferenceResult`, `robotics_theory_landscape`, and `RoboticsTheoryResult` — Chapter 13 application demos |
 | `utils.grids` | `make_grid`, `make_2d_grid` |
 | `utils.logging` | `get_logger` — lightweight, consistent logger factory |
 | `utils.io` | `default_figure_dir`, `default_data_dir`, `ensure_dir` |
@@ -220,9 +234,9 @@ standard library, and follows the same pattern: parse args, build process
 
 ### `extras/` — cross-cutting topic orchestrators
 
-Extras are deterministic topic demos beyond the Chapter 1-10 spine. The
-registry in `active_inference.extra_topics` covers 58 concept-level topics
-across Chapters 1-14 plus the math and free-energy appendices: foundations,
+Extras are deterministic topic demos beyond the Chapter 1-14 spine. The
+registry in `active_inference.extra_topics` covers 71 concept-level topics
+across Chapters 1-14 plus Appendices A-D: foundations,
 estimation, information theory, variational inference, predictive coding,
 continuous active inference, discrete POMDPs, Part III extensions, factor
 graphs, applications, ergodic density, and the thermodynamic/FEP bridge.
@@ -238,6 +252,10 @@ and is checked by `scripts/validate_book_topic_coverage.py`. After rendering,
 `scripts/validate_book_topic_coverage.py --require-rendered` additionally
 requires every declared extras artifact to have matching PNG/GIF output and
 NPZ+JSON raw-data sidecars.
+
+The PDF source-spine contract is checked separately by
+`scripts/validate_source_spine.py --require-pdf`: the inspected source has
+Chapters 1-14 and Appendices A-D, and no Chapter 15.
 
 **Chapter 1 — The Hypothesis-Testing Brain** (4 scripts)
 
@@ -380,7 +398,7 @@ NPZ+JSON raw-data sidecars.
 | `notation.md` | Symbol-to-identifier mapping for variables, parameters, densities, algorithms |
 | `cookbook.md` | Copy-paste recipes for the 10 most-used workflows |
 | `reading_order.md` | Reader-path guide (book follower, library user, contributor) |
-| `chapters/` | Per-book-chapter concept maps (`chapter_01.md` … `chapter_10.md`) |
+| `chapters/` | Per-book-chapter concept maps (`chapter_01.md` … `chapter_14.md`) |
 | `topics/` | Concept walkthroughs (Bayesian inference, generative models, learning, FEP, …) |
 | `statistics/` | Statistical-tool references (KL, entropy, scoring rules, calibration, …) |
 | `reference/` | Per-subpackage API catalogues (`core.md`, `estimators.md`, `utils.md`, `visualizations.md`) |
@@ -410,9 +428,12 @@ The directory mirrors `src/active_inference/` one-for-one (see
 - [x] **Part II, Ch. 6** — generalized filtering for perception (§6.1: online generalized filter; §6.2: multivariate filter, Hooke's-law oscillator; §6.3–6.5: generalized coordinates of motion and the `D` shift operator; §6.6: correlated embedding-order precision `S(γ)^-1 ⊗ Π` plus Example 6.7 multivariate generalized coordinates).
 - [x] **Part II, Ch. 7** — active generalized filtering (§7.1–7.4: action + preference prior, the action-perception cycle, action through the forward model, homeostatic set-point regulation; §7.5: multivariate AIF in generalized coordinates with vector action and animation).
 - [~] **Part II, Ch. 8** — learning, attention, and hierarchical continuous models. §8.1: triple estimation over hidden state, first-order parameter, and second-order log precision; §8.2–§8.6: two-layer continuous hierarchy and forward/backward message passing. Further nonlinear hierarchy examples remain.
-- [~] **Part II, Ch. 9** — active inference in POMDPs. §9.1: the `A`/`B`/`C`/`D` categorical generative model + exact discrete hidden-state inference (verified vs the book's Eq. 15). §9.2–9.3: dynamic filtering (HMM forward pass `forward_filter`, prediction rollout, discrete VFE) with static and animated belief-sequence figures. §9.4–9.6: **expected free energy** (risk + ambiguity, verified vs Eq. 63/68), first-class EFE component traces, policy/action selection, a Grid World planning agent (reaches goal in the minimum 4 steps), and exploration/exploitation figures/animation. 
+- [x] **Part II, Ch. 9** — active inference in POMDPs. §9.1: the `A`/`B`/`C`/`D` categorical generative model + exact discrete hidden-state inference (verified vs the book's Eq. 15). §9.2–9.3: dynamic filtering (HMM forward pass `forward_filter`, prediction rollout, discrete VFE) with static and animated belief-sequence figures. §9.4–9.6: **expected free energy** (risk + ambiguity, verified vs Eq. 63/68), first-class EFE component traces, policy/action selection, a Grid World planning agent (reaches goal in the minimum 4 steps), and exploration/exploitation figures/animation.
 - [x] **Part II, Ch. 10** — learning & extensions in POMDPs. §10.1: **Dirichlet** learning of `A`/`B`/`D` (Eq. 4–6, verified vs Examples 10.1–10.3), the **parameter-novelty** term (Eq. 12–15, verified vs Example 10.4 `o·(Ws)=0.483`), and the learning agent (Alg. 10.1.1). §10.2: **habit** (`E`) + **policy precision** `γ` (Eq. 22, reproduces Fig 10.2.3 exactly; γ-learning Eq. 23–25, verified vs Example 10.6). §10.3: **factorial depth** (state factors + observation modalities) and the two-armed bandit (Example 10.7) — factorial inference/EFE reduce exactly to Ch.9; the agent learns the hidden context and exploits the better arm. §10.4: **hierarchical depth** (nested POMDP layers, Eq. 39–50) — per-layer VFE/EFE reduce to the flat case; a slow top regime contextualizes a fast bottom layer.
-- [ ] Part III — applications and extensions
+- [~] **Part III, Ch. 11** — planning extensions: free-energy variants, sophisticated inference, policy-tree search, time-dependent preferences, parameter forgetting, and structure learning.
+- [~] **Part III, Ch. 12** — factor graphs and message passing: sum-product belief propagation, backward smoothing, VMP updates, and hybrid discrete/continuous bridges.
+- [~] **Part III, Ch. 13** — applications: robotics navigation/control and social-inference demos built from tested primitives.
+- [~] **Part III, Ch. 14** — Bayesian mechanics: ergodic density, entropy/VFE bounds, Markov-blanket flow, and coupling diagnostics.
 
 ## Contributing
 

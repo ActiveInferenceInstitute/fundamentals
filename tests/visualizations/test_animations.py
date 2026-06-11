@@ -64,6 +64,13 @@ def assert_func_animation(anim: FuncAnimation, *, axes: int | None = None) -> No
     assert anim._fig is not None
     if axes is not None:
         assert len(anim._fig.axes) == axes
+    init = getattr(anim, "_init_func", None)
+    if init is not None:
+        init()
+    frames = list(anim.new_frame_seq())
+    if frames:
+        anim._func(frames[0])
+        anim._func(frames[-1])
     anim._draw_was_started = True
 
 
@@ -499,3 +506,12 @@ class TestChapter10Animations:
         from PIL import Image
         with Image.open(out) as im:
             assert im.n_frames == len(gammas)
+
+    def test_two_armed_bandit_animation_runs(self) -> None:
+        from active_inference.estimators.pomdp import make_two_armed_bandit, simulate_two_armed_bandit
+        from active_inference.visualizations import animate_two_armed_bandit
+
+        model = make_two_armed_bandit()
+        result = simulate_two_armed_bandit(model, true_context=1, n_steps=5)
+        anim = animate_two_armed_bandit(result)
+        assert_func_animation(anim, axes=2)

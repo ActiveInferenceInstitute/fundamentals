@@ -43,8 +43,10 @@ from active_inference import make_grid, get_logger
 
 ### `io.py`
 
-- `default_figure_dir()` → `Path("output/figures")` (relative to repo root).
-- `default_data_dir()` → `Path("output/data")` (relative to repo root).
+- `default_figure_dir()` → `Path("output/figures")` (relative to repo root)
+  unless `ACTIVE_INFERENCE_FIGURE_DIR` or `ACTIVE_INFERENCE_OUTPUT_ROOT` is set.
+- `default_data_dir()` → `Path("output/data")` (relative to repo root) unless
+  `ACTIVE_INFERENCE_DATA_DIR` or `ACTIVE_INFERENCE_OUTPUT_ROOT` is set.
 - `ensure_dir(path)` → create `path` (and parents) if missing; return it.
 
 ### `export.py`
@@ -63,9 +65,10 @@ from active_inference import make_grid, get_logger
 
 ## Design Decisions
 
-- **`__file__`-relative paths:** `io.py` computes the repo root as
-  `Path(__file__).resolve().parents[3]`, so `default_figure_dir()` always
-  points to the right place regardless of the working directory.
+- **`__file__`-relative paths with test overrides:** `io.py` computes the repo
+  root as `Path(__file__).resolve().parents[3]`, so `default_figure_dir()`
+  points to the right place regardless of the working directory. Smoke tests
+  can set `ACTIVE_INFERENCE_OUTPUT_ROOT` to render into a temporary tree.
 - **Validated raw data**: export arrays must be finite, numeric, non-empty, and
   non-object; manifests include shapes, dtypes, figures, seed when present, and
   summary statistics.

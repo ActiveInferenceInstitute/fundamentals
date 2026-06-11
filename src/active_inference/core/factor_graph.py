@@ -1,6 +1,8 @@
-"""Small categorical factor-graph helpers used by extras orchestrators."""
+"""Small categorical factor-graph helpers used by extras and Chapter 12 orchestrators."""
 
 from __future__ import annotations
+
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -142,9 +144,126 @@ def variational_message_update(
     return normalize_message(probs)
 
 
+@dataclass(frozen=True)
+class FactorGraphChain:
+    """A categorical state-space chain represented as factor-graph messages."""
+
+    prior: np.ndarray
+    transition: np.ndarray
+    likelihoods: np.ndarray
+
+    def __post_init__(self) -> None:
+        """Validate factor-graph arrays after dataclass initialization."""
+        prior = normalize_message(self.prior)
+        transition = _finite_array("transition", self.transition)
+        likelihoods = _finite_array("likelihoods", self.likelihoods)
+        if transition.ndim != 2 or transition.shape != (prior.size, prior.size):
+            raise ValueError("transition must have shape (S, S)")
+        if likelihoods.ndim != 2 or likelihoods.shape[1] != prior.size:
+            raise ValueError("likelihoods must have shape (T, S)")
+        object.__setattr__(self, "prior", prior)
+        object.__setattr__(self, "transition", transition)
+        object.__setattr__(self, "likelihoods", likelihoods)
+
+
+def backward_smoothing_messages(
+    transitions: np.ndarray | list[float],
+    likelihoods: np.ndarray | list[float],
+) -> np.ndarray:
+    """Return normalized backward messages for a categorical chain."""
+    like = _finite_array("likelihoods", likelihoods)
+    if like.ndim != 2:
+        raise ValueError("likelihoods must have shape (T, S)")
+    trans = _finite_array("transitions", transitions)
+    if trans.ndim != 2 or trans.shape != (like.shape[1], like.shape[1]):
+        raise ValueError("transitions must have shape (S, S)")
+    messages = np.ones_like(like, dtype=float)
+    messages[-1] = normalize_message(messages[-1])
+    for t in range(like.shape[0] - 2, -1, -1):
+        future = normalize_message(like[t + 1] * messages[t + 1])
+        messages[t] = normalize_message(trans.T @ future)
+    return messages
+
+
+def forward_backward_smoothing(
+    prior: np.ndarray | list[float],
+    transitions: np.ndarray | list[float],
+    likelihoods: np.ndarray | list[float],
+) -> np.ndarray:
+    """Combine forward and backward messages into smoothed state beliefs."""
+    forward = sum_product_chain(prior, transitions, likelihoods)
+    backward = backward_smoothing_messages(transitions, likelihoods)
+    return np.asarray([normalize_message(f * b) for f, b in zip(forward, backward)])
+
+
+def hybrid_model_bridge(
+    continuous_state: np.ndarray | list[float],
+    discrete_belief: np.ndarray | list[float],
+) -> np.ndarray:
+    """Return a joint hybrid belief from continuous features and a categorical belief."""
+    x = _finite_array("continuous_state", continuous_state)
+    if x.ndim != 1:
+        raise ValueError("continuous_state must be one-dimensional")
+    belief = normalize_message(discrete_belief)
+    return np.outer(belief, x)
+
+
+def marginal_message_passing(
+    factors: list[np.ndarray] | tuple[np.ndarray, ...],
+    incoming: np.ndarray | list[float],
+) -> np.ndarray:
+    """Repeatedly pass a categorical marginal through a chain of pairwise factors."""
+    message = normalize_message(incoming)
+    out = [message]
+    for factor in factors:
+        fac = _finite_array("factor", factor)
+        if fac.ndim != 2 or fac.shape[1] != message.size:
+            raise ValueError("each factor must have shape (S_next, S_current)")
+        message = normalize_message(fac @ message)
+        out.append(message)
+    return np.asarray(out)
+
+
+def active_inference_factor_messages(
+    likelihood: np.ndarray | list[float],
+    transition: np.ndarray | list[float],
+    prior: np.ndarray | list[float],
+) -> dict[str, np.ndarray]:
+    """Return core messages for a one-step discrete active-inference factor graph."""
+    prior_msg = normalize_message(prior)
+    prediction = categorical_factor_message(transition, [prior_msg], target_axis=0)
+    observation = categorical_factor_message(likelihood, [prediction], target_axis=0)
+    posterior = normalize_message(prediction * categorical_factor_message(likelihood, [observation], target_axis=1))
+    return {
+        "prior": prior_msg,
+        "prediction": prediction,
+        "observation": observation,
+        "posterior": posterior,
+    }
+
+
+def learning_attention_message(
+    prediction_error: np.ndarray | list[float],
+    log_precision: float,
+) -> np.ndarray:
+    """Weight continuous prediction errors by an exponentiated precision message."""
+    errors = _finite_array("prediction_error", prediction_error)
+    precision = float(np.exp(float(log_precision)))
+    if not np.isfinite(precision):
+        raise ValueError("log_precision must be finite")
+    return precision * errors
+
+
 __all__ = [
+    "FactorGraphChain",
+    "active_inference_factor_messages",
+    "backward_smoothing_messages",
     "normalize_message",
     "categorical_factor_message",
+    "forward_backward_smoothing",
+    "hybrid_model_bridge",
+    "learning_attention_message",
+    "marginal_message_passing",
     "sum_product_chain",
     "variational_message_update",
 ]

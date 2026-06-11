@@ -6,7 +6,7 @@ H = U + pV and G = H - T S as explicit analogy-layer quantities.
 
 - Family: Thermodynamic/FEP Bridge
 - Chapters: 4, 14
-- Sections: D
+- Sections: D.4
 
 ## Scripts
 

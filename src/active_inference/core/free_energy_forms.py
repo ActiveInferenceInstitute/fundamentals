@@ -173,6 +173,136 @@ def bethe_free_energy_form(
     )
 
 
+def constrained_bethe_free_energy_form(
+    factor_energy: float,
+    variable_entropy: float,
+    constraint_residual: float,
+    penalty_weight: float = 1.0,
+) -> FreeEnergyForm:
+    """Return a constrained Bethe teaching form with a squared consistency penalty."""
+    energy = _finite_scalar("factor_energy", factor_energy)
+    entropy = _finite_scalar("variable_entropy", variable_entropy)
+    residual = _finite_scalar("constraint_residual", constraint_residual)
+    weight = _finite_scalar("penalty_weight", penalty_weight)
+    if weight < 0.0:
+        raise ValueError("penalty_weight must be non-negative")
+    penalty = weight * residual**2
+    return FreeEnergyForm(
+        "constrained_bethe_free_energy",
+        energy - entropy + penalty,
+        {
+            "factor_energy": energy,
+            "negative_variable_entropy": -entropy,
+            "constraint_penalty": penalty,
+        },
+    )
+
+
+def action_perception_divergence_form(
+    perceptual_divergence: float,
+    action_divergence: float,
+    coupling: float = 0.0,
+) -> FreeEnergyForm:
+    """Return an additive action-perception divergence decomposition with coupling."""
+    perception = _finite_scalar("perceptual_divergence", perceptual_divergence)
+    action = _finite_scalar("action_divergence", action_divergence)
+    coupling_value = _finite_scalar("coupling", coupling)
+    return FreeEnergyForm(
+        "action_perception_divergence",
+        perception + action + coupling_value,
+        {
+            "perceptual_divergence": perception,
+            "action_divergence": action,
+            "coupling": coupling_value,
+        },
+    )
+
+
+def free_energy_of_expected_future(
+    expected_risk: float,
+    expected_ambiguity: float,
+    expected_information_gain: float,
+) -> FreeEnergyForm:
+    """Return the FEEF teaching form ``risk + ambiguity - information_gain``."""
+    risk = _finite_scalar("expected_risk", expected_risk)
+    ambiguity = _finite_scalar("expected_ambiguity", expected_ambiguity)
+    information = _finite_scalar("expected_information_gain", expected_information_gain)
+    return FreeEnergyForm(
+        "free_energy_of_expected_future",
+        risk + ambiguity - information,
+        {
+            "expected_risk": risk,
+            "expected_ambiguity": ambiguity,
+            "expected_information_gain": -information,
+        },
+    )
+
+
+def static_vfe_decomposition(
+    energy: float,
+    entropy: float,
+    *,
+    log_evidence: float | None = None,
+    kl_divergence: float | None = None,
+) -> FreeEnergyForm:
+    """Return Appendix D.1's static VFE as energy minus entropy.
+
+    Optional evidence/KL terms are included as diagnostics; the total remains
+    the energy-entropy value so sign errors are easy to test.
+    """
+    energy_v = _finite_scalar("energy", energy)
+    entropy_v = _finite_scalar("entropy", entropy)
+    terms = {"energy": energy_v, "negative_entropy": -entropy_v}
+    if log_evidence is not None:
+        terms["negative_log_evidence"] = -_finite_scalar("log_evidence", log_evidence)
+    if kl_divergence is not None:
+        terms["kl_divergence"] = _finite_scalar("kl_divergence", kl_divergence)
+    return FreeEnergyForm("static_variational_free_energy", energy_v - entropy_v, terms)
+
+
+def dynamic_vfe_decomposition(
+    sensory_error: float,
+    state_error: float,
+    flow_complexity: float = 0.0,
+) -> FreeEnergyForm:
+    """Return Appendix D.2's dynamic VFE decomposition from validated scalar terms."""
+    sensory = _finite_scalar("sensory_error", sensory_error)
+    state = _finite_scalar("state_error", state_error)
+    complexity = _finite_scalar("flow_complexity", flow_complexity)
+    return FreeEnergyForm(
+        "dynamic_variational_free_energy",
+        sensory + state + complexity,
+        {
+            "sensory_error": sensory,
+            "state_error": state,
+            "flow_complexity": complexity,
+        },
+    )
+
+
+def expected_free_energy_decomposition(
+    risk: float,
+    ambiguity: float,
+    information_gain: float = 0.0,
+    preference_value: float = 0.0,
+) -> FreeEnergyForm:
+    """Return Appendix D.3 EFE decomposition with explicit signed terms."""
+    risk_v = _finite_scalar("risk", risk)
+    ambiguity_v = _finite_scalar("ambiguity", ambiguity)
+    information = _finite_scalar("information_gain", information_gain)
+    preference = _finite_scalar("preference_value", preference_value)
+    return FreeEnergyForm(
+        "appendix_expected_free_energy",
+        risk_v + ambiguity_v - information - preference,
+        {
+            "risk": risk_v,
+            "ambiguity": ambiguity_v,
+            "information_gain": -information,
+            "preference_value": -preference,
+        },
+    )
+
+
 def renyi_bound(
     probabilities: np.ndarray | list[float],
     energies: np.ndarray | list[float],
@@ -244,6 +374,12 @@ __all__ = [
     "observed_predicted_free_energy",
     "generalized_free_energy_form",
     "bethe_free_energy_form",
+    "constrained_bethe_free_energy_form",
+    "action_perception_divergence_form",
+    "free_energy_of_expected_future",
+    "static_vfe_decomposition",
+    "dynamic_vfe_decomposition",
+    "expected_free_energy_decomposition",
     "renyi_bound",
     "renyi_limit_energy",
     "free_energy_variant_table",

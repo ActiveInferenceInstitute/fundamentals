@@ -1,8 +1,12 @@
 # `extras/` - Book-Grounded Topic Curriculum Beyond The Chapters
 
-This section contains cross-cutting topic demos that sit beside, not inside, the Chapter 1-10 reproduction spine. Each topic folder is a thin runnable orchestrator over tested `src/active_inference` APIs. The curriculum is grounded in the attached Namjoshi manuscript across Chapters 1-14 plus the math and free-energy appendices.
+This section contains cross-cutting topic demos that sit beside, not inside,
+the Chapter 1-14 reproduction spine. Each topic folder is a thin runnable
+orchestrator over tested `src/active_inference` APIs. The curriculum is
+grounded in the attached Namjoshi manuscript across Chapters 1-14 plus
+Appendices A-D. The inspected source has no Chapter 15.
 
-The live registry contains 58 topics: 58 static visualizers, 57 simulation
+The live registry contains 71 topics: 71 static visualizers, 57 simulation
 wrappers, 57 interactive GUI launchers, and 23 animation wrappers. Saved
 extras figures land in `output/figures/extras/<topic>/`. Raw numerical
 sidecars land in `output/data/extras/<topic>/` as paired NPZ and JSON files
@@ -89,14 +93,15 @@ demo builders but launch a local matplotlib window instead of writing media.
 
 | Topic | Scripts | Book sections | Focus |
 |---|---|---|---|
-| [`free_energy_variants/`](free_energy_variants/) | `visualize_free_energy_variants.py`, `simulate_free_energy_variants.py`, `interactive_free_energy_variants.py` | 11.1, D | FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms. |
+| [`free_energy_variants/`](free_energy_variants/) | `visualize_free_energy_variants.py`, `simulate_free_energy_variants.py`, `interactive_free_energy_variants.py` | 11.1, 11.1.1-11.1.8, D.4 | FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms. |
 | [`sophisticated_inference/`](sophisticated_inference/) | `visualize_sophisticated_inference.py`, `simulate_sophisticated_inference.py`, `interactive_sophisticated_inference.py` | 11.2.1 | Planning with beliefs over future belief updates. |
 | [`inductive_planning/`](inductive_planning/) | `visualize_inductive_planning.py`, `simulate_inductive_planning.py`, `interactive_inductive_planning.py` | 11.2.2 | Policy search that reuses substructure across paths. |
 | [`state_preferences/`](state_preferences/) | `visualize_state_preferences.py`, `simulate_state_preferences.py`, `interactive_state_preferences.py` | 11.2.3, 11.2.5 | Preferences over states and time-dependent preference schedules. |
+| [`preference_habit_learning/`](preference_habit_learning/) | `visualize_preference_habit_learning.py` | 11.2.4 | Learned preference counts and habit priors. |
 | [`parameter_uncertainty/`](parameter_uncertainty/) | `visualize_parameter_uncertainty.py`, `simulate_parameter_uncertainty.py`, `interactive_parameter_uncertainty.py` | 11.2.6, 11.2.7 | Forgetting rates and uncertainty on learned parameters. |
 | [`backward_smoothing/`](backward_smoothing/) | `visualize_backward_smoothing.py`, `simulate_backward_smoothing.py`, `interactive_backward_smoothing.py`, `animation_backward_smoothing.py` | 11.2.9, 12.3 | Backward messages that refine earlier state beliefs. |
 | [`hybrid_generative_models/`](hybrid_generative_models/) | `visualize_hybrid_generative_models.py`, `simulate_hybrid_generative_models.py`, `interactive_hybrid_generative_models.py` | 11.3, 12.6 | Continuous and discrete state-space components in one model. |
-| [`tree_policy_search/`](tree_policy_search/) | `visualize_tree_policy_search.py`, `simulate_tree_policy_search.py`, `interactive_tree_policy_search.py`, `animation_tree_policy_search.py` | 11.4 | Tree-based optimization and receding policy search. |
+| [`tree_policy_search/`](tree_policy_search/) | `visualize_tree_policy_search.py`, `simulate_tree_policy_search.py`, `interactive_tree_policy_search.py`, `animation_tree_policy_search.py` | 11.2.8, 11.4 | Tree-based optimization and receding policy search. |
 | [`structure_learning/`](structure_learning/) | `visualize_structure_learning.py`, `simulate_structure_learning.py`, `interactive_structure_learning.py` | 11.5 | Comparing candidate model structures through evidence-like scores. |
 
 ### Factor Graphs And Applications
@@ -108,6 +113,7 @@ demo builders but launch a local matplotlib window instead of writing media.
 | [`variational_message_passing/`](variational_message_passing/) | `visualize_variational_message_passing.py`, `simulate_variational_message_passing.py`, `interactive_variational_message_passing.py` | 12.4 | Mean-field updates expressed as local messages. |
 | [`robotics_navigation/`](robotics_navigation/) | `visualize_robotics_navigation.py`, `simulate_robotics_navigation.py`, `interactive_robotics_navigation.py`, `animation_robotics_navigation.py` | 13.1, 13.2 | Navigation and control as preference-seeking active inference. |
 | [`social_robotics/`](social_robotics/) | `visualize_social_robotics.py`, `simulate_social_robotics.py`, `interactive_social_robotics.py` | 13.3 | Belief updates over another agent's hidden intention. |
+| [`robotics_theory/`](robotics_theory/) | `visualize_robotics_theory.py` | 13.4 | Theory-level robotics tradeoffs over controllability, epistemic value, and preference satisfaction. |
 
 ### Thermodynamic/FEP Bridge
 
@@ -115,9 +121,30 @@ demo builders but launch a local matplotlib window instead of writing media.
 |---|---|---|---|
 | [`ergodic_density/`](ergodic_density/) | `visualize_ergodic_density.py`, `simulate_ergodic_density.py`, `interactive_ergodic_density.py`, `animation_ergodic_density.py` | 14.1, 14.2 | Long-run occupancy as a density over viable states. |
 | [`fep_entropy_bounds/`](fep_entropy_bounds/) | `visualize_fep_entropy_bounds.py`, `simulate_fep_entropy_bounds.py`, `interactive_fep_entropy_bounds.py` | 14.3 | Entropy and VFE bounds for self-organizing systems. |
-| [`temperature/`](temperature/) | `visualize_temperature.py`, `simulate_temperature.py`, `interactive_temperature.py` | D, 14.3 | Temperature-scaled canonical probabilities and U - T S. |
-| [`enthalpy/`](enthalpy/) | `visualize_enthalpy.py`, `simulate_enthalpy.py`, `interactive_enthalpy.py` | D | H = U + pV and G = H - T S as explicit analogy-layer quantities. |
-| [`bayesian_mechanics_bridge/`](bayesian_mechanics_bridge/) | `visualize_bayesian_mechanics_bridge.py`, `simulate_bayesian_mechanics_bridge.py`, `interactive_bayesian_mechanics_bridge.py` | 14.1, 14.4, A | A careful bridge between active inference, FEP, and Bayesian mechanics. |
+| [`temperature/`](temperature/) | `visualize_temperature.py`, `simulate_temperature.py`, `interactive_temperature.py` | D.3, 14.3 | Temperature-scaled canonical probabilities and U - T S. |
+| [`enthalpy/`](enthalpy/) | `visualize_enthalpy.py`, `simulate_enthalpy.py`, `interactive_enthalpy.py` | D.4 | H = U + pV and G = H - T S as explicit analogy-layer quantities. |
+| [`bayesian_mechanics_bridge/`](bayesian_mechanics_bridge/) | `visualize_bayesian_mechanics_bridge.py`, `simulate_bayesian_mechanics_bridge.py`, `interactive_bayesian_mechanics_bridge.py` | 14.1, 14.4 | A careful bridge between active inference, FEP, and Bayesian mechanics. |
+
+### Appendix A
+
+| Topic | Scripts | Book sections | Focus |
+|---|---|---|---|
+| [`active_inference_history/`](active_inference_history/) | `visualize_active_inference_history.py` | A.1, A.1.1-A.1.3 | Historical lineage source map. |
+| [`active_inference_future/`](active_inference_future/) | `visualize_active_inference_future.py` | A.2, A.2.1-A.2.5 | Future directions source map. |
+| [`deep_generative_models/`](deep_generative_models/) | `visualize_deep_generative_models.py` | A.1.4 | Deep generative-model context. |
+| [`cybernetics_control/`](cybernetics_control/) | `visualize_cybernetics_control.py` | A.1.5 | Cybernetics and control lineage. |
+| [`information_theory_lineage/`](information_theory_lineage/) | `visualize_information_theory_lineage.py` | A.1.6 | Information-theory lineage. |
+| [`reinforcement_learning_lineage/`](reinforcement_learning_lineage/) | `visualize_reinforcement_learning_lineage.py` | A.1.7 | Reinforcement-learning lineage. |
+
+### Appendices B-D
+
+| Topic | Scripts | Book sections | Focus |
+|---|---|---|---|
+| [`appendix_notation_model_setup/`](appendix_notation_model_setup/) | `visualize_appendix_notation_model_setup.py` | B.1-B.12 | Notation, dimensions, and model-setup conventions. |
+| [`appendix_math_fundamentals/`](appendix_math_fundamentals/) | `visualize_appendix_math_fundamentals.py` | C.1-C.13 | Probability, distributions, information, dynamics, and identities. |
+| [`colored_noise/`](colored_noise/) | `visualize_colored_noise.py` | C.9 | Smooth colored-noise covariance and precision. |
+| [`bayesian_model_selection/`](bayesian_model_selection/) | `visualize_bayesian_model_selection.py` | C.11.1-C.11.4 | Bayes factors, model averaging, reduction, and expansion. |
+| [`appendix_free_energy_forms/`](appendix_free_energy_forms/) | `visualize_appendix_free_energy_forms.py` | D.1-D.4 | Static, dynamic, expected, and variant free-energy forms. |
 
 ## Run
 

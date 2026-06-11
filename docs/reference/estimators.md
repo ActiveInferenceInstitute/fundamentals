@@ -269,6 +269,42 @@ Verified behaviorally: on a 3×3 grid with the goal in the opposite corner the a
 it in the minimum **4 steps** (`states = [0,3,4,7,8]`), and a goal-reaching policy scores
 strictly below a non-reaching one.
 
+## `estimators.pomdp_extensions` — Chapter 11 planning-extension demos
+
+Small simulations built from `core.pomdp_extensions` and the established Chapter 9/10
+POMDP primitives.
+
+| Symbol | Role |
+|---|---|
+| `make_line_world(n_states=5, goal=None)` | Deterministic one-dimensional POMDP with left/right controls and a goal preference. |
+| `simulate_sophisticated_planning(n_states=5, horizon=3, gamma=4.0)` | Bounded tree search in the line world, returning policy scores plus future-belief diagnostics. |
+| `StatePreferenceResult` | Normalized preference schedule, selected target states, and terminal preference posterior. |
+| `simulate_state_preference_schedule(log_preferences)` | Normalize time-varying log preferences and expose their target-state trace. |
+| `ParameterForgettingResult` | Before/after pseudocounts plus inverse-count uncertainty diagnostics. |
+| `simulate_parameter_forgetting(counts, *, rate, floor=1.0)` | Apply Dirichlet forgetting and report uncertainty before and after. |
+| `StructureLearningResult` | Candidate structure evidence, posterior probabilities, and selected model index. |
+| `simulate_structure_learning(evidence, *, complexity=0.0)` | Penalize model evidence by complexity and return a structure posterior. |
+| `PreferenceHabitLearningResult` | Preference pseudocounts, learned preference posterior, habit prior, and selected preference/action traces. |
+| `simulate_preference_habit_learning(observations, actions=None, *, learning_rate=1.0, concentration=1.0)` | Couple learned preferences and habits for Chapter 11 demos. |
+| `PathPolicyResult` | Candidate paths, path scores, and posterior probabilities. |
+| `simulate_path_policy_computation(paths, preferences, *, transition_cost=0.0, gamma=4.0)` | Score path-based policies and normalize their posterior. |
+
+## `estimators.applications` — Chapter 13 application demos
+
+Application-level helpers that keep robotics/social demonstrations deterministic and
+lightweight while reusing the package's active-inference conventions.
+
+| Symbol | Role |
+|---|---|
+| `NavigationResult` | Navigation path, goal, distance-to-goal trace, and preference trace. |
+| `simulate_robot_navigation(n_steps=80, goal=(1.0, 0.75))` | Smooth deterministic 2-D navigation trajectory with increasing goal preference. |
+| `FaultTolerantControlResult` | Desired control, actuator efficacy, compensated action, output, and error traces. |
+| `simulate_fault_tolerant_control(n_steps=90, fault_start=45)` | Deterministic fault-compensation controller for robotics control demos. |
+| `SocialInferenceResult` | Communicative observations, belief trace, and inferred final intention. |
+| `simulate_social_inference(observations=None, *, accuracy=0.82)` | Binary hidden-intention inference from social observations. |
+| `RoboticsTheoryResult` | Controllability, epistemic value, preference satisfaction, and combined score landscape. |
+| `robotics_theory_landscape(n_points=80)` | Theory-level tradeoff curve for Chapter 13 robotics discussion. |
+
 ### §10.1 — learning the POMDP parameters (Dirichlet)
 
 Trial-based learning of the `A`/`B`/`D` arrays by Dirichlet counting (Algorithm 10.1.1).

@@ -107,13 +107,33 @@ domain logic.
   shared visualization save helpers for figure-derived exports.
 - Random number generators are passed explicitly via `numpy.random.Generator`
   — no global state.
-- Chapter and extras scripts import only from `active_inference` or the Python
-  standard library — never from other chapter or extras scripts.
+- Chapter and extras scripts import only from `active_inference`, the Python
+  standard library, and the canonical scientific plotting dependencies already
+  required by the script surface (`numpy`, `matplotlib`, and, where already
+  needed by an existing workflow, `scipy`). They never import from other chapter
+  or extras scripts. Keep domain logic in `src/active_inference/`; direct
+  scientific imports in orchestrators are for CLI/rendering glue only.
 - Extras JSON manifests include registry source API references for saved
   artifacts; update the registry and tests together when a topic's underlying
   method changes.
 - `MPLBACKEND=Agg` is used in all CI and smoke-test contexts so no display is
   required.
+
+
+## Orchestrator Contract Details
+
+- `scripts/validate_orchestrator_contracts.py` is the executable gate for
+  filename discovery, allowed imports, and non-interactive `--save` support.
+  Use `--strict-warnings` only when intentionally turning soft debt into a
+  blocking gate.
+- Delegator wrappers such as `run.sh`, menu/web launchers, generated extras
+  wrappers that call `main_visualize` / `main_simulate` / `main_animation`, and validator
+  scripts are not chapter/extras orchestrators. They may import the internal
+  `active_inference.menu`, `active_inference.web`, or validation helpers needed
+  to dispatch or inspect workflows, but they should not contain domain logic.
+- Shared helper scripts under `scripts/` should stay validator/maintenance
+  oriented and stdlib-first. If they need numerical source behavior, import it
+  from `active_inference` instead of reaching into chapter or extras wrappers.
 
 ## Testing
 
@@ -133,7 +153,8 @@ uv run python scripts/validate_raw_data_exports.py --root output/data --chapters
 # Validate all generated chapter and extras raw-data sidecars
 uv run python scripts/validate_raw_data_exports.py --root output/data
 
-# Validate rendered extras coverage and source-method provenance
+# Validate orchestrator contracts, rendered extras coverage, and source-method provenance
+uv run python scripts/validate_orchestrator_contracts.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
@@ -151,7 +172,9 @@ that mainly glue imports).
    (with corresponding unit tests in `tests/<sub>/`).
 2. Create a thin orchestrator in the appropriate `chapters/chapter_<N>/`
    directory or `extras/<topic>/` directory (≤ ~120 lines; imports only from
-   `active_inference`).
+   `active_inference`, stdlib, and narrowly scoped `numpy` / `matplotlib` /
+   existing `scipy` rendering glue). Put reusable workflow logic in
+   `src/active_inference/`, not in the wrapper.
 3. Accept `--save`; add `--seed` whenever the script samples or otherwise
    depends on pseudo-randomness.
 4. Document the script in the chapter or extras topic `README.md`.

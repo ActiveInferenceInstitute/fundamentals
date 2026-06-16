@@ -11,6 +11,7 @@ historical batch workflow.
 |---|---|
 | `run_all_figures.py` | Render all chapter figures to `output/figures/`. |
 | `validate_book_topic_coverage.py` | Check the book-topic coverage matrix against the live extras registry and folders; `--require-rendered` also verifies expected extras PNG/GIF and NPZ+JSON artifacts. |
+| `validate_orchestrator_contracts.py` | Enforce chapter/extras filename discovery, allowed imports, and non-interactive `--save` support; warn on duplicate stems and line-count drift. |
 | `validate_orchestrator_provenance.py` | Check that chapter and extras wrappers route through `active_inference`, avoid sibling-wrapper imports, and expose every registry-declared extras wrapper. |
 | `validate_rendered_figures.py` | Check rendered PNG/GIF artifacts for corruption, blank output, tiny dimensions, and trivial GIFs. |
 | `validate_raw_data_exports.py` | Check `output/data/` NPZ+JSON sidecars for missing partners, invalid arrays, and manifest drift. |
@@ -46,6 +47,7 @@ uv run python scripts/run_all_figures.py --keep-going
 uv run python scripts/validate_rendered_figures.py --root output/figures
 uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
+uv run python scripts/validate_orchestrator_contracts.py
 uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
 uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
@@ -110,6 +112,7 @@ surface fits the situation:
 | Book-topic coverage QA | `scripts/validate_book_topic_coverage.py` |
 | Book-topic rendered extras QA | `scripts/validate_book_topic_coverage.py --require-rendered` |
 | PDF source-spine QA | `scripts/validate_source_spine.py --require-pdf` |
+| Orchestrator contract QA | `scripts/validate_orchestrator_contracts.py` |
 | Orchestrator/source-method QA | `scripts/validate_orchestrator_provenance.py` |
 | Artifact QA after render | `scripts/validate_rendered_figures.py` |
 | Raw-data QA after render | `scripts/validate_raw_data_exports.py` |

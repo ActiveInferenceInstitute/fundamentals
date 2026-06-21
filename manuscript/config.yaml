@@ -1,0 +1,52 @@
+# Template-format manuscript configuration for fundamentals.
+# Scaffolded from the project README/AGENTS context; update before publication.
+
+paper:
+  title: "Fundamentals of Active Inference: Python Companion"
+  subtitle: "A manuscript scaffold for executable examples aligned to the textbook source spine"
+  version: "0.1.0"
+  date: ""
+
+authors:
+  - name: "Daniel Ari Friedman"
+    orcid: "0000-0001-6232-9096"
+    email: "daniel@activeinference.institute"
+    affiliation: "Active Inference Institute"
+    corresponding: true
+
+publication:
+  doi: ""
+  version_doi: ""
+  version_record: ""
+  github_repository: ""
+  year: "2026"
+  transmission_bookends:
+    enabled: false
+    max_prior_releases: 5
+    show_steganography: false
+
+keywords:
+  - "active inference"
+  - "textbook companion"
+  - "Python examples"
+  - "source spine"
+  - "reproducible figures"
+
+metadata:
+  license: "MIT"
+  language: "en"
+
+manuscript_dir: "manuscript"
+
+render:
+  formats:
+    pdf: true
+    html: true
+    slides: true
+    docx: false
+    epub: false
+
+bibliography:
+  references_path: "manuscript/references.bib"
+  fail_on_missing: true
+  fail_on_unused: false

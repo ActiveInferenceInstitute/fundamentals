@@ -161,3 +161,48 @@ class TestPredictiveMean:
                                    [3.5])
         out = lgs.predictive_mean(np.array([[1.0, 1.0], [2.0, 2.0]]))
         np.testing.assert_allclose(out, [[3.5], [6.5]])
+
+
+class TestNumericalStability:
+    """Ill-conditioned closed-form LGS posterior (the matrix-inversion risk path)."""
+
+    def test_posterior_ill_conditioned_cov_x_stays_valid(self) -> None:
+        # A high condition-number prior covariance where the closed-form inversion
+        # must not lose symmetry, PSD, or finiteness.
+        Theta = np.eye(2)
+        cov_y = np.array([[0.1, 0.0], [0.0, 0.1]])
+        cov_x = np.diag([1e-4, 4.0])  # condition number 4e4
+        lgs = LinearGaussianSystem(
+            Theta=Theta, cov_y=cov_y,
+            mx=np.zeros(2), cov_x=cov_x,
+        )
+        y = np.array([0.5, -0.5])
+        post = lgs.posterior(y)
+        assert np.all(np.isfinite(post.mean))
+        assert np.all(np.isfinite(post.cov))
+        assert np.allclose(post.cov, post.cov.T, atol=1e-8)     # symmetry kept
+        np.testing.assert_array_less(0.0, np.diag(post.cov))    # positive diagonal
+        # Eigenvalues stay positive → PSD preserved through the solve.
+        assert np.all(np.linalg.eigvalsh(post.cov) > 0.0)
+
+    def test_posterior_batch_matches_posterior_tiny_noise(self) -> None:
+        # Tiny likelihood noise → huge precision; posterior must recover the
+        # observation and the batch must tighten the estimate without losing
+        # validity (would expose numerical breakage in the precision inversion).
+        Theta = np.eye(2)
+        cov_y = np.diag([1e-6, 1e-6])
+        lgs = LinearGaussianSystem(
+            Theta=Theta, cov_y=cov_y,
+            mx=np.array([0.2, 0.3]), cov_x=np.eye(2),
+        )
+        y = np.array([0.9, -0.7])
+        post = lgs.posterior(y)
+        np.testing.assert_allclose(post.mean, y, atol=1e-3)
+        batch = lgs.posterior_batch(np.stack([y, y, y]))
+        # More data → strictly tighter posterior that still recovers y, and the
+        # batch covariance stays finite, symmetric, and PSD.
+        np.testing.assert_allclose(batch.mean, y, atol=1e-3)
+        np.testing.assert_array_less(np.diag(batch.cov), np.diag(post.cov))  # tighter
+        assert np.all(np.isfinite(batch.cov))
+        assert np.allclose(batch.cov, batch.cov.T, atol=1e-8)
+        assert np.all(np.linalg.eigvalsh(batch.cov) > 0.0)

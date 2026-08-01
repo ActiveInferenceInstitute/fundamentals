@@ -135,13 +135,23 @@ def _setup_cell_source() -> str:
     return (
         "from pathlib import Path\n"
         "import runpy\n"
-        "import subprocess\n"
         "import sys\n"
         "import warnings\n"
         "\n"
         "import matplotlib.pyplot as plt\n"
         "\n"
-        f"REPO_ROOT = Path({str(_repo_root())!r}).resolve()\n"
+        "# Locate the repository root at runtime (not the export machine's path):\n"
+        "# walk up from the notebook's working directory to the folder containing\n"
+        "# both `src/active_inference` and `chapters/`. This keeps a clean clone of\n"
+        "# the repo runnable regardless of who generated the notebook.\n"
+        "def _find_repo_root(start=None):\n"
+        "    here = Path(start or Path.cwd()).resolve()\n"
+        "    for candidate in [here, *here.parents]:\n"
+        "        if (candidate / 'src' / 'active_inference').is_dir() and (candidate / 'chapters').is_dir():\n"
+        "            return candidate\n"
+        "    return here\n"
+        "\n"
+        "REPO_ROOT = _find_repo_root()\n"
         "if str(REPO_ROOT / 'src') not in sys.path:\n"
         "    sys.path.insert(0, str(REPO_ROOT / 'src'))\n"
         "\n"
@@ -166,13 +176,15 @@ def _animation_cells(entry: ScriptEntry) -> list[nbformat.NotebookNode]:
     gif = _figure_gif_path(entry)
     gif_rel = relative_repo_path(gif)
     run_code = (
+        "import subprocess\n"
+        "from IPython.display import Image, display\n"
+        "\n"
         f"plt.close('all')\n"
         f"subprocess.run(\n"
         f"    [sys.executable, str(REPO_ROOT / {rel!r}), '--save'],\n"
         f"    check=True,\n"
         f"    cwd=str(REPO_ROOT),\n"
         f")\n"
-        f"from IPython.display import Image, display\n"
         f"display(Image(filename=str(REPO_ROOT / {gif_rel!r})))\n"
     )
     return [new_code_cell(run_code)]

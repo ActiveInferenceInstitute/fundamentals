@@ -152,15 +152,23 @@ def gaussian_kl_mvn(
     d = mu_p.size
     if cov_p.shape != (d, d) or cov_q.shape != (d, d) or mu_q.size != d:
         raise ValueError("dimensions of mu / cov must be consistent")
-    inv_q = np.linalg.inv(cov_q)
-    diff = mu_q - mu_p
+    # Solve, never invert: Σq⁻¹ cov_p (for the trace) and Σq⁻¹ diff (for the
+    # quadratic form) come from triangular solves against the Cholesky factor.
     L_p = np.linalg.cholesky(cov_p)
     L_q = np.linalg.cholesky(cov_q)
     log_det_p = 2.0 * np.sum(np.log(np.diag(L_p)))
     log_det_q = 2.0 * np.sum(np.log(np.diag(L_q)))
+    from scipy.linalg import solve_triangular
+
+    diff = mu_q - mu_p
+    z_diff = solve_triangular(L_q, diff, lower=True)
+    quad = float(z_diff @ z_diff)
+    # trace(Σq⁻¹ Σp): solve Σq Z = Σp column-wise, then sum the diagonal.
+    Z = solve_triangular(L_q, solve_triangular(L_q, cov_p, lower=True), lower=False)
+    trace_term = float(np.trace(Z))
     return 0.5 * (
-        np.trace(inv_q @ cov_p)
-        + diff @ inv_q @ diff
+        trace_term
+        + quad
         - d
         + (log_det_q - log_det_p)
     )

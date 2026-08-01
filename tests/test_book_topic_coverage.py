@@ -7,6 +7,7 @@ import importlib
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from active_inference.extra_topics import EXTRA_TOPICS, build_topic_demo
 
@@ -36,13 +37,27 @@ def test_book_topic_coverage_matrix_matches_registry() -> None:
 
 def test_book_topic_coverage_can_require_rendered_artifacts() -> None:
     """Strict coverage mode requires rendered media plus raw-data sidecars."""
+    figures_root = REPO_ROOT / "output" / "figures" / "extras"
+    data_root = REPO_ROOT / "output" / "data" / "extras"
+    rendered = [
+        p
+        for root in (figures_root, data_root)
+        if root.is_dir()
+        for p in root.rglob("*")
+        if p.is_file() and p.suffix.lower() in {".png", ".gif", ".npz"}
+    ]
+    if not rendered:
+        pytest.skip(
+            "no rendered extras media/data present; run "
+            "`python -m active_inference.menu --extras` first"
+        )
     validator = _load_validator()
     errors = validator.validate_coverage(
         REPO_ROOT / "docs" / "reference" / "book_topic_matrix.md",
         REPO_ROOT / "extras",
         require_rendered=True,
-        figures_root=REPO_ROOT / "output" / "figures" / "extras",
-        data_root=REPO_ROOT / "output" / "data" / "extras",
+        figures_root=figures_root,
+        data_root=data_root,
     )
     assert errors == []
 

@@ -30,7 +30,7 @@ def test_render_topic_figure_covers_heatmap_and_bar_branches(monkeypatch) -> Non
         demo_kind="factor_graph",
     )
 
-    def fake_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
+    def fake_demo(slug: str, *, mode: str = "visualize", seed: int = 7) -> TopicDemo:
         return TopicDemo(
             spec=spec,
             arrays={

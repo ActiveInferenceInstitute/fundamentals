@@ -49,9 +49,11 @@ def main() -> None:
 
     ff = fixed_form_vi(model, args.y, x_grid, lr=5e-3, n_iter=1500)
     step = max(1, len(ff.mus) // args.frames)
-    beliefs = [GaussianBelief(ff.mus[i], ff.vars_[i])
-               for i in range(0, len(ff.mus), step)]
-    fes = ff.free_energies[::step]
+    idx = list(range(0, len(ff.mus), step))
+    # Build the belief/free-energy frames in lockstep from the same indices so
+    # a non-divisible ``step`` can never silently misalign the two traces.
+    beliefs = [GaussianBelief(ff.mus[i], ff.vars_[i]) for i in idx]
+    fes = np.asarray([ff.free_energies[i] for i in idx], dtype=float)
     anim = animate_vfe_descent(x_grid, beliefs, fes, posterior=exact.posterior,
                                surprisal=-float(exact.log_evidence))
     LOG.info("built VFE-descent animation with %d frames", len(beliefs))

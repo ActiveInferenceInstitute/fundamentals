@@ -103,12 +103,25 @@ def _parse_demo_args(argv: Sequence[str] | None, description: str) -> argparse.N
     return parser.parse_args(list(argv) if argv is not None else None)
 
 
+def _builder_accepts_seed(slug: str) -> bool:
+    """Return whether the demo's builder is stochastic and accepts ``seed``.
+
+    Introspect the registered builder's signature rather than maintaining a
+    hard-coded slug set, so a future stochastic demo is picked up automatically.
+    """
+    builder = _BUILDERS.get(slug)
+    if builder is None:
+        return False
+    import inspect
+    return "seed" in inspect.signature(builder).parameters
+
+
 def main_visualize(slug: str, argv: Sequence[str] | None = None) -> int:
     """Run the static visualization CLI for one demo topic."""
     args = _parse_demo_args(argv, f"Visualize demo topic {slug}.")
     spec = demo_topic_spec(slug)
     kwargs: dict[str, object] = {}
-    if args.seed is not None and slug in {"bicycle", "drone_flight"}:
+    if args.seed is not None and _builder_accepts_seed(slug):
         kwargs["seed"] = args.seed
     result = build_demo(slug, **kwargs)
     stem = f"visualize_{slug}"

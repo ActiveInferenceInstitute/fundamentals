@@ -186,7 +186,17 @@ def validate_file(path: Path, root: Path) -> tuple[list[Finding], list[Finding]]
 
     if "numpy" in imported_root_names and not has_argument(tree, "--seed"):
         text = path.read_text(encoding="utf-8")
-        if "random" in text or "rng" in text:
+        # Warn only when the script actually *calls* an RNG primitive, not merely
+        # when its prose mentions the words "random"/"rng" (e.g. a docstring
+        # describing "random variables"). Matches a seeded Generator method call
+        # like ``rng.normal(`` / ``rng.choice(``, ``np.random.*``, ``default_rng(``,
+        # or a bare ``.sample(`` / ``random.`` attribute usage.
+        rng_call = re.search(
+            r"\b(?:rng)\s*\.\s*[a-z_]+\s*\(|\bnp\.random\.|\bdefault_rng\s*\("
+            r"|\.\s*sample\s*\(|random\.(?:random|uniform|normal|choice|rand|randint)\s*\(",
+            text,
+        )
+        if rng_call:
             warnings.append(Finding(relative, "script appears stochastic but has no --seed flag"))
 
     return errors, warnings

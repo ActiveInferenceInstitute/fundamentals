@@ -81,7 +81,8 @@ def interactive_inference(
     ax_sx = plt.axes([0.10, 0.08, 0.80, 0.03])
     ax_sy = plt.axes([0.10, 0.03, 0.80, 0.03])
 
-    s_y = Slider(ax_y, "observation y", x_low, x_low + (x_high - x_low) * 4,
+    s_y = Slider(ax_y, "observation y",
+                 beta0 + beta1 * x_low, beta0 + beta1 * x_high,
                  valinit=y_init)
     s_mx = Slider(ax_mx, "prior mean m_x", x_low, x_high, valinit=m_x_init)
     s_sx = Slider(ax_sx, "prior var s2_x", 1e-3, 4.0, valinit=s2_x_init)
@@ -137,8 +138,11 @@ def interactive_precision(
     def compute(log_ratio: float):
         """Compute the current inference result from interactive control values."""
         ratio = 10 ** log_ratio
-        sigma2_y = 1.0 / ratio
-        s2_x = ratio
+        # Split the requested log10(s2_x/sigma2_y) ratio symmetrically so the
+        # label matches the actual precision ratio: s2_x = √ratio, σ²_y = 1/√ratio
+        # ⇒ s2_x/σ²_y = ratio = 10^(log_ratio).
+        s2_x = np.sqrt(ratio)
+        sigma2_y = 1.0 / np.sqrt(ratio)
         model = LinearGaussianModel(
             beta0=beta0, beta1=beta1, sigma2_y=sigma2_y,
             m_x=m_x, s2_x=s2_x, prior_kind="gaussian",
@@ -416,7 +420,7 @@ def interactive_bayesian_regression(
             f"N = {n}\n"
             f"β0 = {post.mean[0]:.3f} ± {post_sd[0]:.3f}\n"
             f"β1 = {post.mean[1]:.3f} ± {post_sd[1]:.3f}\n"
-            f"(true 3.000, 2.000)"
+            f"(true {beta0_true:.3f}, {beta1_true:.3f})"
         )
         fig.canvas.draw_idle()
 
@@ -503,7 +507,15 @@ def interactive_predictive_coding(
         ey_line.set_ydata(w_ey)
         ex_line.set_ydata(w_ex)
         min_marker.set_xdata([mu_star, mu_star])
-        ax_fe.set_ylim(float(np.min(fe)) - 0.5, float(np.min(fe)) + 8.0)
+        fe_lo = float(np.min(fe))
+        # F(μ) is quadratic near μ* with curvature L = λ_x + λ_y g'² (g=2x+3).
+        # Size the vertical window to that curvature so the ±3σ basin stays in
+        # view uniformly: a fixed window clips a steep V (small σ_y²) into a
+        # wall or flattens a wide V (large σ_y²) into a line.
+        curvature = model.lambda_x + 4.0 * model.lambda_y
+        sigma_mu = 1.0 / np.sqrt(max(curvature, 1e-12))
+        fe_top = fe_lo + 0.5 * curvature * (3.0 * sigma_mu) ** 2
+        ax_fe.set_ylim(fe_lo - 0.5, fe_top if np.isfinite(fe_top) else fe_lo + 5.0)
         ax_pe.set_ylim(0, max(float(np.max(w_ey)), float(np.max(w_ex)), 1e-6) * 1.1)
         eps_y = sensory_prediction_error(model, s_y.val, mu_star)
         eps_x = state_prediction_error(model, mu_star)
@@ -560,10 +572,12 @@ def interactive_variational_free_energy(
     plt.subplots_adjust(bottom=0.22, hspace=0.35)
     ax_q.plot(x_grid, post, color="black", ls="--", lw=2, label="posterior")
     (line_q,) = ax_q.plot([], [], color=COLORS["posterior"], lw=2, label="q(x)")
-    ax_q.set_xlim(0, 5)
+    ax_q.set_xlim(x_low, x_high)
     ax_q.set_xlabel("food size x")
     ax_q.set_ylabel("density")
     ax_q.legend(loc="upper right")
+    stat_text = annotate_stat_box(ax_q, "", loc="upper left", fontsize=9,
+                                  monospace=False)
 
     labels = ["F", "divergence", "complexity", "accuracy"]
     bars = ax_bar.bar(labels, [0, 0, 0, 0],
@@ -590,6 +604,14 @@ def interactive_variational_free_energy(
             bar.set_height(val)
         ax_bar.relim()
         ax_bar.autoscale_view()
+        stat_text.set_text(
+            f"μ = {s_mu.val:.3f}\n"
+            f"σ² = {q.var:.4f}\n"
+            f"F = {c.free_energy:.3f}\n"
+            f"div = {c.divergence:.3f}\n"
+            f"cplx = {c.complexity:.3f}\n"
+            f"acc = {c.accuracy:.3f}"
+        )
         fig.canvas.draw_idle()
 
     s_mu.on_changed(update)
@@ -704,11 +726,18 @@ def interactive_gradient_descent(
         loss_line.set_data(np.arange(idx + 1), losses)
         scrub_marker.set_xdata([idx, idx])
         step = float(hist[-1] - hist[-2]) if idx >= 1 else float("nan")
+        # A learning rate above the stability threshold drives the iterate to
+        # inf/NaN (the point of the slider); report those states without crashing.
+        last_loss = losses[-1]
+        loss_str = f"{last_loss:.3g}" if np.isfinite(last_loss) else "(∞/NaN)"
+        last_x = hist[-1]
+        x_str = f"{last_x:.3f}" if np.isfinite(last_x) else "(∞)"
+        step_str = f"{step:.3g}" if np.isfinite(step) else "(∞)"
         stat_text.set_text(
             f"iter = {idx} / {len(result.history) - 1}\n"
-            f"x    = {hist[-1]:.3f}\n"
-            f"loss = {losses[-1]:.3f}\n"
-            f"Δx   = {step:.3g}\n"
+            f"x    = {x_str}\n"
+            f"loss = {loss_str}\n"
+            f"Δx   = {step_str}\n"
             f"{'converged' if result.converged else 'diverging' if idx >= 2 and abs(step) > abs(float(hist[-2] - hist[-3])) else 'descending'}"
         )
         fig.canvas.draw_idle()

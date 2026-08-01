@@ -67,7 +67,7 @@ def run_linear():
     fig = plot_recognition_dynamics(
         res, truth=2.0, oracle=float(post.posterior_mean),
         surprisal=surprisal(lgm, y, grid),
-        title="Example 5.x · linear PC — fixed point = Ch.4 posterior mean")
+        title="Example 5.4 · linear PC — fixed point = Ch.4 posterior mean")
     return fig, "example_5_4_recognition_linear.png"
 
 

@@ -75,6 +75,8 @@ def mle_grad_x(
 
     ``d(-ell)/dx = -beta1 / sigma2_y * sum_i (y_i - beta0 - beta1 * x)``
     """
+    if sigma2_y <= 0 or not np.isfinite(sigma2_y):
+        raise ValueError(f"sigma2_y must be a finite positive number, got {sigma2_y!r}")
     y_obs = np.atleast_1d(np.asarray(y_obs, dtype=float))
     residuals = y_obs - (beta0 + beta1 * x)
     return float(-beta1 / sigma2_y * residuals.sum())

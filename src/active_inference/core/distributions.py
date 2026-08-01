@@ -106,8 +106,17 @@ def _validate_cov(cov: np.ndarray, dim: int) -> np.ndarray:
     cov = np.asarray(cov, dtype=float)
     if cov.shape != (dim, dim):
         raise ValueError(f"covariance must have shape ({dim}, {dim}), got {cov.shape}")
+    if not np.all(np.isfinite(cov)):
+        raise ValueError("covariance matrix must contain only finite values")
     if not np.allclose(cov, cov.T, atol=1e-8):
         raise ValueError("covariance matrix must be symmetric")
+    # A genuine covariance must be symmetric positive-definite (SPD). Reject
+    # non-SPD input up front with a clear message rather than letting a bare
+    # LinAlgError escape from a later Cholesky/solve.
+    try:
+        np.linalg.cholesky(cov)
+    except np.linalg.LinAlgError:
+        raise ValueError("covariance matrix must be positive-definite") from None
     return cov
 
 

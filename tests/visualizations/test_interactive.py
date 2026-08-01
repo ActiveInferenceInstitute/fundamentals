@@ -6,6 +6,7 @@ import matplotlib
 
 matplotlib.use("Agg", force=True)
 
+import matplotlib.patches as mpl_patches  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pytest  # noqa: E402
@@ -32,10 +33,41 @@ def _close_figures() -> None:
 
 
 def _finite_lines(fig: plt.Figure) -> bool:
-    """Return whether every plotted line with data contains finite values."""
-    lines = [line for ax in fig.axes for line in ax.lines if len(line.get_ydata())]
-    assert lines
-    return all(np.all(np.isfinite(np.asarray(line.get_ydata(), dtype=float))) for line in lines)
+    """Return whether every plotted line/collection/patch contains finite values.
+
+    Checks ``ax.lines`` (line artists) plus ``ax.collections`` (band fills,
+    scatter offsets) and ``ax.patches`` (Ellipse posterior shapes), so
+    non-finite band or ellipse data can't slip through unchecked.
+    """
+    finite = True
+    for ax in fig.axes:
+        for line in ax.lines:
+            if len(line.get_ydata()):
+                finite &= bool(np.all(np.isfinite(
+                    np.asarray(line.get_ydata(), dtype=float))))
+        for collection in ax.collections:
+            offsets = collection.get_offsets()
+            if offsets is not None and len(offsets):
+                finite &= bool(np.all(np.isfinite(
+                    np.asarray(offsets, dtype=float))))
+        for patch in ax.patches:
+            if isinstance(patch, mpl_patches.Ellipse):
+                finite &= bool(np.isfinite(patch.center[0])
+                               and np.isfinite(patch.center[1]))
+    return finite
+
+
+def _exercise_sliders(fig) -> None:
+    """Drive every slider to both endpoints and the midpoint, asserting lines
+    stay finite with a live readout at each extreme. This probes the degenerate
+    states (variance→min, observation at support edge, precision extremes) that
+    per-default single-step nudges never reach."""
+    for slider in fig._sliders:  # type: ignore[attr-defined]
+        for target in (slider.valmin, slider.valmax,
+                       (slider.valmin + slider.valmax) / 2.0):
+            slider.set_val(target)
+            assert _finite_lines(fig)
+    assert any(text.get_text() for ax in fig.axes for text in ax.texts)
 
 
 def test_interactive_inference_slider_updates_finite_lines() -> None:
@@ -54,16 +86,12 @@ def test_interactive_precision_slider_updates_finite_lines() -> None:
     slider.set_val(1.0)
     assert _finite_lines(fig)
     assert any("posterior std" in text.get_text() for ax in fig.axes for text in ax.texts)
-
-
-def _exercise_sliders(fig) -> None:
-    """Nudge every slider and assert lines stay finite with a live readout."""
-    for slider in fig._sliders:  # type: ignore[attr-defined]
-        step = (slider.valmax - slider.valmin) * 0.1
-        target = slider.val + step if slider.val + step <= slider.valmax else slider.val - step
+    # Endpoint probe: at the extremes of the precision ratio the curves must
+    # stay finite and the posterior/std readout must remain present.
+    for target in (slider.valmin, slider.valmax):
         slider.set_val(target)
-    assert _finite_lines(fig)
-    assert any(text.get_text() for ax in fig.axes for text in ax.texts)
+        assert _finite_lines(fig)
+        assert any("posterior std" in text.get_text() for ax in fig.axes for text in ax.texts)
 
 
 def test_interactive_inverse_problem_bimodal() -> None:
@@ -91,7 +119,8 @@ def test_interactive_predictive_coding_updates() -> None:
 
 
 def test_interactive_variational_free_energy_updates() -> None:
-    """Ch4 (bonus) VFE explorer stays finite and its bar decomposition updates."""
+    """Ch4 (bonus) VFE explorer stays finite, its bar decomposition updates, and
+    the added live readout reports μ/σ²/F/divergence/complexity/accuracy."""
     fig = interactive_variational_free_energy()
     assert len(fig._sliders) == 2  # type: ignore[attr-defined]
     ax_bar = fig.axes[1]
@@ -101,6 +130,8 @@ def test_interactive_variational_free_energy_updates() -> None:
     after = [bar.get_height() for bar in ax_bar.patches]
     assert all(np.isfinite(h) for h in after)
     assert after != before
+    assert any("σ²" in text.get_text() and "F =" in text.get_text()
+               for ax in fig.axes for text in ax.texts)
 
 
 def test_interactive_gradient_descent_scrubs_trajectory() -> None:
@@ -134,6 +165,9 @@ def test_interactive_gradient_descent_shows_divergence_at_high_learning_rate() -
     assert not result.converged
     assert abs(result.history[-1] - result.history[0]) > abs(result.history[1] - result.history[0])
     assert s_it.valmax >= 1
+    # Even after the iterate diverges to inf/NaN, the readout must remain
+    # present (guarded, not crashing).
+    assert any(text.get_text() for ax in fig.axes for text in ax.texts)
 
 
 def test_interactive_lgs_localization_moves_posterior() -> None:
@@ -142,10 +176,7 @@ def test_interactive_lgs_localization_moves_posterior() -> None:
     assert len(fig._sliders) == 2  # type: ignore[attr-defined]
     _obs_marker, mean_marker = fig._markers  # type: ignore[attr-defined]
     mean_before = np.asarray(mean_marker.get_offsets())[0].copy()
-    for slider in fig._sliders:  # type: ignore[attr-defined]
-        step = (slider.valmax - slider.valmin) * 0.3
-        target = slider.val + step if slider.val + step <= slider.valmax else slider.val - step
-        slider.set_val(target)
+    _exercise_sliders(fig)
     mean_after = np.asarray(mean_marker.get_offsets())[0]
     assert np.all(np.isfinite(mean_after))
     assert not np.allclose(mean_before, mean_after)

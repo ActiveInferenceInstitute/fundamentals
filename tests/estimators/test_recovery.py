@@ -79,8 +79,11 @@ class TestHiddenStateRecovery:
             lo, hi = res.credible_interval(0.95)
             contains[t] = lo <= truths[t] <= hi
         coverage = float(np.mean(contains))
-        # Allow ±5% tolerance due to finite T = 200.
+        # Two-sided band around the 95% nominal level (±5% tolerance, T = 200):
+        # rejects both under-coverage (intervals too narrow) and over-coverage
+        # (intervals so generous they are useless).
         assert 0.90 <= coverage <= 1.0
+        assert coverage <= 0.99
 
 
 # ---------------------------------------------------------------------------

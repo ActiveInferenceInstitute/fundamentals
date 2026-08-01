@@ -21,6 +21,21 @@ from .style import COLORS, annotate_stat_box
 from .unified import layer_colors
 
 
+def _attach_metadata(anim: FuncAnimation, *, kind: str, title: str, n_frames: int) -> FuncAnimation:
+    """Attach provenance dict to ``anim`` for :func:`save_animation`.
+
+    Mirrors :func:`animate_stream_belief`'s pattern so every saved GIF records
+    what produced it (kind, title, frame count) alongside the fps/dpi that
+    ``save_animation`` adds. Returns ``anim`` for chaining.
+    """
+    anim._metadata = {  # type: ignore[attr-defined]
+        "kind": kind,
+        "title": title,
+        "n_frames": int(n_frames),
+    }
+    return anim
+
+
 def save_animation(
     anim: FuncAnimation,
     path: Path | str,
@@ -35,7 +50,16 @@ def save_animation(
     animation_metadata = getattr(anim, "_metadata", {})
     if not isinstance(animation_metadata, dict):
         animation_metadata = {}
-    save_animation_data(anim, path, metadata={**animation_metadata, "fps": fps, "dpi": dpi})
+    # Attach provenance for animators that set ``_metadata``; fall back to
+    # deriving what we can (frame count, figure suptitle) so every saved GIF is
+    # traceable even before an animator opts in explicitly.
+    metadata: dict[str, object] = dict(animation_metadata)
+    metadata.setdefault("n_frames", int(len(list(anim.new_frame_seq()))) if hasattr(anim, "new_frame_seq") else 0)
+    figs = getattr(anim, "_fig", None)
+    if figs is not None:
+        suptitle = getattr(figs, "_suptitle", None)
+        metadata.setdefault("title", suptitle.get_text() if suptitle is not None else "")
+    save_animation_data(anim, path, metadata={**metadata, "fps": fps, "dpi": dpi})
     anim._draw_was_started = True
     plt.close(anim._fig)  # avoid leaking figure handles
     return path
@@ -76,7 +100,7 @@ def animate_sequential_posterior(
         ax.plot(x_grid, prior, color=COLORS["prior"], ls="--", lw=1.2,
                 alpha=0.5, label="prior")
     if truth is not None:
-        ax.axvline(truth, color="red", ls=":", lw=1.5,
+        ax.axvline(truth, color=COLORS["truth"], ls=":", lw=1.5,
                    label=f"x* = {truth:.3f}")
 
     line, = ax.plot([], [], color=COLORS["posterior"], lw=2, label="posterior")
@@ -249,12 +273,12 @@ def animate_gradient_descent(
     """Animate a 1-D gradient descent trajectory rolling down a loss curve."""
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
 
-    axes[0].plot(x_grid, loss_grid, color="#888", lw=1.5)
+    axes[0].plot(x_grid, loss_grid, color=COLORS["neutral"], lw=1.5)
     axes[0].set_xlabel("x")
     axes[0].set_ylabel("loss")
     axes[0].set_title("Loss surface + iterate")
     if truth is not None:
-        axes[0].axvline(truth, color="red", ls=":", lw=1, label="x*")
+        axes[0].axvline(truth, color=COLORS["truth"], ls=":", lw=1, label="x*")
         axes[0].legend()
     axes[0].grid(alpha=0.3)
     point, = axes[0].plot([], [], "o", color=COLORS["likelihood"], ms=8)
@@ -268,6 +292,13 @@ def animate_gradient_descent(
     axes[1].grid(alpha=0.3)
     loss_line, = axes[1].plot([], [], color=COLORS["prior"], lw=2)
 
+    fig.suptitle(title, fontsize=12)
+    # Precompute the invoked loss at every history point once, so the per-frame
+    # update slices instead of re-`searchsorted`-ing the whole trail each time.
+    trail_grid_idx = [int(np.clip(np.searchsorted(x_grid, h), 0, len(x_grid) - 1))
+                      for h in history]
+    trail_losses = loss_grid[trail_grid_idx]
+
     def init():
         """Initialize animation artists before the first rendered frame."""
         point.set_data([], [])
@@ -279,17 +310,13 @@ def animate_gradient_descent(
         """Update interactive or animated artists for the current state."""
         x = history[frame]
         # Read loss off the precomputed grid for visual consistency.
-        idx = int(np.clip(np.searchsorted(x_grid, x), 0, len(x_grid) - 1))
+        idx = trail_grid_idx[frame]
         y = float(loss_grid[idx])
         point.set_data([x], [y])
-        trail.set_data(history[: frame + 1],
-                       [loss_grid[int(np.clip(np.searchsorted(x_grid, h), 0,
-                                              len(x_grid) - 1))]
-                        for h in history[: frame + 1]])
+        trail.set_data(history[: frame + 1], trail_losses[: frame + 1])
         loss_line.set_data(np.arange(frame + 1), losses[: frame + 1])
         return point, trail, loss_line
 
-    fig.suptitle(title, fontsize=12)
     anim = FuncAnimation(fig, update, frames=len(history),
                          init_func=init, interval=interval_ms, blit=False)
     anim._fig = fig
@@ -353,7 +380,7 @@ def animate_2d_posterior(
                 lw=1.2,
             ))
     if truth is not None:
-        ax.scatter(*truth, marker="x", color="red", s=80, lw=2, label="true θ")
+        ax.scatter(*truth, marker="x", color=COLORS["truth"], s=80, lw=2, label="true θ")
 
     mean_dot, = ax.plot([], [], "o", color=COLORS["posterior"], ms=6, label="posterior mean")
     txt = ax.text(0.02, 0.96, "", transform=ax.transAxes, fontsize=10,
@@ -427,7 +454,7 @@ def animate_sufficient_statistics(
         ax.grid(alpha=0.3)
 
     if truth is not None:
-        axes[0].axhline(truth, color="red", ls=":", lw=1.5, label="truth")
+        axes[0].axhline(truth, color=COLORS["truth"], ls=":", lw=1.5, label="truth")
         axes[0].legend(loc="upper right", fontsize=8)
 
     line_mean, = axes[0].plot([], [], color=COLORS["posterior"], lw=2)
@@ -499,7 +526,7 @@ def animate_calibration_growth(
     K = empirical_history.shape[0]
 
     fig, ax = plt.subplots(figsize=(5.5, 5), constrained_layout=True)
-    ax.plot([0, 1], [0, 1], color="red", ls="--", lw=1, label="perfect")
+    ax.plot([0, 1], [0, 1], color=COLORS["truth"], ls="--", lw=1, label="perfect")
     line, = ax.plot([], [], "o-", color=COLORS["prior"], lw=2, ms=5,
                     label="empirical")
     ax.set_xlim(0, 1)
@@ -564,7 +591,7 @@ def animate_precision_sweep(
     line_l, = ax.plot([], [], color=COLORS["likelihood"], lw=2, label="likelihood")
     line_q, = ax.plot([], [], color=COLORS["posterior"], lw=2, label="posterior")
     if truth is not None:
-        ax.axvline(truth, color="black", ls=":", lw=1, label=f"x* = {truth:.3f}")
+        ax.axvline(truth, color=COLORS["truth"], ls=":", lw=1, label=f"x* = {truth:.3f}")
     ax.set_xlim(x_grid.min(), x_grid.max())
     ax.set_ylim(0, 1.1)
     ax.set_xlabel("hidden state x")
@@ -644,7 +671,7 @@ def animate_bimodal_emergence(
                               label="prior mean")
     truth_marker = None
     if truths is not None:
-        truth_marker = ax.axvline(truths[0], color="red", ls=":",
+        truth_marker = ax.axvline(truths[0], color=COLORS["truth"], ls=":",
                                   lw=1.5, label="true |x|")
     ax.legend(loc="upper right", fontsize=9)
     txt = ax.text(0.02, 0.96, "", transform=ax.transAxes, fontsize=10,
@@ -673,9 +700,19 @@ def animate_bimodal_emergence(
         peak_idx = int(np.argmax(posteriors[frame]))
         is_bimodal = _is_bimodal(posteriors[frame])
         verdict = "BIMODAL" if is_bimodal else "unimodal"
+        # Report both local modes when the posterior is genuinely bimodal;
+        # a single argmax is misleading for the two-mode case this surfaces.
+        p = posteriors[frame]
+        maxima_mask = (p[1:-1] > p[:-2]) & (p[1:-1] > p[2:])
+        local_idx = np.flatnonzero(maxima_mask) + 1
+        if is_bimodal and local_idx.size >= 2:
+            peaks = sorted(local_idx, key=lambda i: p[i], reverse=True)[:2]
+            mode_line = ", ".join(f"{x_grid[i]:+.2f}" for i in peaks)
+        else:
+            mode_line = f"{x_grid[peak_idx]:+.2f}"
         txt.set_text(
             f"prior mean = {prior_means[frame]:+.2f}\n"
-            f"mode at x ≈ {x_grid[peak_idx]:+.2f}\n"
+            f"mode(s) at x ≈ {mode_line}\n"
             f"{verdict}"
         )
         return line, txt
@@ -736,7 +773,7 @@ def animate_lgs_online(
     ax.set_ylabel(r"$x_2$")
     ax.grid(alpha=0.3)
     if truth is not None:
-        ax.scatter(*truth, marker="x", color="red", s=100, lw=2,
+        ax.scatter(*truth, marker="x", color=COLORS["truth"], s=100, lw=2,
                    label=f"truth ({truth[0]:.2f}, {truth[1]:.2f})", zorder=5)
 
     obs_scatter = ax.scatter([], [], s=18, color="black",
@@ -818,16 +855,14 @@ def animate_em_steps(
     ax_ll = fig.add_subplot(gs[1, :])
 
     # E-step panel
-    e_means_all = np.asarray(e_step_means[0])
-    if e_means_all.shape[1] >= 2:
-        e_scatter = ax_e.scatter([], [], s=12, c=COLORS["prior"], alpha=0.6)
-    else:
-        e_scatter = ax_e.scatter([], [], s=12, c=COLORS["prior"], alpha=0.6)
+    e_scatter = ax_e.scatter([], [], s=12, c=COLORS["prior"], alpha=0.6)
     pad = 1.2
-    arr_first = np.asarray(e_step_means[0])
-    if arr_first.shape[1] >= 2:
-        x_lo, x_hi = arr_first[:, 0].min() - pad, arr_first[:, 0].max() + pad
-        y_lo, y_hi = arr_first[:, 1].min() - pad, arr_first[:, 1].max() + pad
+    # Fix the E-step limits from the *full* sweep (all frames), not just the
+    # first, so posterior means that drift across EM iterations never clip.
+    all_e = np.concatenate([np.asarray(e) for e in e_step_means], axis=0)
+    if all_e.shape[1] >= 2:
+        x_lo, x_hi = all_e[:, 0].min() - pad, all_e[:, 0].max() + pad
+        y_lo, y_hi = all_e[:, 1].min() - pad, all_e[:, 1].max() + pad
         ax_e.set_xlim(x_lo, x_hi)
         ax_e.set_ylim(y_lo, y_hi)
     ax_e.set_title("E-step · latent posterior means")
@@ -920,7 +955,7 @@ def animate_blr_predictive_band(
     fig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)
     if truth_line is not None:
         b0, b1 = truth_line
-        ax.plot(x_grid, b0 + b1 * x_grid, color="red", ls=":", lw=1.5,
+        ax.plot(x_grid, b0 + b1 * x_grid, color=COLORS["truth"], ls=":", lw=1.5,
                 label="true line")
     band = ax.fill_between(x_grid, np.zeros_like(x_grid), np.zeros_like(x_grid),
                            alpha=0.25, color=COLORS["posterior"])
@@ -1056,7 +1091,11 @@ def animate_vfe_descent(
     fig, (ax_q, ax_f) = plt.subplots(1, 2, figsize=(12.5, 4.8),
                                      constrained_layout=True)
     q0 = beliefs[0].pdf(x_grid)
-    ymax = max(float(np.max(q0)),
+    # The fixed-form q(x) peak sharpens (grows) as its variance shrinks during
+    # descent, so fix ylim from the *tallest* belief across all frames, not the
+    # initial one — otherwise the curve clips mid-animation.
+    peak_across_frames = max(float(np.max(b.pdf(x_grid))) for b in beliefs) if beliefs else float(np.max(q0))
+    ymax = max(peak_across_frames,
                float(np.max(posterior)) if posterior is not None else 0.0)
     if posterior is not None:
         ax_q.plot(x_grid, posterior, color=COLORS["data"], ls="--", lw=2.2,
@@ -1873,14 +1912,19 @@ def animate_two_armed_bandit(
     ax_pol.grid(alpha=0.3, axis="y")
     stat = annotate_stat_box(ax_pol, "", loc="upper left")
 
+    # Cumulative win / hint counts computed once, so the per-frame update is
+    # O(1) rather than re-summing the whole prefix on every frame.
+    win_prefix = np.concatenate([[0], np.cumsum(rew == 2)])
+    hint_prefix = np.concatenate([[0], np.cumsum(np.asarray(result.choices) == 1)])
+
     def update(k: int):
         """Update interactive or animated artists for the current state."""
         l0.set_data(np.arange(k + 2), ctx[: k + 2, 0])
         l1.set_data(np.arange(k + 2), ctx[: k + 2, 1])
         for rect, h in zip(bars, pol[k]):
             rect.set_height(h)
-        wins = int(np.sum(rew[: k + 1] == 2))
-        hints = int(np.sum(np.asarray(result.choices)[: k + 1] == 1))
+        wins = int(win_prefix[k + 1])
+        hints = int(hint_prefix[k + 1])
         stat.set_text(f"step {k}\nwins {wins}\nhints {hints}")
         return [l0, l1, stat, *bars]
 
@@ -1888,6 +1932,7 @@ def animate_two_armed_bandit(
     anim = FuncAnimation(fig, update, frames=n, interval=interval_ms,
                          blit=False, repeat_delay=1500)
     anim._fig = fig
+    anim._metadata = {"kind": "two_armed_bandit", "title": title, "n_frames": int(n)}
     return anim
 
 

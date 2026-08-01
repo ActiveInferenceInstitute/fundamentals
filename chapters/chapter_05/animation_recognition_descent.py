@@ -82,7 +82,7 @@ def main() -> None:
         agree = oracle_agreement(res.mu_star, oracle, tol=1e-2)
         LOG.info("LINEAR: PC mu*=%.5f | oracle=%.5f | agree=%s (err=%.2e)",
                  res.mu_star, oracle, agree.passed, agree.abs_error)
-        title = "Example 5.x · linear recognition dynamics → Ch.4 posterior mean"
+        title = "Example 5.4 · linear recognition dynamics → Ch.4 posterior mean"
         truth = 2.0
 
     sup = surprisal(

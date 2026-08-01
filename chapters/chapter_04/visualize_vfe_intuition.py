@@ -38,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--save", action="store_true")
     p.add_argument("--y", type=float, default=7.0)
+    p.add_argument("--seed", type=int, default=0)
     return p.parse_args()
 
 
@@ -57,7 +58,7 @@ def main() -> None:
                     label="p(x | y)")
     ax.plot(x_grid, joint, color="black", ls="--", lw=2.5, label="p(x, y)")
 
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(args.seed)
     mean, var = exact.posterior_mean, exact.posterior_variance
     for k in range(8):
         mu = mean + rng.normal(0, 0.12)

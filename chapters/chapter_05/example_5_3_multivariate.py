@@ -1,30 +1,24 @@
 """§5.3 / §5.5 — Multivariate predictive coding.
 
-Run::
+Run:: ``python chapters/chapter_05/example_5_3_multivariate.py [--save] [--regime linear|nonlinear]``
 
-    python chapters/chapter_05/example_5_3_multivariate.py [--save]
-    python chapters/chapter_05/example_5_3_multivariate.py --regime nonlinear [--save]
+Generalizes the scalar recognition dynamics to a vector hidden state with precision
+*matrices* and a Jacobian matrix (book §5.3): ``μ ← μ − κ(Π_x ε_x − Jᵀ Π_y ε_y)``.
+Each regime carries an independent oracle so the fixed point is *verified*, not merely
+plotted.
 
-Generalizes the scalar recognition dynamics to a vector hidden state with
-precision *matrices* and a Jacobian matrix (book §5.3). The recognition dynamics
-``μ ← μ − κ(Π_x ε_x − Jᵀ Π_y ε_y)`` recover the state; each regime carries its own
-independent oracle so the fixed point is *verified*, not merely plotted.
-
-* **linear** (``--regime linear``, default) — ``g(x) = A x + b`` with a constant
-  Jacobian ``A``. Under a near-flat prior the fixed point is the least-squares inverse
-  ``A⁻¹(y−b)``, computed independently by
-  :func:`~active_inference.pc_multivariate_linear_fixed_point`. On a 1-D restriction
-  this reproduces the scalar predictive-coding result exactly (asserted in the tests).
-* **nonlinear** (``--regime nonlinear``) — the book's genuine §5.5 multivariate model
-  ``g(x) = x ⊙ x + 1`` (element-wise square), ``x* = [0.5, 2.5]``, ``m_x = [1, 1]``,
-  ``Σ_y = 0.5 I`` with a near-flat state prior (isolating the likelihood so the fixed
-  point is the ML inverse, not a MAP compromise). Because ``g`` depends on ``x`` only
-  through ``u = x⊙x``, a noiseless observation is inverted exactly by
-  ``x* = sign ⊙ √(y − 1)``, computed independently by
-  :func:`~active_inference.pc_parameterized_lstsq_oracle` (with identity mixing). This
-  is the faithful nonlinear counterpart of the linear demo, and the square special
-  case of the parameterized model in ``example_5_6_parameterized.py`` (whose
-  ``--regime informative`` is where ``Σ_x = 0.5 I`` actually keeps the prior in play).
+* **linear** (default) — ``g(x) = A x + b``, constant Jacobian ``A``; under a near-flat
+  prior the fixed point is the least-squares inverse ``A⁻¹(y−b)``, computed independently
+  by :func:`~active_inference.pc_multivariate_linear_fixed_point`. On a 1-D restriction
+  this reproduces the scalar predictive-coding result exactly.
+* **nonlinear** (``--regime nonlinear``) — the book's §5.5 model ``g(x) = x ⊙ x + 1``
+  (element-wise square), ``x* = [0.5, 2.5]``, ``m_x = [1, 1]``, ``Σ_y = 0.5 I`` with a
+  near-flat state prior (isolating the likelihood so the fixed point is the ML inverse).
+  Since ``g`` depends on ``x`` only via ``u = x⊙x``, a noiseless observation is inverted
+  exactly by ``x* = sign ⊙ √(y − 1)``, computed independently by
+  :func:`~active_inference.pc_parameterized_lstsq_oracle` — the faithful nonlinear
+  counterpart of the linear demo, and a square special case of ``example_5_6_parameterized.py``
+  (whose ``--regime informative`` keeps the prior in play).
 """
 
 from __future__ import annotations

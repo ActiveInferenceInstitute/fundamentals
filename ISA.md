@@ -4,7 +4,7 @@ task: Keep the textbook companion source of truth aligned with live code
 effort: E5
 phase: pdf-grounded-expansion
 mode: implementation
-updated: 2026-06-11
+updated: 2026-08-01
 ---
 
 # ISA — Fundamentals of Active Inference, Python Companion
@@ -74,7 +74,15 @@ The acceptance gates for this state are:
 - `uv run python scripts/validate_rendered_figures.py --root output/figures`
 
 ## Open Work
-
+<!-- Review record 2026-08-01: deepest hostile red-team review found no MAJOR
+     findings. Minor/Medium fixes landed: generated-notebook lint gate
+     (notebooks F401/E402 generator fix + regenerate), gaussian_kl_mvn
+     solve-not-invert, self-contained render-required test, --seed on
+     stochastic scripts, validator stochastic heuristic, chapter-05 line
+     counts, hierarchical-layer VFE divergence, array-learning B transition
+     off-by-one, cov/PSD + mle/map validation, LGS stability + coverage tests.
+     ISA.md remains the sole authoritative top-level record (no TODO.md by
+     repo contract). -->
 - Keep package coverage at or above the documented 90% target as new APIs are
   added.
 - Expand Chapter 8 with richer nonlinear hierarchy examples before marking

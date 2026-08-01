@@ -75,6 +75,10 @@ def map_grad_x(
     s2_x: float,
 ) -> float:
     """Gradient of :func:`map_loss` w.r.t. ``x`` for the linear-Gaussian case."""
+    if sigma2_y <= 0 or not np.isfinite(sigma2_y):
+        raise ValueError(f"sigma2_y must be a finite positive number, got {sigma2_y!r}")
+    if s2_x <= 0 or not np.isfinite(s2_x):
+        raise ValueError(f"s2_x must be a finite positive number, got {s2_x!r}")
     y_obs = np.atleast_1d(np.asarray(y_obs, dtype=float))
     residuals = y_obs - (beta0 + beta1 * x)
     grad_lik = -beta1 / sigma2_y * residuals.sum()

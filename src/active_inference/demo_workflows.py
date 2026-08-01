@@ -58,7 +58,10 @@ def build_eye_saccades_demo(
             for policy in policies
             if policy[0] == action
         ]
-        best_efe.append(min(scores) if scores else np.nan)
+        if not scores:
+            raise RuntimeError(
+                f"no policy starts with action {action}; cannot plan a first saccade")
+        best_efe.append(min(scores))
 
     action_names = ["up", "down", "left", "right"]
     fig, axes = panel_grid(
@@ -88,11 +91,11 @@ def build_eye_saccades_demo(
 
     ax = axes[1]
     colors = [
-        COLORS["posterior"] if value == np.nanmin(best_efe) else COLORS["neutral"]
+        COLORS["posterior"] if value == min(best_efe) else COLORS["neutral"]
         for value in best_efe
     ]
     ax.bar(action_names, best_efe, color=colors, alpha=0.85)
-    chosen = action_names[int(np.nanargmin(best_efe))]
+    chosen = action_names[int(np.argmin(best_efe))]
     annotate_stat_box(ax, f"first saccade: {chosen}", loc="upper right", fontsize=10)
     finalize(ax, xlabel="saccade direction", ylabel="min G(π)", title="expected free energy", legend=False)
 
@@ -142,6 +145,8 @@ def build_bicycle_demo(
         n_steps=n_steps,
         dt=dt,
         action_start=action_start,
+        # Same seed as the active sim deliberately: identical noise realizations
+        # keep the active-vs-passive comparison a clean A/B on action alone.
         rng=np.random.default_rng(seed),
     )
     fault = simulate_fault_tolerant_control(n_steps=90, fault_time=0.45, post_fault_efficacy=0.55)

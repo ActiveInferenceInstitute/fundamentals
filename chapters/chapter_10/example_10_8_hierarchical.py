@@ -51,6 +51,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--regime", type=int, default=1, choices=[0, 1], help="true top-layer regime")
     p.add_argument("--macro", type=int, default=6)
     p.add_argument("--inner", type=int, default=3)
+    p.add_argument("--seed", type=int, default=0)
     return p.parse_args()
 
 
@@ -59,7 +60,7 @@ def main() -> None:
     args = parse_args()
     model = build_model()
     res = simulate_hierarchical_agent(model, true_top=args.regime, n_macro=args.macro,
-                                      inner_steps=args.inner, rng=np.random.default_rng(0))
+                                      inner_steps=args.inner, rng=np.random.default_rng(args.seed))
     LOG.info("true regime=%d | final top belief=%s | final bottom prior=%s",
              args.regime, [round(x, 3) for x in res.top_belief[-1]],
              [round(x, 3) for x in res.bottom_priors[-1]])

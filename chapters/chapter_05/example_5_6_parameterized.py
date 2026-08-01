@@ -1,9 +1,6 @@
 """§5.6 — Parameterized multivariate predictive coding (Fig. 5.3.5).
 
-Run::
-
-    python chapters/chapter_05/example_5_6_parameterized.py [--save]
-    python chapters/chapter_05/example_5_6_parameterized.py --regime informative [--save]
+Run:: ``python chapters/chapter_05/example_5_6_parameterized.py [--save] [--regime recover|informative]``
 
 The book's parameterized generative model drives a **rectangular** mixing matrix
 ``Θ ∈ R^{4×2}`` with the *nonlinear* element-wise-square generating function
@@ -26,9 +23,8 @@ Two regimes (``--regime``):
   :func:`~active_inference.pc_parameterized_lstsq_oracle` and cross-checked against
   the iterate (‖μ*−oracle‖ ≈ 0), the nonlinear/over-determined analogue of the
   Chapter-4 grid oracle.
-* **informative** — the book's precision (``Σ_x = Σ_y = 0.5 I`` → precision 2) keeps
-  the prior in play, so the MAP belief settles between the data-consistent state and
-  the prior mean ``m_x = [1, 1]`` — precision-weighted prediction-error balance.
+* **informative** — the book's precision (``Σ_x = Σ_y = 0.5 I`` → precision 2) keeps the prior in
+  play, so the MAP belief settles between the data-consistent state and ``m_x = [1, 1]``.
 """
 
 from __future__ import annotations

@@ -322,16 +322,17 @@ def simulate_array_learning(
 
     for _ in range(int(n_trials)):
         s = int(start_state)
-        s_prev: Optional[int] = None
         for _t in range(int(steps_per_trial)):
             # Generative process: emit an observation, then (for B) transition.
             o = int(rng.choice(n_obs, p=A_true[:, s]))
             if learn == "A":
                 a = a + accumulate_a_counts(one_hot(o, n_obs), one_hot(s, C))
             s_next = int(rng.choice(C, p=B_true[:, s]))
-            if learn == "B" and s_prev is not None:
-                b = b + accumulate_b_counts(one_hot(s, C), one_hot(s_prev, C))
-            s_prev, s = s, s_next
+            if learn == "B":
+                # Count the transition s -> s_next the moment it occurs (Eq. 4b), so the
+                # final transition of each trial is included rather than dropped.
+                b = b + accumulate_b_counts(one_hot(s_next, C), one_hot(s, C))
+            s = s_next
         A_hist.append(expected_A(a))
         B_hist.append(expected_B(b))
         a_conf.append(a.copy())
@@ -706,8 +707,13 @@ def simulate_hierarchical_agent(
                 o = int(bottom_observations[k][t])
             else:
                 o = int(rng.choice(bottom.n_obs, p=bottom.A[:, int(np.argmax(prior))]))
-            belief = infer_states(bottom, o, prior=belief)
-            vfe_total += hierarchical_layer_vfe(belief, o, bottom.A, prior=belief)
+            # VFE is a divergence between the new posterior and the *previous*
+            # predictive prior. Capture the pre-update belief so the KL term in
+            # hierarchical_layer_vfe (log s − log prior) stays non-zero instead of
+            # collapsing when prior is set to the freshly-updated posterior.
+            prior_t = belief
+            belief = infer_states(bottom, o, prior=prior_t)
+            vfe_total += hierarchical_layer_vfe(belief, o, bottom.A, prior=prior_t)
             inner_beliefs.append(belief.copy())
         bottom_hist.append(np.array(inner_beliefs))
         vfe_hist.append(vfe_total)

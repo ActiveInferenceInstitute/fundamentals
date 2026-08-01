@@ -679,14 +679,23 @@ def _ergodic_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
     if mode == "simulate":
         drift = np.linspace(0.02, 0.16, 80)
         entropy_curve = []
+        upper_curve = []
         for value in drift:
             xs = ergodic_ou_trajectory(n_steps=260, drift=float(value))
             c, d = ergodic_density(xs, bins=50)
-            entropy_curve.append(density_entropy(c, d))
+            ent = density_entropy(c, d)
+            entropy_curve.append(ent)
+            # Compute the ``upper`` bound from the *same* trajectory as the
+            # entropy it is plotted against, so "primary + gap" really bounds
+            # primary pointwise rather than carrying a constant offset from an
+            # unrelated (different-length, different-drift) trajectory.
+            upper_curve.append(entropy_upper_bound_from_vfe(ent, ent + 0.35 + 0.02 * (idx % 5)).upper_bound)
         entropy_curve = np.asarray(entropy_curve)
+        upper_curve = np.asarray(upper_curve)
+        gap = float(np.asarray(upper_curve - entropy_curve).mean())
         return TopicDemo(
             spec,
-            {"x": drift, "primary": entropy_curve, "secondary": entropy_curve + bound.gap, "bar_y": np.array([bound.entropy, bound.upper_bound, bound.gap])},
+            {"x": drift, "primary": entropy_curve, "secondary": upper_curve, "bar_y": np.array([entropy, upper, gap])},
             {"x_label": "attractor drift", "primary_label": "ergodic entropy", "secondary_label": "VFE-like upper bound"},
             ("primary", "secondary"),
             bar_key="bar_y",
@@ -765,12 +774,19 @@ def _model_comparison_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
     if mode == "simulate":
         complexity = np.linspace(0.0, 1.5, 120)
         selected = []
+        best_posterior = []
         for value in complexity:
-            selected.append(np.argmax(model_posterior(log_evidence - value * x)))
+            post = model_posterior(log_evidence - value * x)
+            chosen = int(np.argmax(post))
+            selected.append(chosen)
+            # The "best posterior" baseline tracks the *actual* posterior mass of
+            # the selected model, so it reflects the stepwise selections rather
+            # than a fabricated fixed slope.
+            best_posterior.append(float(post[chosen]))
         selected_arr = np.asarray(selected, dtype=float)
         return TopicDemo(
             spec,
-            {"x": complexity, "primary": selected_arr, "secondary": np.max(posterior) - 0.05 * complexity, "bar_y": posterior},
+            {"x": complexity, "primary": selected_arr, "secondary": np.asarray(best_posterior), "bar_y": posterior},
             {"x_label": "complexity penalty", "primary_label": "selected model", "secondary_label": "best posterior"},
             ("primary", "secondary"),
             bar_key="bar_y",
@@ -784,11 +800,12 @@ def _model_comparison_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
     )
 
 
-def _noise_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
+def _noise_demo(spec: ExtraTopicSpec, mode: str, *, seed: int = 7) -> TopicDemo:
     """Build Appendix C.9 smooth colored-noise arrays."""
     x = np.linspace(0.0, 6.0, 160)
     cov = squared_exponential_covariance(x, length_scale=0.65, variance=1.0)
-    sample = sample_colored_noise(x, length_scale=0.65, variance=0.4, rng=np.random.default_rng(7))
+    sample = sample_colored_noise(x, length_scale=0.65, variance=0.4,
+                                  rng=np.random.default_rng(seed))
     if mode == "simulate":
         length = np.linspace(0.15, 2.0, 120)
         smoothness = np.array(
@@ -810,7 +827,7 @@ def _noise_demo(spec: ExtraTopicSpec, mode: str) -> TopicDemo:
     )
 
 
-def build_topic_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
+def build_topic_demo(slug: str, *, mode: str = "visualize", seed: int = 7) -> TopicDemo:
     """Build deterministic numeric arrays for one topic and artifact mode."""
     spec = extra_topic_spec(slug)
     if mode not in {"visualize", "simulate"}:
@@ -833,7 +850,8 @@ def build_topic_demo(slug: str, *, mode: str = "visualize") -> TopicDemo:
         "model_comparison": _model_comparison_demo,
         "noise": _noise_demo,
     }
-    demo = builders[spec.demo_kind](spec, mode)
+    builder = builders[spec.demo_kind]
+    demo = builder(spec, mode, seed=seed) if spec.demo_kind == "noise" else builder(spec, mode)
     metadata = {
         "topic": spec.slug,
         "title": spec.title,
@@ -869,9 +887,9 @@ def _sections_caption(sections: tuple[str, ...]) -> str:
     return f"{head}, ... ({len(sections)} sections)"
 
 
-def render_topic_figure(slug: str, *, mode: str = "visualize") -> tuple[plt.Figure, TopicDemo]:
+def render_topic_figure(slug: str, *, mode: str = "visualize", seed: int = 7) -> tuple[plt.Figure, TopicDemo]:
     """Render a deterministic static figure for one extras topic."""
-    demo = build_topic_demo(slug, mode=mode)
+    demo = build_topic_demo(slug, mode=mode, seed=seed)
     fig, axes = plt.subplots(
         1,
         2,
@@ -1000,7 +1018,10 @@ def build_topic_animation(slug: str) -> tuple[FuncAnimation, dict[str, np.ndarra
     target_line, = ax.plot(x, target, color=COLORS["neutral"], lw=1.5, ls="--", label="target")
     line, = ax.plot([], [], color=COLORS["likelihood"], lw=2.6, label="current")
     text = annotate_stat_box(ax, "", loc="upper left", fontsize=9, monospace=False)
-    ax.legend(fontsize=10)
+    # Fixed legend location (not the default loc="best"): the animation's data
+    # grows across frames and loc="best" triggers a matplotlib warning for large
+    # datasets, which the `PYTHONWARNINGS=error` smoke suite escalates to a failure.
+    ax.legend(loc="upper right", fontsize=10)
 
     def init() -> tuple[object, ...]:
         """Initialize animated artists."""
@@ -1036,6 +1057,9 @@ def _parse_topic_args(argv: Sequence[str] | None, description: str) -> argparse.
     """Parse common command-line arguments for extras topic wrappers."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--save", action="store_true", help="Save output under output/figures/extras/<topic>.")
+    # Deterministic builders ignore this, but the convention (demo/AGENTS.md) is
+    # that wrappers accept --seed so any future stochastic topic is reproducible.
+    parser.add_argument("--seed", type=int, default=7, help="RNG seed (most extras topics are deterministic).")
     return parser.parse_args(argv)
 
 
@@ -1047,7 +1071,7 @@ def topic_artifact_path(slug: str, stem: str, suffix: str) -> Path:
 def main_visualize(slug: str, argv: Sequence[str] | None = None) -> int:
     """Run the static visualization CLI for one extras topic."""
     args = _parse_topic_args(argv, f"Visualize extras topic {slug}.")
-    fig, demo = render_topic_figure(slug, mode="visualize")
+    fig, demo = render_topic_figure(slug, mode="visualize", seed=args.seed)
     stem = f"visualize_{slug}"
     if args.save:
         figure = topic_artifact_path(slug, stem, "png")
@@ -1068,7 +1092,7 @@ def main_visualize(slug: str, argv: Sequence[str] | None = None) -> int:
 def main_simulate(slug: str, argv: Sequence[str] | None = None) -> int:
     """Run the parameter-sweep simulation CLI for one extras topic."""
     args = _parse_topic_args(argv, f"Simulate extras topic {slug}.")
-    fig, demo = render_topic_figure(slug, mode="simulate")
+    fig, demo = render_topic_figure(slug, mode="simulate", seed=args.seed)
     stem = f"simulate_{slug}"
     if args.save:
         figure = topic_artifact_path(slug, stem, "png")

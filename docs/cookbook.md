@@ -213,7 +213,7 @@ for p in posteriors:
 ```
 
 A single loop works for grid / LGS / BLR posteriors. See
-[`reference/core.md`](reference/core.md#coreposterior--cross-cutting-posterior-protocol).
+[`reference/core.md`](reference/core.md#coreposterior-cross-cutting-posterior-protocol).
 
 ## 10. Defensive validation
 

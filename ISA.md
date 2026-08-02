@@ -14,7 +14,7 @@ repository and with the inspected PDF source spine, not with stale plans.
 
 ## Source Spine
 
-- Authority: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf`.
+- Authority: the inspected *Fundamentals of Active Inference* PDF source; its repository-relative ledger is maintained in [`src/active_inference/source_spine.py`](src/active_inference/source_spine.py).
 - Observed PDF metadata: 1153 pages, LaTeX build date 2025-03-20.
 - The source spine has Chapters 1-14 and Appendices A-D.
 - The source spine has no Chapter 15. `chapter_15` must remain absent unless a

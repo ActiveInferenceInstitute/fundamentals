@@ -9,7 +9,7 @@ methods; those wrappers are validated by
 `scripts/validate_orchestrator_provenance.py` and tested through the shared
 `interactive_topic_demo` constructor rather than by saved PNG/GIF output.
 
-Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf` (1153 pages, LaTeX build dated 2025-03-20).
+Source spine: the inspected *Fundamentals of Active Inference* PDF (1153 pages, LaTeX build dated 2025-03-20); see [`source_spine.md`](source_spine.md) for the repository-relative ledger.
 
 ## Coverage By Family
 
@@ -123,7 +123,7 @@ Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Infer
 
 ## PDF Source Spine Contract
 
-Source spine: `/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf`
+Source spine: the inspected *Fundamentals of Active Inference* PDF; see [`source_spine.md`](source_spine.md) for the repository-relative ledger.
 has 1153 pages, LaTeX build date 2025-03-20, Chapters 1-14, and Appendices
 A-D. It has no Chapter 15; `chapter_15` must remain absent unless a different
 source manuscript is supplied.

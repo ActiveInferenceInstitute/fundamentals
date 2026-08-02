@@ -33,8 +33,8 @@ parameter posterior, or learn parameters. Allowed imports: `numpy`,
    - exercises a non-default branch (e.g., L2 regularization, no intercept);
    - validates input checking.
 3. Re-export via `estimators/__init__.py` and `active_inference/__init__.py`.
-4. Update `docs/estimators.md` and the chapter `README.md` if a chapter
-   orchestrator uses it.
+4. Update [`docs/reference/estimators.md`](../../../docs/reference/estimators.md)
+   and the chapter `README.md` if a chapter orchestrator uses it.
 
 ## Dependency graph
 

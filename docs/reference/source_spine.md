@@ -1,8 +1,8 @@
 # PDF source-spine contract
 
-The companion currently uses the local source PDF:
+The companion uses the inspected source PDF:
 
-`/Users/4d/Documents/Namjoshi_2025_v5_Fundamentals_of_Active_Inference.pdf`
+the inspected *Fundamentals of Active Inference* PDF source
 
 The inspected metadata is recorded in `active_inference.source_spine`:
 

@@ -34,7 +34,8 @@ chart-style decisions here, not in chapter orchestrators.
 1. Headless-safe: `MPLBACKEND=Agg` must produce identical output.
 2. Test in `tests/visualizations/` that the helper writes a non-zero file
    and returns the right type (`Figure` or `FuncAnimation`).
-3. Update `docs/visualizations.md` if it adds a public symbol.
+3. Update [`docs/reference/visualizations.md`](../../../docs/reference/visualizations.md)
+   if it adds a public symbol.
 
 ## Dependency graph
 

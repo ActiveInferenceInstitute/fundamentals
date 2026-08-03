@@ -10,7 +10,8 @@ python demo/bicycle/visualize_bicycle.py --save
 
 ## Library APIs
 
-- `build_multivariate_active_agent_env`, `simulate_multivariate_active_inference`
+- `build_multivariate_active_agent_env` — `orchestrator_workflows.py`
+- `simulate_multivariate_active_inference` — `estimators/active_inference.py`
 - `simulate_fault_tolerant_control` — `estimators/applications.py`
 
 ## Outputs

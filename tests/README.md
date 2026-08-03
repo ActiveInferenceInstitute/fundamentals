@@ -11,9 +11,20 @@ tests/
 ├── visualizations/  ← mirrors src/active_inference/visualizations
 ├── menu/            ← mirrors src/active_inference/menu
 ├── web/             ← mirrors src/active_inference/web
-├── chapters/        ← subprocess smoke tests for chapters/chapter_0{1..10}/
+├── chapters/        ← subprocess smoke tests for chapters/chapter_01..14/
 ├── extras/          ← subprocess smoke tests for extras/<topic>/
-└── test_orchestrator_provenance.py
+├── demo/            ← subprocess smoke tests for demo/<slug>/
+├── test_orchestrator_provenance.py
+├── test_orchestrator_workflows.py
+├── test_source_spine.py
+├── test_book_topic_coverage.py
+├── test_raw_data_exports.py
+├── test_render_validator.py
+├── test_run_all_figures.py
+├── test_demo_workflows.py
+├── test_documentation_contracts.py
+├── test_method_documentation_contracts.py
+└── test_status_contracts.py
 ```
 
 ## Running
@@ -48,8 +59,9 @@ pytest --cov=active_inference --cov-report=term-missing
 | `visualizations/` | `src/active_inference/visualizations/` | `test_plotting.py`, `test_animations.py`, `test_diagnostics.py`, `test_interactive.py`, `test_unified.py` | Figures save correctly, animations are valid `FuncAnimation` objects, diagnostic plots, interactive slider callbacks, the composable Ch.4–10 `unified` layer. |
 | `menu/` | `src/active_inference/menu/` | `test_runner.py` | Chapter/script discovery, classification, menu rendering, resolution. |
 | `web/` | `src/active_inference/web/` | `test_server.py` | Routes, markdown converter, run endpoint, templates, metadata, assets. |
-| `chapters/` | `chapters/chapter_0{1..10}/` | `test_smoke.py` | Every non-interactive chapter script (examples, animations, visualizations) runs to exit 0 with `--save` and `PYTHONWARNINGS=error`. |
+| `chapters/` | `chapters/chapter_01/` … `chapter_14/` | `test_smoke.py` | Every non-interactive chapter script (examples, animations, visualizations) runs to exit 0 with `--save` and `PYTHONWARNINGS=error`. |
 | `extras/` | `extras/<topic>/` | `test_smoke.py` | Every extras topic script runs to exit 0 with `--save` and writes fresh raw-data sidecars. |
+| `demo/` | `demo/<slug>/` | `test_demo_smoke.py` | Every application demo script runs to exit 0 with `--save` and writes fresh raw-data sidecars. |
 | `test_orchestrator_provenance.py` | `chapters/`, `extras/`, `scripts/` | root test | The non-mutating provenance validator rejects sibling-wrapper imports and enforces the `active_inference` source-method boundary. |
 
 ## Design Decisions

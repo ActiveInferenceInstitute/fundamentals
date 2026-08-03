@@ -7,6 +7,8 @@ One test file per source module.
 | `utils/grids.py` | [`test_grids.py`](test_grids.py) |
 | `utils/io.py` | [`test_io.py`](test_io.py) |
 | `utils/logging.py` | [`test_logging.py`](test_logging.py) |
+| `utils/export.py` | [`test_export.py`](test_export.py) |
+| `utils/notebooks.py` | [`test_notebooks.py`](test_notebooks.py) |
 
 ## Running
 

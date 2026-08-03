@@ -17,4 +17,6 @@ statistics.
 | File | Producing script |
 |---|---|
 | `example_13_1_robotics_navigation.png` | `example_13_1_robotics_navigation.py` |
+| `example_13_2_fault_tolerant_control.png` | `example_13_2_fault_tolerant_control.py` |
 | `example_13_3_social_robotics.png` | `example_13_3_social_robotics.py` |
+| `example_13_4_robotics_theory.png` | `example_13_4_robotics_theory.py` |

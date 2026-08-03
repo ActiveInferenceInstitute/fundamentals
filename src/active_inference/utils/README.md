@@ -11,6 +11,7 @@ conventions, and raw NPZ+JSON exports for saved chapter and extras artifacts.
 | [`logging.py`](logging.py) | `get_logger` |
 | [`io.py`](io.py) | `default_figure_dir`, `default_data_dir`, `ensure_dir` |
 | [`export.py`](export.py) | `save_chapter_data`, `save_extra_data`, `extract_figure_data`, `extract_animation_data`, `data_paths_for_figure`, `data_paths_for_extra_figure` |
+| [`notebooks.py`](notebooks.py) | `default_notebook_dir`, `build_notebook`, `export_*_notebook`, `export_all_notebooks` — Jupyter export used by `scripts/export_notebooks.py`; lazy-imports `menu.runner` for discovery |
 | `__init__.py` | Re-exports all public names |
 
 ## Public API

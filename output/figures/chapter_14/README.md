@@ -17,4 +17,6 @@ statistics.
 | File | Producing script |
 |---|---|
 | `example_14_1_ergodic_density.png` | `example_14_1_ergodic_density.py` |
+| `example_14_2_survival_viability.png` | `example_14_2_survival_viability.py` |
+| `example_14_3_entropy_vfe_bounds.png` | `example_14_3_entropy_vfe_bounds.py` |
 | `example_14_4_bayesian_mechanics.png` | `example_14_4_bayesian_mechanics.py` |

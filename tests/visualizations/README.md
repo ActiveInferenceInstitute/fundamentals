@@ -12,7 +12,8 @@ requiring a display.
 | `visualizations/diagnostics.py` | [`test_diagnostics.py`](test_diagnostics.py) |
 | `visualizations/unified.py` (Ch.4–10) | [`test_unified.py`](test_unified.py) |
 | `visualizations/interactive.py` | [`test_interactive.py`](test_interactive.py) |
-| `visualizations/variational.py`, `style.py` | (exercised via `test_unified.py` + chapter smoke tests; no dedicated file) |
+| `visualizations/variational.py` (Ch.4) | [`test_variational.py`](test_variational.py) |
+| `visualizations/style.py` | [`test_style.py`](test_style.py) |
 
 ## Running
 

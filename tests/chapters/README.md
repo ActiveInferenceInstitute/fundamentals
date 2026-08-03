@@ -5,7 +5,7 @@ and assert exit code 0.
 
 | File | Coverage |
 |---|---|
-| [`test_smoke.py`](test_smoke.py) | Chapters 1–10 — examples + auxiliary + animations + visualizations. |
+| [`test_smoke.py`](test_smoke.py) | Chapters 1–14 — examples + auxiliary + animations + visualizations. |
 
 ## Running
 
@@ -19,7 +19,7 @@ pytest tests/chapters -v -k 'not animation'
 
 ## What's checked
 
-For each script under `chapters/chapter_0{1..10}/`:
+For each script under `chapters/chapter_01/` … `chapters/chapter_14/`:
 
 1. The Python interpreter resolves `active_inference` imports.
 2. The script's `argparse` accepts `--save`.

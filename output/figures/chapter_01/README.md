@@ -1,6 +1,6 @@
 # `output/figures/chapter_01/` — Chapter 1 figures
 
-PNG outputs from the Chapter 1 orchestrators (`chapters/chapter_01/`).
+PNG and GIF outputs from the Chapter 1 orchestrators (`chapters/chapter_01/`).
 **Ephemeral and gitignored** — regenerate with:
 
 ```bash
@@ -22,3 +22,4 @@ Each saved artifact has a matching raw-data sidecar under `output/data/chapter_0
 | `04_inverse_curve.png` | `04_inverse_problem.py` |
 | `04_inverse_posterior.png` | `04_inverse_problem.py` |
 | `04_inverse_overlay.png` | `04_inverse_problem.py` |
+| `05_belief_from_stream.gif` | `05_belief_from_stream.py` |

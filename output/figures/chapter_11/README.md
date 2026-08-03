@@ -18,3 +18,5 @@ statistics.
 |---|---|
 | `example_11_1_free_energy_variants.png` | `example_11_1_free_energy_variants.py` |
 | `example_11_2_sophisticated_planning.png` | `example_11_2_sophisticated_planning.py` |
+| `example_11_3_preference_habit_learning.png` | `example_11_3_preference_habit_learning.py` |
+| `example_11_4_hybrid_tree_structure.png` | `example_11_4_hybrid_tree_structure.py` |

@@ -17,4 +17,7 @@ statistics.
 | File | Producing script |
 |---|---|
 | `example_12_1_factor_graph_messages.png` | `example_12_1_factor_graph_messages.py` |
+| `example_12_2_belief_propagation_smoothing.png` | `example_12_2_belief_propagation_smoothing.py` |
+| `example_12_3_vmp_marginal_messages.png` | `example_12_3_vmp_marginal_messages.py` |
 | `example_12_4_hybrid_message_bridge.png` | `example_12_4_hybrid_message_bridge.py` |
+| `example_12_5_active_factor_learning_attention.png` | `example_12_5_active_factor_learning_attention.py` |

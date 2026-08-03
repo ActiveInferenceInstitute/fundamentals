@@ -5,31 +5,36 @@ Subprocess-based smoke tests for the chapter orchestrators in
 
 ## Discovery model
 
-Scripts are discovered by **glob pattern**, not by a hard-coded list
-(`CHAPTER_DIRS` registers chapters 1–10):
+Scripts are discovered through the shared **menu-runner inventory**
+(`active_inference.menu.runner.discover_chapters` /
+`discover_scripts`), the same discovery layer used by `run.sh`, the web
+UI, and `scripts/run_all_figures.py` — not by a hard-coded list:
 
 ```python
-CHAPTER_1_SCRIPTS    = sorted(CHAPTER_DIRS[1].glob("0*.py"))
-CHAPTER_2_EXAMPLES   = sorted(CHAPTER_DIRS[2].glob("example_*.py"))
-CHAPTER_2_ANIMATIONS = sorted(CHAPTER_DIRS[2].glob("animation_*.py"))
-CHAPTER_3_EXAMPLES   = sorted(CHAPTER_DIRS[3].glob("example_*.py"))
-# … later chapters follow the same pattern …
-CHAPTER_4_EXAMPLES   = sorted(CHAPTER_DIRS[4].glob("example_*.py"))
-CHAPTER_4_ANIMATIONS = sorted(CHAPTER_DIRS[4].glob("animation_*.py"))
-CHAPTER_5_EXAMPLES   = sorted(CHAPTER_DIRS[5].glob("example_*.py"))
-CHAPTER_5_ANIMATIONS = sorted(CHAPTER_DIRS[5].glob("animation_*.py"))
+# tests/chapters/test_smoke.py
+from active_inference.menu.runner import discover_chapters, discover_scripts
+
+def _all_chapter_scripts() -> list[Path]:
+    scripts: list[Path] = []
+    for chapter in discover_chapters():            # chapters 1–14
+        scripts.extend(entry.path for entry in discover_scripts(chapter.number))
+    return scripts
+
+CHAPTER_ALL_SCRIPTS = _all_chapter_scripts()
 ```
 
-A new chapter script is therefore picked up automatically. The price is
-that the glob patterns are an implicit contract — name files
-`example_*.py` / `animation_*.py` / `visualize_*.py` /
-`interactive_*.py` consistently.
+A new chapter folder or script is therefore picked up automatically. The
+price is that the `example_*.py` / `animation_*.py` / `visualize_*.py` /
+`interactive_*.py` filename conventions are an implicit contract — name
+files consistently so classification (and the web/menu UI) stays correct.
 
 ## When to edit `test_smoke.py`
 
-- A new chapter is added (extend `CHAPTER_DIRS`).
-- A new file-name pattern is introduced (extend the glob calls).
-- A script needs a longer timeout (animations already get 240 s).
+- A new file-name pattern is introduced (extend the discovery or
+  classification calls).
+- A script needs a different timeout (animations already get 240 s).
+- New per-chapter special cases are needed (see `_run` and the
+  per-script timeout table).
 
 ## Conventions
 

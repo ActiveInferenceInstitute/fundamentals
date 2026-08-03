@@ -11,6 +11,13 @@ One test file per source module.
 | `estimators/em.py` | [`test_em.py`](test_em.py) |
 | `estimators/variational.py` (Ch.4) | [`test_variational.py`](test_variational.py) |
 | `estimators/predictive_coding.py` (Ch.5) | [`test_predictive_coding.py`](test_predictive_coding.py) |
+| `estimators/generalized_filtering.py` (Ch.6) | [`test_generalized_filtering.py`](test_generalized_filtering.py) |
+| `estimators/active_inference.py` (Ch.7) | [`test_active_inference.py`](test_active_inference.py) |
+| `estimators/continuous_learning.py` (Ch.8) | [`test_continuous_learning.py`](test_continuous_learning.py) |
+| `estimators/pomdp.py` (Ch.9–10) | [`test_pomdp.py`](test_pomdp.py) |
+| `estimators/pomdp_extensions.py` (Ch.11) | [`test_pomdp_extensions.py`](test_pomdp_extensions.py) |
+| `estimators/applications.py` (Ch.13) | [`test_applications.py`](test_applications.py) |
+| Part III estimator demos (cross-cutting) | [`test_part_iii_extensions.py`](test_part_iii_extensions.py) |
 | *(cross-estimator)* | [`test_recovery.py`](test_recovery.py) |
 
 ## Running

@@ -17,6 +17,9 @@ gradient descent, conjugate Bayesian updates, and EM.
 | [`generalized_filtering.py`](generalized_filtering.py) | **(Ch.6)** online generalized filtering, generalized measurements, and vector generalized-coordinate filtering. |
 | [`active_inference.py`](active_inference.py) | **(Ch.7)** univariate and multivariate active generalized-filtering loops. |
 | [`continuous_learning.py`](continuous_learning.py) | **(Ch.8)** `simulate_learning_attention` and `LearningAttentionResult` for perception, learning, and attention traces. |
+| [`pomdp.py`](pomdp.py) | **(Ch.9–10)** Grid World planning, policy enumeration, POMDP agent simulation; Dirichlet parameter learning, precision sweeps, two-armed bandit, and hierarchical-agent simulations. |
+| [`pomdp_extensions.py`](pomdp_extensions.py) | **(Ch.11)** Part III demos: sophisticated planning, state-preference schedules, parameter forgetting, structure learning, preference/habit learning, and path-policy computation. |
+| [`applications.py`](applications.py) | **(Ch.13)** Application demos: robot navigation, fault-tolerant control, social inference, and the robotics-theory landscape. |
 | `__init__.py` | Re-exports the public surface. |
 
 ## Public API

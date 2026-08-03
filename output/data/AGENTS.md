@@ -15,7 +15,7 @@ Ephemeral, regenerable storage for raw numerical artifacts.
    generated `.npz` and `.json` files; README/AGENTS files are the only
    hand-maintained content in chapter data folders.
 4. **Validate after full renders.** Run
-   `python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10`
+   `python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14`
    for the chapter spine and
    `python scripts/validate_raw_data_exports.py --root output/data` after
    regenerating the extras curriculum.

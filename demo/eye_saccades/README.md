@@ -10,7 +10,8 @@ python demo/eye_saccades/visualize_eye_saccades.py --save
 
 ## Library APIs
 
-- `make_gridworld`, `simulate_pomdp_agent`, `evaluate_policy` — `estimators/pomdp.py`
+- `make_gridworld`, `simulate_pomdp_agent` — `estimators/pomdp.py`
+- `evaluate_policy` — `core/pomdp.py`
 
 ## Outputs
 

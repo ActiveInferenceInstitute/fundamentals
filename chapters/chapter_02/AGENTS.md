@@ -61,7 +61,7 @@ These scripts import exclusively from:
 - `active_inference` — all public API classes and functions
 - `active_inference.estimators.mle` / `.map` — for scripts using raw gradient functions
 - `active_inference.utils.io` — `default_figure_dir`, `ensure_dir`
-- Standard library — `argparse`, `numpy`, `matplotlib`
+- Standard library plus `numpy` / `matplotlib` for CLI and rendering glue
 
 ## Testing
 

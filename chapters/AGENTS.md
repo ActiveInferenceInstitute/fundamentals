@@ -7,8 +7,9 @@ numerical example.
 
 ## Hard rules
 
-1. A chapter script imports **only** from `active_inference` and the Python
-   standard library. No cross-script imports between chapters.
+1. A chapter script imports **only** from `active_inference`, `numpy` /
+   `matplotlib` / `scipy` rendering glue, and the Python standard library.
+   No cross-script imports between chapters.
 2. Every script is **≤ ~120 lines**. If you cross that, push the new logic
    into `src/active_inference/`.
 3. Every script accepts at minimum `--save` and (where stochastic) `--seed`

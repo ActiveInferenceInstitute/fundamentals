@@ -15,7 +15,7 @@ precision `Π̃(γ)` and Example 6.7 vector generalized filtering.
 | [`example_6_2_multivariate_filter.py`](example_6_2_multivariate_filter.py) | ~95 | Multivariate filter (§6.2) on a Hooke's-law oscillator; vector belief tracks the orbit with perception lag; reproduces Fig. 6.2.3. |
 | [`example_6_6_generalized_coordinates.py`](example_6_6_generalized_coordinates.py) | ~95 | Generalized filtering in generalized coordinates (§6.5, Alg. 6.5.1); recovers position + velocity; the `D μ̃ − κ∂F` recognition flow. |
 | [`visualize_6_6_correlated_embedding_orders.py`](visualize_6_6_correlated_embedding_orders.py) | ~75 | Correlated embedding-order precision (§6.6, Fig. 6.6.2); shows how `S(γ)^-1 ⊗ Π` changes with smoothness. |
-| [`example_6_7_multivariate_generalized_coordinates.py`](example_6_7_multivariate_generalized_coordinates.py) | ~120 | Example 6.7; vector generalized-coordinate filter with full correlated precision, compared against the ordinary multivariate filter. |
+| [`example_6_7_multivariate_generalized_coordinates.py`](example_6_7_multivariate_generalized_coordinates.py) | ~60 | Thin wrapper over the `orchestrator_workflows` §6.6 builder: vector generalized-coordinate filter with full correlated precision, compared against the ordinary multivariate filter. |
 
 ## Running
 
@@ -38,8 +38,10 @@ from active_inference import (
 
 ## Smoke Tests
 
-`tests/chapters/test_smoke.py::test_chapter_6_scripts_run` runs each script via
-`subprocess` with `--save` and asserts exit code 0. Unit tests for the methods live
+`tests/chapters/test_smoke.py` runs each script via `subprocess` with `--save`
+and asserts exit code 0, in the single parametrized
+`test_chapter_script_runs_and_exports_raw_data` (one case per discovered
+chapter script). Unit tests for the methods live
 in `tests/core/test_generalized_filtering.py` and
 `tests/estimators/test_generalized_filtering.py`.
 

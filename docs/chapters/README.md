@@ -29,13 +29,18 @@ Chapter 15; that absence is checked by
 
 ## How to read a chapter page
 
-Each page has the same skeleton:
+Each page has the same skeleton, with one deliberate variant:
 
 1. *What the chapter covers* — a paragraph summary in our own words.
-2. *Recipe* — the canonical 5-step modeling pattern, parameterized for
-   that chapter.
+2. *Recipe* (Ch.1–5 pages) — the canonical 5-step modeling pattern,
+   parameterized for that chapter. Dynamic/discrete chapters (Ch.6+)
+   replace this with a *model/architecture* section instead (e.g.
+   "The model is a handful of matrices" for Ch.9) since their
+   recognition/planning loops do not follow the static 5-step recipe.
 3. *Scripts* — table mapping each orchestrator to the question it
-   answers and the library symbols it imports.
+   answers; library imports appear either inline in the table or in a
+   dedicated "Reusable building blocks" / "API used" / "Library
+   surface" section.
 4. *Where the book takes this next* — a forward pointer to the next
    chapter's chapter-page in this folder.
 

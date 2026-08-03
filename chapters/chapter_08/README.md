@@ -4,7 +4,10 @@ Chapter 8 extends continuous-state generalized filtering with slow learning of
 first-order parameters, attention-like learning of second-order log precisions,
 and hierarchical message passing. It is the bridge between the continuous
 recognition dynamics of Chapters 6–7 and the explicit hierarchical / discrete
-architectures of Chapters 9–10.
+architectures of Chapters 9–10. The concept map is
+[`docs/chapters/chapter_08.md`](../../docs/chapters/chapter_08.md).
+
+## Scripts
 
 | Script | Book section | What it shows |
 |---|---:|---|
@@ -23,6 +26,29 @@ uv run python scripts/run_all_figures.py --chapters 8
 `example_8_1_learning_attention.py` accepts `--seed` and `--n-steps`.
 `example_8_2_hierarchical_continuous.py` accepts `--n-steps` and `--dt`.
 `animation_learning_attention.py` accepts `--seed` and `--frames`.
+
+## Programmatic usage
+
+```python
+from active_inference import (
+    LearningAttentionModel,
+    LearningAttentionState,
+    simulate_learning_attention,
+)
+import numpy as np
+
+# One VFE objective descends state, first-order parameter, and log precision.
+model = LearningAttentionModel(
+    state_attractor=5.0, theta_prior_mean=0.0, zeta_prior_mean=0.0,
+    sigma2_y=0.02, sigma2_theta=50.0, sigma2_zeta=50.0,
+)
+ys = 5.0 + np.random.default_rng(0).normal(0.0, 0.08, size=100)
+res = simulate_learning_attention(
+    model, ys, initial=LearningAttentionState(mu_x=1.5, mu_theta=0.0, mu_zeta=0.0),
+    dt=0.03, kappa_x=0.7, kappa_theta=2.0, kappa_zeta=0.25, damping=1.2,
+)
+print(res.final_state.mu_x, res.final_variance_x)
+```
 
 ## Reading the figures
 

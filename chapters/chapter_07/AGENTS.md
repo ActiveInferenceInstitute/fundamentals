@@ -10,8 +10,8 @@ multivariate active generalized filtering in generalized coordinates.
 | Script | Lines | What it shows |
 |---|---|---|
 | [`example_7_2_active_inference.py`](example_7_2_active_inference.py) | ~95 | The coupled action-perception loop (Alg. 7.2.1): action drives the true state to the agent's preferred set-point against an exogenous force; reproduces Fig. 7.4.5. |
-| [`example_7_5_multivariate_active_inference.py`](example_7_5_multivariate_active_inference.py) | ~120 | §7.5 vector action-perception loop: a 2-D agent uses generalized measurements and vector action to cancel an exogenous attractor. |
-| [`animation_7_5_multivariate_active_inference.py`](animation_7_5_multivariate_active_inference.py) | ~120 | GIF for §7.5 showing 2-D path, belief, action vector, sensory error, and free-energy evolution. |
+| [`example_7_5_multivariate_active_inference.py`](example_7_5_multivariate_active_inference.py) | ~60 | Thin wrapper over the `orchestrator_workflows` §7.5 builder: a 2-D agent uses generalized measurements and vector action to cancel an exogenous attractor. |
+| [`animation_7_5_multivariate_active_inference.py`](animation_7_5_multivariate_active_inference.py) | ~50 | Thin wrapper over the `orchestrator_workflows` §7.5 animation builder: GIF showing 2-D path, belief, action vector, sensory error, and free-energy evolution. |
 
 ## Running
 
@@ -33,8 +33,10 @@ from active_inference import (
 
 ## Smoke Tests
 
-`tests/chapters/test_smoke.py::test_chapter_7_scripts_run` runs each script with `--save`
-and asserts exit 0. Unit tests live in `tests/core/test_active_inference.py` and
+`tests/chapters/test_smoke.py` runs each script with `--save` and asserts exit 0,
+in the single parametrized `test_chapter_script_runs_and_exports_raw_data`
+(one case per discovered chapter script). Unit tests live in
+`tests/core/test_active_inference.py` and
 `tests/estimators/test_active_inference.py`.
 
 ## Key Concepts

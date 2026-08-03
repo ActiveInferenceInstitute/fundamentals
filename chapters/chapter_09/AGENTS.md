@@ -11,7 +11,7 @@ The generative model is built from matrices `A` (likelihood `P(o|s)`), `B` (tran
 |---|---|---|
 | [`example_9_1_state_inference.py`](example_9_1_state_inference.py) | ~70 | Exact discrete hidden-state inference (`s = σ(log Aᵀô + log D)`, Eq. 13); reproduces Fig. 9.1.3 and the Eq. 15 numbers. |
 | [`example_9_2_dynamic_filtering.py`](example_9_2_dynamic_filtering.py) | ~80 | Forward filtering with `B`-propagated priors and `A`-based observation updates. |
-| [`example_9_3_discrete_vfe.py`](example_9_3_discrete_vfe.py) | ~70 | Simplex sweep showing categorical VFE minimized at the exact posterior. |
+| [`example_9_3_discrete_vfe.py`](example_9_3_discrete_vfe.py) | ~105 | Simplex sweep showing categorical VFE minimized at the exact posterior. |
 | [`example_9_4_gridworld.py`](example_9_4_gridworld.py) | ~95 | Grid World planning agent (Alg. 9.5.1): navigates to a goal by minimizing expected free energy over policies. |
 | [`example_9_6_exploration_exploitation.py`](example_9_6_exploration_exploitation.py) | ~90 | Risk/ambiguity decomposition of expected free energy for exploration vs exploitation. |
 | [`animation_belief_filtering.py`](animation_belief_filtering.py) | ~70 | GIF of the categorical predict-update rhythm across observations. |
@@ -32,8 +32,9 @@ from active_inference import POMDPModel, infer_states, softmax, one_hot, is_stoc
 
 ## Smoke Tests
 
-`tests/chapters/test_smoke.py::test_chapter_9_scripts_run` plus the Chapter 9
-animation smoke test run each non-interactive script with `--save`.
+`tests/chapters/test_smoke.py` runs each non-interactive script with `--save`
+in the single parametrized `test_chapter_script_runs_and_exports_raw_data`
+(one case per discovered chapter script).
 Unit tests live in `tests/core/test_pomdp.py` (verified against the book's exact Eq. 15
 posterior `[0.18, 0.40, 0.36, 0.06]`).
 

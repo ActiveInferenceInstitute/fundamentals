@@ -10,11 +10,14 @@ Every chapter page must contain, in this order:
 1. **H1 title** including the chapter number and book title fragment.
 2. **One-paragraph summary** in our own prose — never a quoted passage
    from the book.
-3. **Recipe** section listing the 5 modeling steps with chapter-specific
-   parameterizations.
+3. **Recipe** section (Ch.1–5 pages) listing the 5 modeling steps with
+   chapter-specific parameterizations. Ch.6+ pages substitute a
+   model/architecture section appropriate to their dynamic or discrete
+   machinery (e.g. the POMDP matrix model for Ch.9).
 4. **Scripts** table linking every orchestrator under
-   `chapters/chapter_<N>/` to the question it answers and the library
-   imports it uses.
+   `chapters/chapter_<N>/` to the question it answers; library imports
+   either inline in the table or in a dedicated "Reusable building
+   blocks" / "API used" / "Library surface" section.
 5. **Where the book takes this next** — a one-sentence forward pointer.
 
 ## When to edit

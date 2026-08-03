@@ -36,7 +36,9 @@ message passing.
 
 ```bash
 python scripts/run_all_figures.py --chapters 8
-uv run pytest tests/chapters/test_smoke.py::test_chapter_8_scripts_run \
-  tests/chapters/test_smoke.py::test_chapter_8_visualizations \
-  tests/chapters/test_smoke.py::test_chapter_8_animations
+uv run pytest tests/chapters -v
 ```
+
+`tests/chapters/test_smoke.py` runs every discovered chapter script (including
+all four Chapter 8 orchestrators) with `--save` in the single parametrized
+`test_chapter_script_runs_and_exports_raw_data`.

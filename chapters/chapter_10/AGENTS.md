@@ -60,8 +60,9 @@ from active_inference.visualizations.unified import (
 
 ## Smoke Tests
 
-`tests/chapters/test_smoke.py::test_chapter_10_scripts_run` (+ `_animations`,
-`_visualizations`) runs each script with `--save`. Unit tests live in
+`tests/chapters/test_smoke.py` runs every discovered Chapter 10 script with
+`--save` in the single parametrized
+`test_chapter_script_runs_and_exports_raw_data`. Unit tests live in
 `tests/core/test_pomdp.py` (`TestDirichletLearning`, `TestHabitAndPrecision`,
 `TestFactorialDepth`, `TestHierarchicalDepth`) and `tests/estimators/test_pomdp.py`
 (`TestParameterLearning`, `TestPrecisionSweep`, `TestTwoArmedBandit`,

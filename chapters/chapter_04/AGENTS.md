@@ -11,7 +11,7 @@ VI. All run on the linear-Gaussian example whose exact grid posterior
 | Script | Lines | What it shows |
 |---|---|---|
 | [`example_4_1_coordinate_search.py`](example_4_1_coordinate_search.py) | ~95 | Zero-order coordinate search descends the VFE surface (Fig. 4.2.2). |
-| [`example_4_2_surprisal.py`](example_4_2_surprisal.py) | ~65 | Surprisal `−log p(y)` vs `y` and vs `p(y)` (Fig. 4.3.1). |
+| [`example_4_2_surprisal.py`](example_4_2_surprisal.py) | ~90 | Surprisal `−log p(y)` vs `y` and vs `p(y)` (Fig. 4.3.1). |
 | [`example_4_3_vfe_forms.py`](example_4_3_vfe_forms.py) | ~85 | All four VFE forms (G/D/C/E) agree; G/C/E decompositions over a descent. |
 | [`example_4_6_free_form_cavi.py`](example_4_6_free_form_cavi.py) | ~85 | Mean-field CAVI on `(x, β₀, β₁)`; VFE monotone, closed-form updates. |
 | [`example_4_7_fixed_form.py`](example_4_7_fixed_form.py) | ~100 | Fixed-form gradient VI → exact posterior `N(2.4, 0.05)`, bound tight. |

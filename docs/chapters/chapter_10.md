@@ -306,3 +306,9 @@ Every claim is checked against an oracle (see `tests/core/test_pomdp.py::TestDir
   `tests/estimators/test_pomdp.py::TestHierarchicalAgent`): `hierarchical_layer_vfe` /
   `hierarchical_layer_efe` reduce to the flat `discrete_vfe` / `expected_free_energy`; the
   top-down prior equals the link column; the top regime demonstrably steers the bottom prior.
+
+## Where the book takes this next
+
+Chapter 11 then moves from *learning* to *planning* extensions: alternate
+free-energy forms, sophisticated inference over policy trees, time-dependent
+preferences, parameter forgetting, and structure learning.

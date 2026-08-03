@@ -44,3 +44,41 @@ Passing checks before the documentation edits:
 - `uv run python scripts/validate_notebook_exports.py`.
 
 The final documentation scan and git diff/status are run after the edits are committed.
+
+## Comprehensive extension (same day) — full-family audit + implementation
+
+The initial pass covered the top-level docs only. This extension reviewed ALL
+274 Markdown files across families, using three parallel review-only
+subagents (chapters family: 46 files; extras family: 72 files; docs
+subfolders + manuscript: 54 files), plus a personal audit of the generated
+output/ docs, tests/ docs, src/ subpackage READMEs, demo/ docs, and
+scripts/ docs.
+
+Findings implemented (per family):
+
+- Chapters family: 6 Minor + 7 Medium findings — stale Lines columns
+  (orchestrator_workflows-wrapped scripts), stale smoke-test node IDs,
+  H1/`## Scripts` style drift, Rules-only ch11-14 AGENTS, skeletal ch08/11-14
+  READMEs (expanded with concept-map links + executed programmatic snippets),
+  docs/chapters contract relaxed to the two real page variants, missing
+  forward pointer added to chapter_10 page.
+- Extras family: 3 Medium + 4 Minor findings — root README Appendix A map
+  aligned with the registry (6 rows corrected), 4 topic README book-section
+  omissions fixed (+B.12/+12.7/+11.2.8/+12.4.1), appendix_math_fundamentals
+  section range tightened, 142 artifact-path claims normalized to trailing
+  slash, "Run any non-interactive script with --save" phrasing across 58
+  topic READMEs. Boilerplate doc-gen (M3) deferred as a code change.
+- Docs subfolders + manuscript: 7 Minor + 1 Medium — typo, audience count,
+  duplicate source-PDF sentences, missing demos.md in docs map, missing
+  pc_multivariate_linear_fixed_point API row (signature-verified), architecture
+  diagram completions (notebooks.py, orchestrator_workflows.py), manuscript
+  source-surfaces table de-duplicated (canonical in S01).
+- Personal audit: output/figures README expected-file tables completed for
+  chapters 1/11-14, tests/ README source↔test tables completed, tests/demo/
+  README created, demo README API attributions corrected, output/ AGENTS
+  chapter-spine ranges updated, chapters/AGENTS.md CHAPTER_DIRS removed.
+
+Every added programmatic snippet was executed against the real API; every
+line-count edit was verified with wc -l; every validators still passes
+(orchestrator contracts/provenance, book-topic coverage, source spine, raw
+data, rendered figures, notebook exports).

@@ -32,17 +32,17 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 - [x] Extras family (subagent): root `extras/README.md` Appendix A section map aligned with the registry (history A.1–A.1.7, future A.2/A.2.5, lineage topics A.2.1–A.2.4). ✓ commit `7b080fe`
 - [x] Extras family (subagent): omitted book sections added (factor_graphs +B.12, hierarchical_message_passing +12.7, tree_policy_search +11.2.8, variational_message_passing +12.4.1; appendix_math_fundamentals range tightened to C.1–C.8, C.10, C.12, C.13). ✓ commit `7b080fe`
 - [x] Extras family (subagent): normalized 142 no-trailing-slash artifact-path claims and "Run any script with `--save`" → "Run any non-interactive script with `--save`" across 58 topic READMEs. ✓ commit `7b080fe`
-- [x] Docs family (subagent): `docs/statistics/entropy.md` typo ("exit" → "exist"); `docs/reading_order.md` "four audiences" → six; duplicate source-PDF sentence removed from `docs/reference/source_spine.md` and `docs/topics/source_spine_and_appendices.md`; `docs/README.md` reference tree map now lists `demos.md`. ✓ commit `PENDING`
-- [x] Docs family (subagent): `docs/reference/estimators.md` gains the missing `pc_multivariate_linear_fixed_point` API row (signature verified). ✓ commit `PENDING`
-- [x] Docs family (subagent): `docs/architecture.md` layer diagram now lists `utils/notebooks.py` and `orchestrator_workflows.py`. ✓ commit `PENDING`
+- [x] Docs family (subagent): `docs/statistics/entropy.md` typo ("exit" → "exist"); `docs/reading_order.md` "four audiences" → six; duplicate source-PDF sentence removed from `docs/reference/source_spine.md` and `docs/topics/source_spine_and_appendices.md`; `docs/README.md` reference tree map now lists `demos.md`. ✓ commit `8e53f09`
+- [x] Docs family (subagent): `docs/reference/estimators.md` gains the missing `pc_multivariate_linear_fixed_point` API row (signature verified). ✓ commit `8e53f09`
+- [x] Docs family (subagent): `docs/architecture.md` layer diagram now lists `utils/notebooks.py` and `orchestrator_workflows.py`. ✓ commit `8e53f09`
 
 ## Medium
 
 - [x] Chapters family (subagent): stale smoke-test node IDs (`test_chapter_6/7/8/9/10_*`) replaced with the real single parametrized `test_chapter_script_runs_and_exports_raw_data`. Files: `chapters/chapter_06..10/AGENTS.md`. ✓ commit `c01c6b1`
 - [x] Chapters family (subagent): Rules-only ch11–14 AGENTS.md expanded to the shared template (Scripts-with-Lines, Library Usage, Smoke Tests). ✓ commit `c01c6b1`
 - [x] Chapters family (subagent): skeletal ch08/11–14 READMEs expanded with concept-map links and verified programmatic-usage snippets (every snippet executed against the real API). ✓ commit `c01c6b1`
-- [x] Chapters family (subagent): `docs/chapters/` file contract relaxed to describe the two real page variants (5-step Recipe for Ch.1–5; model/architecture section for Ch.6+) and imports via table or library-surface section; `docs/chapters/chapter_10.md` gains the missing "Where the book takes this next". Files: `docs/chapters/README.md`, `docs/chapters/AGENTS.md`, `docs/chapters/chapter_10.md`. ✓ commit `PENDING`
-- [x] Docs family (subagent): manuscript source-surfaces table de-duplicated — canonical table stays in `S01_source_surface.md`; `manuscript/README.md` and `04_artifacts_and_evidence.md` cross-reference it. ✓ commit `PENDING`
+- [x] Chapters family (subagent): `docs/chapters/` file contract relaxed to describe the two real page variants (5-step Recipe for Ch.1–5; model/architecture section for Ch.6+) and imports via table or library-surface section; `docs/chapters/chapter_10.md` gains the missing "Where the book takes this next". Files: `docs/chapters/README.md`, `docs/chapters/AGENTS.md`, `docs/chapters/chapter_10.md`. ✓ commit `8e53f09`
+- [x] Docs family (subagent): manuscript source-surfaces table de-duplicated — canonical table stays in `S01_source_surface.md`; `manuscript/README.md` and `04_artifacts_and_evidence.md` cross-reference it. ✓ commit `8e53f09`
 
 ## Major
 

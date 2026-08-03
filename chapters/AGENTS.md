@@ -30,13 +30,16 @@ numerical example.
 ## Adding a new chapter
 
 1. `mkdir chapters/chapter_<N>` and add `README.md` + `AGENTS.md`.
-2. Add the chapter's directory to `CHAPTER_DIRS` in
-   `tests/chapters/test_smoke.py`.
-3. Add the chapter's directory to `CHAPTER_DIRS` in
-   `scripts/run_all_figures.py`.
-4. Add a one-line entry to `README.md` and `docs/architecture.md` and a
+2. Add a one-line entry to `README.md` and `docs/architecture.md` and a
    concept map to `docs/chapters/chapter_<N>.md` (also list it in
    `docs/chapters/README.md`).
+
+No registry edits are needed: chapter discovery is folder-driven through
+`active_inference.menu.runner` (shared with `scripts/run_all_figures.py`,
+the web UI, and `tests/chapters/test_smoke.py`), so a new
+`chapters/chapter_<NN>/` folder is picked up automatically as long as its
+scripts follow the `0N_*.py` / `example_*.py` / `visualize_*.py` /
+`interactive_*.py` / `animation_*.py` naming conventions.
 
 ## Running
 

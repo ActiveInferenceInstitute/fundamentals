@@ -24,7 +24,8 @@ class so chapter scripts can mix and match them.
 │ src/active_inference/extra_topics.py                         │  extras registry,
 │   topic metadata, deterministic demos, CLI runners           │  simulations, GIFs
 │ src/active_inference/demo_topics.py                          │  demo registry + CLI
-│ src/active_inference/demo_workflows.py                         │  application demo builders
+│ src/active_inference/demo_workflows.py                       │  application demo builders
+│ src/active_inference/orchestrator_workflows.py               │  shared chapter demo builders
 └──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
@@ -62,7 +63,7 @@ class so chapter scripts can mix and match them.
                        ▼
 ┌──────────────────────────────────────────────────────────────┐
 │ src/active_inference/utils/                                  │  grids, logging, paths
-│   grids.py, logging.py, io.py, export.py                     │
+│   grids.py, logging.py, io.py, export.py, notebooks.py       │  + NPZ/JSON export, notebooks
 └──────────────────────────────────────────────────────────────┘
 ```
 

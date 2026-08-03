@@ -1,8 +1,7 @@
 # Source spine and appendices
 
-The companion is grounded in the inspected source PDF:
-
-the inspected *Fundamentals of Active Inference* PDF source
+The companion is grounded in the inspected *Fundamentals of Active
+Inference* PDF source:
 
 That source has Chapters 1-14 and Appendices A-D. It has no Chapter 15. The
 ledger is represented in `active_inference.source_spine` and validated by

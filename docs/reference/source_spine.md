@@ -1,8 +1,7 @@
 # PDF source-spine contract
 
-The companion uses the inspected source PDF:
-
-the inspected *Fundamentals of Active Inference* PDF source
+The companion uses the inspected *Fundamentals of Active Inference* PDF
+source:
 
 The inspected metadata is recorded in `active_inference.source_spine`:
 

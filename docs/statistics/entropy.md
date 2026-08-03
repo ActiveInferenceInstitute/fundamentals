@@ -51,7 +51,7 @@ All live in `active_inference.core.diagnostics`.
   ``σ² < 1 / (2π e)`` has `H[p] < 0`. This is expected, not a bug.
 - The grid result depends on how dense the grid is; for tight
   distributions, widen `x_grid` rather than narrowing the grid spacing.
-- The Gaussian closed forms exit in nats; multiply by `1/log(2)` for
+- The Gaussian closed forms exist in nats; multiply by `1/log(2)` for
   bits.
 
 ## See also

@@ -27,14 +27,9 @@ An open-source Python companion to Fundamentals of Active Inference, implementin
 
 ## Source Surfaces
 
-| Surface | Role |
-|---|---|
-| `chapters/` | Source directory to inspect before turning prose into claims. |
-| `src/active_inference/` | Source directory to inspect before turning prose into claims. |
-| `scripts/` | Source directory to inspect before turning prose into claims. |
-| `tests/` | Source directory to inspect before turning prose into claims. |
-| `docs/` | Source directory to inspect before turning prose into claims. |
-| `output/` | Source directory to inspect before turning prose into claims. |
+The canonical source-surfaces table lives in
+[`S01_source_surface.md`](S01_source_surface.md); see there for the
+surfaces to inspect before turning prose into claims.
 
 ## Verification
 

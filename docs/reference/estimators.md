@@ -151,6 +151,7 @@ print(res.mu_star)   # ≈ 2.4 — the Ch.4 grid posterior mean (cross-chapter o
 |---|---|
 | `predictive_coding_inference(model, y, *, mu0=None, kappa=0.1, n_iter=500, tol=1e-9)` | Algorithm 5.2.1 — univariate perception `μ ← μ − κ(λ_x ε_x − λ_y ε_y g'(μ))`. → `PredictiveCodingResult`. Fixed-step descent is stable for `κ < 2/L`, `L = λ_x + β₁²λ_y`. |
 | `multivariate_predictive_coding(g, jacobian, y, m_x, *, precision_y, precision_x, mu0=None, kappa=0.1, n_iter=500, tol=1e-9)` | §5.3 — vector states, `μ ← μ − κ(Π_x ε_x − Jᵀ Π_y ε_y)`. → `MultivariatePCResult`. |
+| `pc_multivariate_linear_fixed_point(A, b, y, m_x, *, precision_y, precision_x)` | §5.5 — closed-form fixed point of the multivariate linear PC descent (`g(x)=Ax+b`); the oracle that `multivariate_predictive_coding` converges to (see [`notation.md`](../notation.md)). |
 | `pc_parameterized_lstsq_oracle(Theta, b, y, *, sign=None)` | §5.6 — independent recovery oracle for the rectangular, nonlinear `g(x)=Θ(x⊙x)+b`; least-squares inverts the noiseless observation to `x* = sign ⊙ √(Θ⁺(y−b))`, cross-checking `multivariate_predictive_coding`'s iterate. |
 | `hierarchical_predictive_coding(model, y, *, mu0=None, kappa=0.05, n_iter=500, tol=1e-12)` | §5.4 — `L+1` layers, `μ^{[0]}=y` clamped, simultaneous (Jacobi) updates. → `HierarchicalPCResult`. |
 | `HierarchicalPCModel(generators, variances, m_x)` | `L` generators, `L+1` variances; `m_x=0` ⇒ unconstrained top. Methods `prediction`, `errors`, `free_energy`, `layer_free_energies`. |

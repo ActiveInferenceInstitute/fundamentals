@@ -57,6 +57,7 @@ docs/
     ├── book_topic_matrix.md   ← PDF-section to extras-topic coverage matrix
     ├── source_spine.md        ← inspected PDF ledger, including no Ch.15
     ├── orchestrator_provenance.md
+    ├── demos.md
     ├── core.md
     ├── estimators.md
     ├── utils.md

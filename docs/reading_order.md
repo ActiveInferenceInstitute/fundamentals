@@ -1,6 +1,6 @@
 # Reading order
 
-These docs cover four audiences. Pick the path that matches what you're
+These docs cover six audiences. Pick the path that matches what you're
 trying to do.
 
 > Reading the book alongside others? The

@@ -16,7 +16,7 @@ D, A, B, C, and E arrays as discrete generative-model components.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/pomdp_arrays` and raw-data sidecars under `output/data/extras/pomdp_arrays`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/pomdp_arrays/` and raw-data sidecars under `output/data/extras/pomdp_arrays/`.
 
 ```bash
 uv run python extras/pomdp_arrays/visualize_pomdp_arrays.py --save

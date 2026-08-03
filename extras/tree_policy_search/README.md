@@ -6,7 +6,7 @@ Tree-based optimization and receding policy search.
 
 - Family: Part III Extensions
 - Chapters: 11
-- Sections: 11.4
+- Sections: 11.2.8, 11.4
 
 ## Scripts
 
@@ -17,7 +17,7 @@ Tree-based optimization and receding policy search.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/tree_policy_search` and raw-data sidecars under `output/data/extras/tree_policy_search`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/tree_policy_search/` and raw-data sidecars under `output/data/extras/tree_policy_search/`.
 
 ```bash
 uv run python extras/tree_policy_search/visualize_tree_policy_search.py --save

@@ -16,7 +16,7 @@ Discrete free energy for hidden-state estimation.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/discrete_vfe` and raw-data sidecars under `output/data/extras/discrete_vfe`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/discrete_vfe/` and raw-data sidecars under `output/data/extras/discrete_vfe/`.
 
 ```bash
 uv run python extras/discrete_vfe/visualize_discrete_vfe.py --save

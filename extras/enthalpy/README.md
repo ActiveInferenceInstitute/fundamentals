@@ -16,7 +16,7 @@ H = U + pV and G = H - T S as explicit analogy-layer quantities.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/enthalpy` and raw-data sidecars under `output/data/extras/enthalpy`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/enthalpy/` and raw-data sidecars under `output/data/extras/enthalpy/`.
 
 ```bash
 uv run python extras/enthalpy/visualize_enthalpy.py --save

@@ -6,7 +6,7 @@ Mean-field updates expressed as local messages.
 
 - Family: Factor Graphs And Applications
 - Chapters: 12
-- Sections: 12.4
+- Sections: 12.4, 12.4.1
 
 ## Scripts
 
@@ -16,7 +16,7 @@ Mean-field updates expressed as local messages.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/variational_message_passing` and raw-data sidecars under `output/data/extras/variational_message_passing`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/variational_message_passing/` and raw-data sidecars under `output/data/extras/variational_message_passing/`.
 
 ```bash
 uv run python extras/variational_message_passing/visualize_variational_message_passing.py --save

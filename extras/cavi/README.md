@@ -17,7 +17,7 @@ Coordinate-ascent updates as repeated local message refinement.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/cavi` and raw-data sidecars under `output/data/extras/cavi`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/cavi/` and raw-data sidecars under `output/data/extras/cavi/`.
 
 ```bash
 uv run python extras/cavi/visualize_cavi.py --save

@@ -6,7 +6,7 @@ Forney factor graphs as model diagrams for message passing.
 
 - Family: Factor Graphs And Applications
 - Chapters: 12
-- Sections: 12.1, 12.5
+- Sections: 12.1, 12.5, B.12
 
 ## Scripts
 
@@ -16,7 +16,7 @@ Forney factor graphs as model diagrams for message passing.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/factor_graphs` and raw-data sidecars under `output/data/extras/factor_graphs`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/factor_graphs/` and raw-data sidecars under `output/data/extras/factor_graphs/`.
 
 ```bash
 uv run python extras/factor_graphs/visualize_factor_graphs.py --save

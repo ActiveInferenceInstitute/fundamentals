@@ -16,7 +16,7 @@ Comparing candidate model structures through evidence-like scores.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/structure_learning` and raw-data sidecars under `output/data/extras/structure_learning`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/structure_learning/` and raw-data sidecars under `output/data/extras/structure_learning/`.
 
 ```bash
 uv run python extras/structure_learning/visualize_structure_learning.py --save

@@ -16,7 +16,7 @@ Continuous and discrete state-space components in one model.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/hybrid_generative_models` and raw-data sidecars under `output/data/extras/hybrid_generative_models`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hybrid_generative_models/` and raw-data sidecars under `output/data/extras/hybrid_generative_models/`.
 
 ```bash
 uv run python extras/hybrid_generative_models/visualize_hybrid_generative_models.py --save

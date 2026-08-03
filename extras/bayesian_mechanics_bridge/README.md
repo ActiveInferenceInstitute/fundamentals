@@ -16,7 +16,7 @@ A careful bridge between active inference, FEP, and Bayesian mechanics.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/bayesian_mechanics_bridge` and raw-data sidecars under `output/data/extras/bayesian_mechanics_bridge`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/bayesian_mechanics_bridge/` and raw-data sidecars under `output/data/extras/bayesian_mechanics_bridge/`.
 
 ```bash
 uv run python extras/bayesian_mechanics_bridge/visualize_bayesian_mechanics_bridge.py --save

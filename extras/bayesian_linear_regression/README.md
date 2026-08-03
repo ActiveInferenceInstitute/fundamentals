@@ -17,7 +17,7 @@ Posterior parameter uncertainty and predictive bands.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/bayesian_linear_regression` and raw-data sidecars under `output/data/extras/bayesian_linear_regression`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/bayesian_linear_regression/` and raw-data sidecars under `output/data/extras/bayesian_linear_regression/`.
 
 ```bash
 uv run python extras/bayesian_linear_regression/visualize_bayesian_linear_regression.py --save

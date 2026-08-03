@@ -67,7 +67,7 @@ demo builders but launch a local matplotlib window instead of writing media.
 |---|---|---|---|
 | [`active_generalized_filtering/`](active_generalized_filtering/) | `visualize_active_generalized_filtering.py`, `simulate_active_generalized_filtering.py`, `interactive_active_generalized_filtering.py`, `animation_active_generalized_filtering.py` | 7.2, 7.4, 7.5 | Action and perception as coupled free-energy descent. |
 | [`learning_attention/`](learning_attention/) | `visualize_learning_attention.py`, `simulate_learning_attention.py`, `interactive_learning_attention.py`, `animation_learning_attention.py` | 8.1 | Learning first- and second-order parameters through precision. |
-| [`hierarchical_message_passing/`](hierarchical_message_passing/) | `visualize_hierarchical_message_passing.py`, `simulate_hierarchical_message_passing.py`, `interactive_hierarchical_message_passing.py`, `animation_hierarchical_message_passing.py` | 8.5, 12.5 | Forward and backward messages across hierarchical layers. |
+| [`hierarchical_message_passing/`](hierarchical_message_passing/) | `visualize_hierarchical_message_passing.py`, `simulate_hierarchical_message_passing.py`, `interactive_hierarchical_message_passing.py`, `animation_hierarchical_message_passing.py` | 8.5, 12.5, 12.7 | Forward and backward messages across hierarchical layers. |
 
 ### Discrete POMDP Active Inference
 
@@ -108,9 +108,9 @@ demo builders but launch a local matplotlib window instead of writing media.
 
 | Topic | Scripts | Book sections | Focus |
 |---|---|---|---|
-| [`factor_graphs/`](factor_graphs/) | `visualize_factor_graphs.py`, `simulate_factor_graphs.py`, `interactive_factor_graphs.py` | 12.1, 12.5 | Forney factor graphs as model diagrams for message passing. |
+| [`factor_graphs/`](factor_graphs/) | `visualize_factor_graphs.py`, `simulate_factor_graphs.py`, `interactive_factor_graphs.py` | 12.1, 12.5, B.12 | Forney factor graphs as model diagrams for message passing. |
 | [`belief_propagation/`](belief_propagation/) | `visualize_belief_propagation.py`, `simulate_belief_propagation.py`, `interactive_belief_propagation.py`, `animation_belief_propagation.py` | 12.2, 12.3 | Sum-product messages for state-space models. |
-| [`variational_message_passing/`](variational_message_passing/) | `visualize_variational_message_passing.py`, `simulate_variational_message_passing.py`, `interactive_variational_message_passing.py` | 12.4 | Mean-field updates expressed as local messages. |
+| [`variational_message_passing/`](variational_message_passing/) | `visualize_variational_message_passing.py`, `simulate_variational_message_passing.py`, `interactive_variational_message_passing.py` | 12.4, 12.4.1 | Mean-field updates expressed as local messages. |
 | [`robotics_navigation/`](robotics_navigation/) | `visualize_robotics_navigation.py`, `simulate_robotics_navigation.py`, `interactive_robotics_navigation.py`, `animation_robotics_navigation.py` | 13.1, 13.2 | Navigation and control as preference-seeking active inference. |
 | [`social_robotics/`](social_robotics/) | `visualize_social_robotics.py`, `simulate_social_robotics.py`, `interactive_social_robotics.py` | 13.3 | Belief updates over another agent's hidden intention. |
 | [`robotics_theory/`](robotics_theory/) | `visualize_robotics_theory.py` | 13.4 | Theory-level robotics tradeoffs over controllability, epistemic value, and preference satisfaction. |
@@ -129,19 +129,19 @@ demo builders but launch a local matplotlib window instead of writing media.
 
 | Topic | Scripts | Book sections | Focus |
 |---|---|---|---|
-| [`active_inference_history/`](active_inference_history/) | `visualize_active_inference_history.py` | A.1, A.1.1-A.1.3 | Historical lineage source map. |
-| [`active_inference_future/`](active_inference_future/) | `visualize_active_inference_future.py` | A.2, A.2.1-A.2.5 | Future directions source map. |
-| [`deep_generative_models/`](deep_generative_models/) | `visualize_deep_generative_models.py` | A.1.4 | Deep generative-model context. |
-| [`cybernetics_control/`](cybernetics_control/) | `visualize_cybernetics_control.py` | A.1.5 | Cybernetics and control lineage. |
-| [`information_theory_lineage/`](information_theory_lineage/) | `visualize_information_theory_lineage.py` | A.1.6 | Information-theory lineage. |
-| [`reinforcement_learning_lineage/`](reinforcement_learning_lineage/) | `visualize_reinforcement_learning_lineage.py` | A.1.7 | Reinforcement-learning lineage. |
+| [`active_inference_history/`](active_inference_history/) | `visualize_active_inference_history.py` | A.1, A.1.1-A.1.7 | Historical lineage source map. |
+| [`active_inference_future/`](active_inference_future/) | `visualize_active_inference_future.py` | A.2, A.2.5 | Future directions source map. |
+| [`deep_generative_models/`](deep_generative_models/) | `visualize_deep_generative_models.py` | A.2.1 | Deep generative-model context. |
+| [`cybernetics_control/`](cybernetics_control/) | `visualize_cybernetics_control.py` | A.2.2 | Cybernetics and control lineage. |
+| [`information_theory_lineage/`](information_theory_lineage/) | `visualize_information_theory_lineage.py` | A.2.3 | Information-theory lineage. |
+| [`reinforcement_learning_lineage/`](reinforcement_learning_lineage/) | `visualize_reinforcement_learning_lineage.py` | A.2.4 | Reinforcement-learning lineage. |
 
 ### Appendices B-D
 
 | Topic | Scripts | Book sections | Focus |
 |---|---|---|---|
 | [`appendix_notation_model_setup/`](appendix_notation_model_setup/) | `visualize_appendix_notation_model_setup.py` | B.1-B.12 | Notation, dimensions, and model-setup conventions. |
-| [`appendix_math_fundamentals/`](appendix_math_fundamentals/) | `visualize_appendix_math_fundamentals.py` | C.1-C.13 | Probability, distributions, information, dynamics, and identities. |
+| [`appendix_math_fundamentals/`](appendix_math_fundamentals/) | `visualize_appendix_math_fundamentals.py` | C.1-C.8, C.10, C.12, C.13 | Probability, distributions, information, dynamics, and identities. |
 | [`colored_noise/`](colored_noise/) | `visualize_colored_noise.py` | C.9 | Smooth colored-noise covariance and precision. |
 | [`bayesian_model_selection/`](bayesian_model_selection/) | `visualize_bayesian_model_selection.py` | C.11.1-C.11.4 | Bayes factors, model averaging, reduction, and expansion. |
 | [`appendix_free_energy_forms/`](appendix_free_energy_forms/) | `visualize_appendix_free_energy_forms.py` | D.1-D.4 | Static, dynamic, expected, and variant free-energy forms. |

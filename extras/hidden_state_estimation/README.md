@@ -17,7 +17,7 @@ Sequential inference over latent states.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/hidden_state_estimation` and raw-data sidecars under `output/data/extras/hidden_state_estimation`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hidden_state_estimation/` and raw-data sidecars under `output/data/extras/hidden_state_estimation/`.
 
 ```bash
 uv run python extras/hidden_state_estimation/visualize_hidden_state_estimation.py --save

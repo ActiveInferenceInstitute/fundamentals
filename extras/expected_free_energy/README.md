@@ -16,7 +16,7 @@ Risk, ambiguity, and epistemic value in policy scoring.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/expected_free_energy` and raw-data sidecars under `output/data/extras/expected_free_energy`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/expected_free_energy/` and raw-data sidecars under `output/data/extras/expected_free_energy/`.
 
 ```bash
 uv run python extras/expected_free_energy/visualize_expected_free_energy.py --save

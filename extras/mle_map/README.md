@@ -16,7 +16,7 @@ Likelihood-only and prior-regularized point estimates.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/mle_map` and raw-data sidecars under `output/data/extras/mle_map`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/mle_map/` and raw-data sidecars under `output/data/extras/mle_map/`.
 
 ```bash
 uv run python extras/mle_map/visualize_mle_map.py --save

@@ -17,7 +17,7 @@ State-space prediction and filtering under linear Gaussian assumptions.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/linear_gaussian_systems` and raw-data sidecars under `output/data/extras/linear_gaussian_systems`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/linear_gaussian_systems/` and raw-data sidecars under `output/data/extras/linear_gaussian_systems/`.
 
 ```bash
 uv run python extras/linear_gaussian_systems/visualize_linear_gaussian_systems.py --save

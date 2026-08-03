@@ -14,7 +14,7 @@ How internal representations stand in for hidden causes.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/model_representation` and raw-data sidecars under `output/data/extras/model_representation`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/model_representation/` and raw-data sidecars under `output/data/extras/model_representation/`.
 
 ```bash
 uv run python extras/model_representation/visualize_model_representation.py --save

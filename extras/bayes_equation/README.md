@@ -16,7 +16,7 @@ Prior, likelihood, evidence, posterior, and normalization.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/bayes_equation` and raw-data sidecars under `output/data/extras/bayes_equation`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/bayes_equation/` and raw-data sidecars under `output/data/extras/bayes_equation/`.
 
 ```bash
 uv run python extras/bayes_equation/visualize_bayes_equation.py --save

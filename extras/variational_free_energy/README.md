@@ -17,7 +17,7 @@ Energy, entropy, KL, and surprisal decompositions of VFE.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/variational_free_energy` and raw-data sidecars under `output/data/extras/variational_free_energy`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/variational_free_energy/` and raw-data sidecars under `output/data/extras/variational_free_energy/`.
 
 ```bash
 uv run python extras/variational_free_energy/visualize_variational_free_energy.py --save

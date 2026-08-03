@@ -16,7 +16,7 @@ How repeated observations tighten posterior beliefs.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/multiple_samples` and raw-data sidecars under `output/data/extras/multiple_samples`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/multiple_samples/` and raw-data sidecars under `output/data/extras/multiple_samples/`.
 
 ```bash
 uv run python extras/multiple_samples/visualize_multiple_samples.py --save

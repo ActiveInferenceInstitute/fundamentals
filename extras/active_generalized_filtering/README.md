@@ -17,7 +17,7 @@ Action and perception as coupled free-energy descent.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/active_generalized_filtering` and raw-data sidecars under `output/data/extras/active_generalized_filtering`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/active_generalized_filtering/` and raw-data sidecars under `output/data/extras/active_generalized_filtering/`.
 
 ```bash
 uv run python extras/active_generalized_filtering/visualize_active_generalized_filtering.py --save

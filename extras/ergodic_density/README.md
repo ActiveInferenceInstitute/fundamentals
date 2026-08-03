@@ -17,7 +17,7 @@ Long-run occupancy as a density over viable states.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/ergodic_density` and raw-data sidecars under `output/data/extras/ergodic_density`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/ergodic_density/` and raw-data sidecars under `output/data/extras/ergodic_density/`.
 
 ```bash
 uv run python extras/ergodic_density/visualize_ergodic_density.py --save

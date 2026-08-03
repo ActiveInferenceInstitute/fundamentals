@@ -17,7 +17,7 @@ Learning first- and second-order parameters through precision.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/learning_attention` and raw-data sidecars under `output/data/extras/learning_attention`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/learning_attention/` and raw-data sidecars under `output/data/extras/learning_attention/`.
 
 ```bash
 uv run python extras/learning_attention/visualize_learning_attention.py --save

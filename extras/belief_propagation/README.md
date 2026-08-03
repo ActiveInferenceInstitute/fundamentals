@@ -17,7 +17,7 @@ Sum-product messages for state-space models.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/belief_propagation` and raw-data sidecars under `output/data/extras/belief_propagation`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/belief_propagation/` and raw-data sidecars under `output/data/extras/belief_propagation/`.
 
 ```bash
 uv run python extras/belief_propagation/visualize_belief_propagation.py --save

@@ -6,7 +6,7 @@ Forward and backward messages across hierarchical layers.
 
 - Family: Active Inference Core
 - Chapters: 8, 12
-- Sections: 8.5, 12.5
+- Sections: 8.5, 12.5, 12.7
 
 ## Scripts
 
@@ -17,7 +17,7 @@ Forward and backward messages across hierarchical layers.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/hierarchical_message_passing` and raw-data sidecars under `output/data/extras/hierarchical_message_passing`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hierarchical_message_passing/` and raw-data sidecars under `output/data/extras/hierarchical_message_passing/`.
 
 ```bash
 uv run python extras/hierarchical_message_passing/visualize_hierarchical_message_passing.py --save

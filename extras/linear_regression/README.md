@@ -16,7 +16,7 @@ Deterministic parameter estimation and residual geometry.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/linear_regression` and raw-data sidecars under `output/data/extras/linear_regression`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/linear_regression/` and raw-data sidecars under `output/data/extras/linear_regression/`.
 
 ```bash
 uv run python extras/linear_regression/visualize_linear_regression.py --save

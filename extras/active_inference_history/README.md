@@ -8,5 +8,5 @@ Run:
 uv run python extras/active_inference_history/visualize_active_inference_history.py --save
 ```
 
-Saved artifacts are written to `output/figures/extras/active_inference_history`
-and `output/data/extras/active_inference_history`.
+Saved artifacts are written to `output/figures/extras/active_inference_history/`
+and `output/data/extras/active_inference_history/`.

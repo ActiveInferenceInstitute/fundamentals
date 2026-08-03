@@ -16,7 +16,7 @@ Recovering hidden states from observations under a generative model.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/inverse_problem` and raw-data sidecars under `output/data/extras/inverse_problem`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/inverse_problem/` and raw-data sidecars under `output/data/extras/inverse_problem/`.
 
 ```bash
 uv run python extras/inverse_problem/visualize_inverse_problem.py --save

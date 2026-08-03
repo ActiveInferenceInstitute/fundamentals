@@ -16,7 +16,7 @@ Asymmetric divergence and posterior approximation loss.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/kl_divergence` and raw-data sidecars under `output/data/extras/kl_divergence`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/kl_divergence/` and raw-data sidecars under `output/data/extras/kl_divergence/`.
 
 ```bash
 uv run python extras/kl_divergence/visualize_kl_divergence.py --save

@@ -17,7 +17,7 @@ Pseudocount accumulation for POMDP parameter learning.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/dirichlet_learning` and raw-data sidecars under `output/data/extras/dirichlet_learning`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/dirichlet_learning/` and raw-data sidecars under `output/data/extras/dirichlet_learning/`.
 
 ```bash
 uv run python extras/dirichlet_learning/visualize_dirichlet_learning.py --save

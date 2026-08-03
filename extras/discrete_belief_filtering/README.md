@@ -17,7 +17,7 @@ Dynamic categorical belief updates over time.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/discrete_belief_filtering` and raw-data sidecars under `output/data/extras/discrete_belief_filtering`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/discrete_belief_filtering/` and raw-data sidecars under `output/data/extras/discrete_belief_filtering/`.
 
 ```bash
 uv run python extras/discrete_belief_filtering/visualize_discrete_belief_filtering.py --save

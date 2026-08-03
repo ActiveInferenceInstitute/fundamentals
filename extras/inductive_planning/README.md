@@ -16,7 +16,7 @@ Policy search that reuses substructure across paths.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/inductive_planning` and raw-data sidecars under `output/data/extras/inductive_planning`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/inductive_planning/` and raw-data sidecars under `output/data/extras/inductive_planning/`.
 
 ```bash
 uv run python extras/inductive_planning/visualize_inductive_planning.py --save

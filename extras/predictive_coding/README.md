@@ -17,7 +17,7 @@ Prediction errors and recognition dynamics.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/predictive_coding` and raw-data sidecars under `output/data/extras/predictive_coding`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/predictive_coding/` and raw-data sidecars under `output/data/extras/predictive_coding/`.
 
 ```bash
 uv run python extras/predictive_coding/visualize_predictive_coding.py --save

@@ -16,7 +16,7 @@ Belief updates over another agent's hidden intention.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/social_robotics` and raw-data sidecars under `output/data/extras/social_robotics`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/social_robotics/` and raw-data sidecars under `output/data/extras/social_robotics/`.
 
 ```bash
 uv run python extras/social_robotics/visualize_social_robotics.py --save

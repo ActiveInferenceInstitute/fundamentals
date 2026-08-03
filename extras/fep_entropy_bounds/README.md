@@ -16,7 +16,7 @@ Entropy and VFE bounds for self-organizing systems.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/fep_entropy_bounds` and raw-data sidecars under `output/data/extras/fep_entropy_bounds`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/fep_entropy_bounds/` and raw-data sidecars under `output/data/extras/fep_entropy_bounds/`.
 
 ```bash
 uv run python extras/fep_entropy_bounds/visualize_fep_entropy_bounds.py --save

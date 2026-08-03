@@ -16,7 +16,7 @@ Factorized approximations and coordinate updates.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/mean_field_variational_inference` and raw-data sidecars under `output/data/extras/mean_field_variational_inference`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/mean_field_variational_inference/` and raw-data sidecars under `output/data/extras/mean_field_variational_inference/`.
 
 ```bash
 uv run python extras/mean_field_variational_inference/visualize_mean_field_variational_inference.py --save

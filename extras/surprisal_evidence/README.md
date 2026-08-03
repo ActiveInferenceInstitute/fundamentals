@@ -16,7 +16,7 @@ Evidence, negative log evidence, and bound gaps.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/surprisal_evidence` and raw-data sidecars under `output/data/extras/surprisal_evidence`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/surprisal_evidence/` and raw-data sidecars under `output/data/extras/surprisal_evidence/`.
 
 ```bash
 uv run python extras/surprisal_evidence/visualize_surprisal_evidence.py --save

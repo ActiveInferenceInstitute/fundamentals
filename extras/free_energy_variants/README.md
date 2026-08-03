@@ -16,7 +16,7 @@ FEF, OFE, PFE, FEEF, generalized, Bethe, and Renyi forms.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/free_energy_variants` and raw-data sidecars under `output/data/extras/free_energy_variants`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/free_energy_variants/` and raw-data sidecars under `output/data/extras/free_energy_variants/`.
 
 ```bash
 uv run python extras/free_energy_variants/visualize_free_energy_variants.py --save

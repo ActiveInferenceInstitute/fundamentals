@@ -16,7 +16,7 @@ Order as low-surprisal occupancy over viable states.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/order_and_surprisal` and raw-data sidecars under `output/data/extras/order_and_surprisal`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/order_and_surprisal/` and raw-data sidecars under `output/data/extras/order_and_surprisal/`.
 
 ```bash
 uv run python extras/order_and_surprisal/visualize_order_and_surprisal.py --save

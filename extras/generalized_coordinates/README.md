@@ -16,7 +16,7 @@ State, velocity, and higher-order embedding orders.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/generalized_coordinates` and raw-data sidecars under `output/data/extras/generalized_coordinates`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/generalized_coordinates/` and raw-data sidecars under `output/data/extras/generalized_coordinates/`.
 
 ```bash
 uv run python extras/generalized_coordinates/visualize_generalized_coordinates.py --save

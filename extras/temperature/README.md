@@ -16,7 +16,7 @@ Temperature-scaled canonical probabilities and U - T S.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/temperature` and raw-data sidecars under `output/data/extras/temperature`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/temperature/` and raw-data sidecars under `output/data/extras/temperature/`.
 
 ```bash
 uv run python extras/temperature/visualize_temperature.py --save

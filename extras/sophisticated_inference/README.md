@@ -16,7 +16,7 @@ Planning with beliefs over future belief updates.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/sophisticated_inference` and raw-data sidecars under `output/data/extras/sophisticated_inference`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/sophisticated_inference/` and raw-data sidecars under `output/data/extras/sophisticated_inference/`.
 
 ```bash
 uv run python extras/sophisticated_inference/visualize_sophisticated_inference.py --save

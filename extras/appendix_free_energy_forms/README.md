@@ -8,5 +8,5 @@ Run:
 uv run python extras/appendix_free_energy_forms/visualize_appendix_free_energy_forms.py --save
 ```
 
-Saved artifacts are written to `output/figures/extras/appendix_free_energy_forms`
-and `output/data/extras/appendix_free_energy_forms`.
+Saved artifacts are written to `output/figures/extras/appendix_free_energy_forms/`
+and `output/data/extras/appendix_free_energy_forms/`.

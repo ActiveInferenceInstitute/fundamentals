@@ -17,7 +17,7 @@ Backward messages that refine earlier state beliefs.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/backward_smoothing` and raw-data sidecars under `output/data/extras/backward_smoothing`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/backward_smoothing/` and raw-data sidecars under `output/data/extras/backward_smoothing/`.
 
 ```bash
 uv run python extras/backward_smoothing/visualize_backward_smoothing.py --save

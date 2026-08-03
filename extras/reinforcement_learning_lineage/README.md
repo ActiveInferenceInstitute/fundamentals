@@ -9,5 +9,5 @@ uv run python extras/reinforcement_learning_lineage/visualize_reinforcement_lear
 ```
 
 Saved artifacts are written to
-`output/figures/extras/reinforcement_learning_lineage` and
-`output/data/extras/reinforcement_learning_lineage`.
+`output/figures/extras/reinforcement_learning_lineage/` and
+`output/data/extras/reinforcement_learning_lineage/`.

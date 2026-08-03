@@ -16,7 +16,7 @@ Nested policies and slower contextual layers.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/hierarchical_depth` and raw-data sidecars under `output/data/extras/hierarchical_depth`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hierarchical_depth/` and raw-data sidecars under `output/data/extras/hierarchical_depth/`.
 
 ```bash
 uv run python extras/hierarchical_depth/visualize_hierarchical_depth.py --save

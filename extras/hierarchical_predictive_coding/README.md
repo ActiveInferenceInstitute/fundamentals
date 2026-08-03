@@ -17,7 +17,7 @@ Layered prediction-error propagation.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/hierarchical_predictive_coding` and raw-data sidecars under `output/data/extras/hierarchical_predictive_coding`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hierarchical_predictive_coding/` and raw-data sidecars under `output/data/extras/hierarchical_predictive_coding/`.
 
 ```bash
 uv run python extras/hierarchical_predictive_coding/visualize_hierarchical_predictive_coding.py --save

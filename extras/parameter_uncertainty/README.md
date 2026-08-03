@@ -16,7 +16,7 @@ Forgetting rates and uncertainty on learned parameters.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/parameter_uncertainty` and raw-data sidecars under `output/data/extras/parameter_uncertainty`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/parameter_uncertainty/` and raw-data sidecars under `output/data/extras/parameter_uncertainty/`.
 
 ```bash
 uv run python extras/parameter_uncertainty/visualize_parameter_uncertainty.py --save

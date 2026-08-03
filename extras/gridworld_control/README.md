@@ -17,7 +17,7 @@ Planning as inference in controllable grid-world transitions.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/gridworld_control` and raw-data sidecars under `output/data/extras/gridworld_control`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/gridworld_control/` and raw-data sidecars under `output/data/extras/gridworld_control/`.
 
 ```bash
 uv run python extras/gridworld_control/visualize_gridworld_control.py --save

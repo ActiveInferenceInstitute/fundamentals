@@ -16,7 +16,7 @@ Variance, precision, and their control over belief updates.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/precision_weighting` and raw-data sidecars under `output/data/extras/precision_weighting`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/precision_weighting/` and raw-data sidecars under `output/data/extras/precision_weighting/`.
 
 ```bash
 uv run python extras/precision_weighting/visualize_precision_weighting.py --save

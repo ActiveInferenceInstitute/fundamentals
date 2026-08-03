@@ -17,7 +17,7 @@ Iterative descent on a differentiable loss surface.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/gradient_descent` and raw-data sidecars under `output/data/extras/gradient_descent`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/gradient_descent/` and raw-data sidecars under `output/data/extras/gradient_descent/`.
 
 ```bash
 uv run python extras/gradient_descent/visualize_gradient_descent.py --save

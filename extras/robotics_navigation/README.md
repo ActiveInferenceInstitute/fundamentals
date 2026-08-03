@@ -17,7 +17,7 @@ Navigation and control as preference-seeking active inference.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/robotics_navigation` and raw-data sidecars under `output/data/extras/robotics_navigation`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/robotics_navigation/` and raw-data sidecars under `output/data/extras/robotics_navigation/`.
 
 ```bash
 uv run python extras/robotics_navigation/visualize_robotics_navigation.py --save

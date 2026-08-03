@@ -17,7 +17,7 @@ Alternating latent expectation and parameter maximization.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/expectation_maximization` and raw-data sidecars under `output/data/extras/expectation_maximization`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/expectation_maximization/` and raw-data sidecars under `output/data/extras/expectation_maximization/`.
 
 ```bash
 uv run python extras/expectation_maximization/visualize_expectation_maximization.py --save

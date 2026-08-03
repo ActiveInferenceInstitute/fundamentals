@@ -17,7 +17,7 @@ Policy precision and baseline habits in action selection.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/policy_precision_habits` and raw-data sidecars under `output/data/extras/policy_precision_habits`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/policy_precision_habits/` and raw-data sidecars under `output/data/extras/policy_precision_habits/`.
 
 ```bash
 uv run python extras/policy_precision_habits/visualize_policy_precision_habits.py --save

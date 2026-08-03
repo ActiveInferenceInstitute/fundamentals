@@ -16,7 +16,7 @@ Preferences over states and time-dependent preference schedules.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/state_preferences` and raw-data sidecars under `output/data/extras/state_preferences`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/state_preferences/` and raw-data sidecars under `output/data/extras/state_preferences/`.
 
 ```bash
 uv run python extras/state_preferences/visualize_state_preferences.py --save

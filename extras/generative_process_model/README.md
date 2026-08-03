@@ -16,7 +16,7 @@ Contrasting the data-generating process with the agent's model.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/generative_process_model` and raw-data sidecars under `output/data/extras/generative_process_model`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/generative_process_model/` and raw-data sidecars under `output/data/extras/generative_process_model/`.
 
 ```bash
 uv run python extras/generative_process_model/visualize_generative_process_model.py --save

@@ -16,7 +16,7 @@ Evidence and Bayes-factor style comparison across models.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/model_comparison` and raw-data sidecars under `output/data/extras/model_comparison`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/model_comparison/` and raw-data sidecars under `output/data/extras/model_comparison/`.
 
 ```bash
 uv run python extras/model_comparison/visualize_model_comparison.py --save

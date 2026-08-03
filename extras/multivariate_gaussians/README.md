@@ -16,7 +16,7 @@ Covariance geometry, entropy, and KL in multiple dimensions.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/multivariate_gaussians` and raw-data sidecars under `output/data/extras/multivariate_gaussians`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/multivariate_gaussians/` and raw-data sidecars under `output/data/extras/multivariate_gaussians/`.
 
 ```bash
 uv run python extras/multivariate_gaussians/visualize_multivariate_gaussians.py --save

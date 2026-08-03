@@ -17,7 +17,7 @@ Dynamic state inference with generalized filtering.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/generalized_filtering` and raw-data sidecars under `output/data/extras/generalized_filtering`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/generalized_filtering/` and raw-data sidecars under `output/data/extras/generalized_filtering/`.
 
 ```bash
 uv run python extras/generalized_filtering/visualize_generalized_filtering.py --save

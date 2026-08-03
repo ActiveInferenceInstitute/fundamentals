@@ -16,7 +16,7 @@ Discrete and differential entropy, including negative differential cases.
 
 ## Outputs
 
-Run any script with `--save` to render artifacts under `output/figures/extras/entropy` and raw-data sidecars under `output/data/extras/entropy`.
+Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/entropy/` and raw-data sidecars under `output/data/extras/entropy/`.
 
 ```bash
 uv run python extras/entropy/visualize_entropy.py --save

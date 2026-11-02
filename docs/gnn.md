@@ -91,7 +91,13 @@ what a consumer executes.
 The patterns and pin discipline this adoption follows are documented upstream in
 the [GNN downstream adoption guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md)
 (main branch; the guide postdates the pinned `v5.0.3` revision, so it is not part
-of the pin). Two sibling repositories apply the same pattern:
+of the pin). This repository uses **pattern D, structure-only declaration**, with
+the book's authored `A` and `D` declared alongside the structure: the document
+declares the model, no runtime code reads it, the chapter orchestrator owns the
+behavior, and a conformance test binds the two sides so editing either alone
+fails the suite. What that proves: the declared model is reviewable in one place
+and cannot drift from the implementation. Two sibling repositories show the other
+directions:
 
 - [ActInf_RxInfer](https://github.com/ActiveInferenceInstitute/ActInf_RxInfer) —
   a conjugate Beta-Bernoulli model read by a dependency-free Julia reader;

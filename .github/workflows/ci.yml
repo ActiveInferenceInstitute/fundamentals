@@ -17,7 +17,15 @@ concurrency:
 
 jobs:
   # Ruff plus the unit, contract, and documentation suites on the interpreter
-  # floor declared in pyproject.toml and on the current stable interpreter.
+  # floor declared in pyproject.toml (3.11) and on the newest interpreter the
+  # committed lock installs on (3.14).
+  #
+  # Python 3.15 is deliberately not a leg: the locked dependency set publishes no
+  # cp315 wheels yet — PyYAML 6.0.3 (a runtime dependency) stops at cp314, and
+  # rpds-py 0.30.0 (through nbformat -> jsonschema) would need a Rust build — so
+  # `uv sync --locked` cannot install here. The leg returns when the wheels exist;
+  # pyproject.toml still declares support for 3.11 and newer.
+  #
   # `tests/test_gnn_spec.py` runs the drift guard, the posterior oracle, and the
   # reader's rejection cases here; its pinned-parser case needs a runtime and is
   # covered by the `gnn conformance` job below.
@@ -27,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.15"]
+        python-version: ["3.11", "3.14"]
 
     env:
       MPLBACKEND: Agg
@@ -80,11 +88,11 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Set up Python 3.15
-        run: uv python install 3.15
+      - name: Set up Python 3.14
+        run: uv python install 3.14
 
       - name: Install the locked environment
-        run: uv sync --locked --python 3.15
+        run: uv sync --locked --python 3.14
 
       - name: Orchestrator contracts and provenance
         run: |
@@ -121,12 +129,12 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Set up Python 3.15 and the pinned-runtime interpreter
+      - name: Set up Python 3.14 and the pinned-runtime interpreter
         run: |
-          uv python install 3.15 3.12
+          uv python install 3.14 3.12
 
       - name: Install the locked environment
-        run: uv sync --locked --python 3.15
+        run: uv sync --locked --python 3.14
 
       - name: Provision the pinned GNN parser runtime
         run: |

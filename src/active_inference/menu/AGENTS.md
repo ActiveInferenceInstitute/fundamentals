@@ -3,7 +3,7 @@
 User-facing text menu for `run.sh`. Three rules:
 
 1. **Stdlib only.** No third-party imports inside this subpackage. The
-   menu must run wherever Python 3.9+ runs.
+   menu must run wherever Python 3.11+ runs.
 2. **No domain logic.** This is presentation + subprocess plumbing. If a
    change pulls in `numpy`/`matplotlib`/`active_inference.core` symbols
    it belongs in `core/`, `estimators/`, or `visualizations/`, not here.

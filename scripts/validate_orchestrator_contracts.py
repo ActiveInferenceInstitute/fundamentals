@@ -26,22 +26,7 @@ EXTRAS_NAME_RE = re.compile(r"^(?:visualize|simulate|animation|interactive)_[A-Z
 DEMO_NAME_RE = EXTRAS_NAME_RE
 SOFT_LINE_LIMIT = 120
 
-try:
-    STDLIB_MODULES = set(sys.stdlib_module_names)
-except AttributeError:  # pragma: no cover - Python < 3.10 fallback
-    STDLIB_MODULES = {
-        "argparse",
-        "collections",
-        "dataclasses",
-        "functools",
-        "itertools",
-        "math",
-        "os",
-        "pathlib",
-        "re",
-        "sys",
-        "typing",
-    }
+STDLIB_MODULES = set(sys.stdlib_module_names)
 
 
 @dataclass(frozen=True)

@@ -51,6 +51,25 @@ python -m active_inference.menu --extras
 python scripts/run_all_figures.py --no-chapters --extras
 ```
 
+## Recorded manifest
+
+The counts in the table above describe **one default render** of each chapter.
+They are checked against the chapter's own `README.md` — the recorded manifest —
+and never against the files on disk:
+
+- Each `chapter_NN/README.md` lists its default artifacts under
+  `## Expected files` and, where a flag changes the output filename, the
+  alternative under `## Flag variants`.
+- `tests/test_documentation_contracts.py` requires the two documents to agree
+  on the default counts, and requires any media that *is* present to be
+  recorded in one of those two sections.
+
+A partial, interrupted, or flag-variant render is therefore a supported state
+and never a documentation failure: `output/figures/` is regenerable and most
+checkouts hold little or none of it. `python
+scripts/validate_rendered_figures.py --root output/figures` checks whatever is
+present for corrupt, blank, or undersized output.
+
 ## Conventions
 
 - Filenames mirror the orchestrator that produced them.

@@ -76,5 +76,5 @@ if command -v python >/dev/null 2>&1; then
 fi
 
 echo "run.sh: no python interpreter found on PATH (and \`uv\` is also unavailable)." >&2
-echo "Install Python 3.9+ or uv (https://docs.astral.sh/uv/) and re-run." >&2
+echo "Install Python 3.11+ or uv (https://docs.astral.sh/uv/) and re-run." >&2
 exit 127

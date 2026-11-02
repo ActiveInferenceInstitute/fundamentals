@@ -79,5 +79,5 @@ truth, however, is `pyproject.toml`.
 - *`uv.lock` shows up dirty in `git status` after `uv sync`:* you
   probably edited `pyproject.toml` without running `uv lock`. Commit the
   regenerated lock alongside the `pyproject.toml` change.
-- *`run.sh` complains about no Python:* install Python 3.9+ or `uv`. The
+- *`run.sh` complains about no Python:* install Python 3.11+ or `uv`. The
   script intentionally avoids guessing other interpreters.

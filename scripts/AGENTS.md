@@ -17,6 +17,8 @@ in `chapters/` and validation utilities for chapter/extras artifacts.
 | `validate_rendered_figures.py` | Validate generated PNG/GIF artifacts for corruption, blank output, tiny dimensions, and trivial GIFs. |
 | `validate_raw_data_exports.py` | Validate generated NPZ+JSON raw-data sidecars for missing partners, invalid arrays, manifest drift, and required extras topics. |
 | `validate_source_spine.py` | Validate the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
+| `gnn_parser_probe.py` | Parse the committed GNN document with the installed upstream `gnn` package and emit JSON; the subprocess half of `validate_gnn_spec.py`. |
+| `validate_gnn_spec.py` | Validate `specs/weather_pomdp.gnn.md` with the parser revision pinned in `specs/gnn-pin.json` and require the pinned parser to agree with `active_inference.gnn_spec`. Needs a pinned runtime (`--gnn-runtime`/`GNN_RUNTIME_PYTHON`) or checkout (`--gnn-root`/`GNN_ROOT`); exits 2 when neither is available. |
 | `run_all_chapter_01.sh` | Bash wrapper invoking `run_all_figures.py --chapters 1`. |
 | `run_all_chapter_02.sh` | Same for Chapter 2. |
 | `run_all_chapter_03.sh` | Same for Chapter 3. |

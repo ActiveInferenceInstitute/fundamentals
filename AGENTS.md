@@ -75,7 +75,8 @@ domain logic.
 | `demo/` | application demos (eye saccades, bicycle, drone flight) from `active_inference.demo_topics` + `demo_workflows` |
 | `tests/` | pytest unit tests + chapter/extras smoke tests + provenance validators |
 | `docs/` | Architecture, notation, chapter concept maps, topic walkthroughs, uv workflow, coverage/provenance references |
-| `scripts/` | Batch figure renderer (`run_all_figures.py`), source-spine/raw-data/rendered/provenance validators, and per-chapter shell wrappers |
+| `scripts/` | Batch figure renderer (`run_all_figures.py`), source-spine/raw-data/rendered/provenance validators, the GNN conformance validator, and per-chapter shell wrappers |
+| `specs/` | GNN declaration of the Chapter 9 weather model (`weather_pomdp.gnn.md`) and the pinned upstream parser revision with its parser-file digests (`gnn-pin.json`) |
 | `output/figures/` | Generated PNGs/GIFs (gitignored, regenerated via scripts) |
 | `output/data/` | Generated raw-data NPZ arrays plus JSON metadata/manifests for every saved non-interactive chapter or extras artifact |
 | `output/notebooks/` | Generated Jupyter notebooks per chapter, extras topic, and demo (gitignored, regenerated via `scripts/export_notebooks.py`) |
@@ -101,6 +102,30 @@ domain logic.
   declares topic modes and source API references; `docs/reference/book_topic_matrix.md`
   and `docs/reference/orchestrator_provenance.md` document the coverage and
   source-method contracts.
+
+## Generative-model specification (GNN)
+
+The Chapter 9 §9.1 weather model is declared in
+[`specs/weather_pomdp.gnn.md`](specs/weather_pomdp.gnn.md) using Generalized
+Notation Notation, with the upstream parser revision pinned in
+[`specs/gnn-pin.json`](specs/gnn-pin.json) (GNN v5.0.3,
+commit `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`).
+
+- `tests/test_gnn_spec.py` binds the declaration to the implementation: the
+  declared `A`/`D` must equal the module-level literals in
+  `chapters/chapter_09/example_9_1_state_inference.py`, and `infer_states` must
+  reproduce the book's Eq. 15 posterior.
+- `scripts/validate_gnn_spec.py` parses the document with the pinned parser
+  (installed parser files digest-verified against the pin before parsing) and
+  requires the pinned parser to agree with `active_inference.gnn_spec`. It exits
+  `2` when no pinned runtime is available: that is a reported *not run*, never a
+  pass. CI's `gnn conformance` job provisions the runtime, so the check is
+  required there.
+- Change the model in the declaration and the chapter literals together; never
+  leave one describing a model the other does not implement.
+
+See [`docs/gnn.md`](docs/gnn.md) for the commands and for what each check does
+and does not prove.
 
 ## Conventions
 
@@ -172,6 +197,8 @@ uv run python scripts/validate_orchestrator_contracts.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
+uv run pytest tests/test_gnn_spec.py
+uv run python scripts/validate_gnn_spec.py --gnn-runtime <pinned-venv>/bin/python
 
 # Export and validate Jupyter notebooks
 uv run python scripts/export_notebooks.py

@@ -17,6 +17,7 @@ tests/
 ├── test_orchestrator_provenance.py
 ├── test_orchestrator_workflows.py
 ├── test_source_spine.py
+├── test_gnn_spec.py
 ├── test_book_topic_coverage.py
 ├── test_raw_data_exports.py
 ├── test_render_validator.py
@@ -63,6 +64,7 @@ pytest --cov=active_inference --cov-report=term-missing
 | `extras/` | `extras/<topic>/` | `test_smoke.py` | Every extras topic script runs to exit 0 with `--save` and writes fresh raw-data sidecars. |
 | `demo/` | `demo/<slug>/` | `test_demo_smoke.py` | Every application demo script runs to exit 0 with `--save` and writes fresh raw-data sidecars. |
 | `test_orchestrator_provenance.py` | `chapters/`, `extras/`, `scripts/` | root test | The non-mutating provenance validator rejects sibling-wrapper imports and enforces the `active_inference` source-method boundary. |
+| `test_gnn_spec.py` | `specs/`, `scripts/` | root test | The GNN declaration of the Chapter 9 weather model equals the chapter's `A`/`D` literals and reproduces the book's Eq. 15 posterior; the pinned-parser case runs the validator with a pinned runtime, and skips with an explicit message when none is available. |
 
 ## Design Decisions
 

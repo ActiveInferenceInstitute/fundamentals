@@ -182,34 +182,76 @@ def test_extras_docs_mention_every_live_script_and_artifact_path() -> None:
         assert "output/data/extras/<topic>" in output_overview
 
 
-def test_output_figures_overview_counts_match_rendered_artifacts_when_present() -> None:
+def _figure_manifest(chapter: int) -> tuple[str, str]:
+    """Return the (Expected files, Flag variants) sections for one chapter.
+
+    These README sections are the recorded manifest of a chapter render. The
+    contract test compares documents to each other, never to whichever
+    artifacts happen to be on disk, because `output/figures/` is gitignored
+    and regenerable and a checkout may hold a partial or absent render.
+    """
+
+    readme = REPO_ROOT / "output" / "figures" / f"chapter_{chapter:02d}" / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    sections: dict[str, str] = {}
+    for heading in ("Expected files", "Flag variants"):
+        body = text.partition(f"## {heading}\n")[2].partition("\n## ")[0]
+        sections[heading] = body
+    assert sections["Expected files"].strip(), (
+        f"{readme.relative_to(REPO_ROOT)} has no Expected files section"
+    )
+    return sections["Expected files"], sections["Flag variants"]
+
+
+def _recorded_media(body: str) -> list[str]:
+    return re.findall(r"`([^`]+\.(?:png|gif))`", body)
+
+
+def test_output_figures_overview_counts_match_the_recorded_manifest() -> None:
     text = (REPO_ROOT / "output" / "figures" / "README.md").read_text(encoding="utf-8")
-    saw_rendered_artifact = False
 
     for chapter in _chapter_numbers():
         suffix = f"{chapter:02d}"
-        media_dir = REPO_ROOT / "output" / "figures" / f"chapter_{suffix}"
-        png_count = len(list(media_dir.glob("*.png")))
-        gif_count = len(list(media_dir.glob("*.gif")))
-        if png_count + gif_count == 0:
-            continue
+        expected, _ = _figure_manifest(chapter)
+        recorded = _recorded_media(expected)
+        png_count = sum(name.endswith(".png") for name in recorded)
+        gif_count = sum(name.endswith(".gif") for name in recorded)
 
-        saw_rendered_artifact = True
         line = next(
             line for line in text.splitlines() if f"[`chapter_{suffix}/`]" in line
         )
         documented_png = re.search(r"(\d+)\s+PNGs?", line)
         documented_gif = re.search(r"(\d+)\s+GIFs?", line)
-        if documented_png:
-            assert int(documented_png.group(1)) == png_count
-        else:
-            assert png_count == 0
-        if documented_gif:
-            assert int(documented_gif.group(1)) == gif_count
-        else:
-            assert gif_count == 0
+        assert (int(documented_png.group(1)) if documented_png else 0) == png_count, line
+        assert (int(documented_gif.group(1)) if documented_gif else 0) == gif_count, line
 
-    assert saw_rendered_artifact
+
+def test_rendered_chapter_media_is_recorded_in_the_manifest() -> None:
+    """Rendered media must be recorded; nothing is required to be present.
+
+    A checkout can hold no media at all, the tracked sample for Chapters 1-3,
+    or one freshly rendered chapter. Any artifact that is present has to be
+    listed in that chapter's README, either in the Expected files table (the
+    default render) or among the Flag variants.
+    """
+
+    for chapter in _chapter_numbers():
+        suffix = f"{chapter:02d}"
+        expected, variants = _figure_manifest(chapter)
+        allowed = set(_recorded_media(expected))
+        allowed.update(name for name in _recorded_media(variants) if "<" not in name)
+
+        media_dir = REPO_ROOT / "output" / "figures" / f"chapter_{suffix}"
+        present = sorted(
+            path.name
+            for pattern in ("*.png", "*.gif")
+            for path in media_dir.glob(pattern)
+        )
+        unrecorded = [name for name in present if name not in allowed]
+        assert not unrecorded, (
+            f"output/figures/chapter_{suffix}/ holds media missing from its README: "
+            + ", ".join(unrecorded)
+        )
 
 
 def test_chapter_smoke_tests_cover_every_noninteractive_chapter_script() -> None:

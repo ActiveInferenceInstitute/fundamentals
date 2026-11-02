@@ -117,7 +117,9 @@ uv run active-inference-web         # ditto, for the browser UI
 See [`docs/web.md`](docs/web.md) for the full HTTP surface and design
 notes.
 
-The older batch pipeline still works and is exercised by CI:
+The batch pipeline is documented for local use; CI runs lint plus the unit and
+contract suites and the static validators below (see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
 
 ```bash
 # render every figure from all discovered chapters
@@ -136,6 +138,11 @@ uv run python scripts/validate_book_topic_coverage.py
 uv run python scripts/validate_book_topic_coverage.py --require-rendered
 uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
+
+# validate the committed GNN declaration against the upstream parser pinned in
+# specs/gnn-pin.json (exits 2, "not run", when no pinned runtime is available);
+# docs/gnn.md documents the GNN_ROOT / GNN_RUNTIME_PYTHON forms
+uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --json
 
 # export Jupyter notebooks (chapters + extras + demos)
 uv sync --extra notebooks
@@ -231,6 +238,7 @@ boundary with `scripts/validate_orchestrator_provenance.py`.
 | `utils.io` | `default_figure_dir`, `default_data_dir`, `ensure_dir` |
 | `utils.export` | `save_chapter_data`, `save_extra_data`, `extract_figure_data`, `extract_animation_data`, `data_paths_for_figure`, `data_paths_for_extra_figure`; the NPZ+JSON raw-data contract used by `--save` |
 | `extra_topics` | `EXTRA_TOPICS`, `extra_topic_spec`, `extra_topics_by_family`, `build_topic_demo`, `main_visualize`, `main_simulate`, `main_animation`, and `main_interactive` — registry-driven extras curriculum runners |
+| `gnn_spec` | `GNN_SPEC_PATH`, `GNN_PIN_PATH`, `parse_sections`, `parse_variables`, `parse_parameterization`, `declared_arrays`, `load_pin`, `spec_summary` — reader for the committed GNN declaration of the Chapter 9 weather model; internal (not in `__all__`), used by the conformance test and validator |
 | `visualizations.plotting` | `plot_prior_likelihood_posterior`, `plot_generating_function`, `plot_likelihood_ridge`, `plot_joint_heatmap`, `plot_gradient_descent`, `plot_precision_comparison`, `plot_2d_gaussian`, `confidence_ellipse`, `save_or_show` |
 | `visualizations.interactive` | `interactive_inference`, `interactive_precision`, `interactive_topic_demo` — matplotlib slider widgets, no `ipywidgets` dependency |
 | `visualizations.variational` | `vfe_surface`, `plot_vfe_contour`, `plot_density_evolution`, `plot_vfe_decomposition`, `plot_surprisal_relationship` — Chapter 4 figures |
@@ -415,6 +423,19 @@ Chapters 1-14 and Appendices A-D, and no Chapter 15.
 | `animation_precision.py` | §10.2 | Animated policy-precision sweep (Fig 10.2.2) |
 | `animation_bandit.py` | §10.3 | Animated two-armed bandit (context belief + policy posterior over time) |
 
+### `specs/` — generative-model declaration
+
+| File | Contents |
+|---|---|
+| [`weather_pomdp.gnn.md`](specs/weather_pomdp.gnn.md) | The Chapter 9 §9.1 weather model declared in Generalized Notation Notation: variables, connections, `A`/`D`, equations, and ontology annotations |
+| [`gnn-pin.json`](specs/gnn-pin.json) | The upstream parser revision the declaration was reviewed against (GNN v5.0.3, commit `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`) with the parser-file SHA-256 digests |
+
+[`tests/test_gnn_spec.py`](tests/test_gnn_spec.py) binds the declaration to the
+chapter's literals and to the book's Eq. 15 posterior;
+[`scripts/validate_gnn_spec.py`](scripts/validate_gnn_spec.py) parses it with the
+pinned parser. CI runs that validator in its `gnn conformance` job. See
+[`docs/gnn.md`](docs/gnn.md).
+
 ### `docs/` — reference documentation
 
 | Subfolder / file | Contents |
@@ -428,6 +449,7 @@ Chapters 1-14 and Appendices A-D, and no Chapter 15.
 | `topics/` | Concept walkthroughs (Bayesian inference, generative models, learning, FEP, …) |
 | `statistics/` | Statistical-tool references (KL, entropy, scoring rules, calibration, …) |
 | `reference/` | Per-subpackage API catalogues (`core.md`, `estimators.md`, `utils.md`, `visualizations.md`) |
+| `gnn.md` | GNN declaration of the Chapter 9 weather model: files, commands, and what each check proves |
 | `uv.md` | Quick reference for the uv workflow |
 
 ### `tests/` — pytest suite
@@ -460,6 +482,7 @@ The directory mirrors `src/active_inference/` one-for-one (see
 - [~] **Part III, Ch. 12** — factor graphs and message passing: sum-product belief propagation, backward smoothing, VMP updates, and hybrid discrete/continuous bridges.
 - [~] **Part III, Ch. 13** — applications: robotics navigation/control and social-inference demos built from tested primitives.
 - [~] **Part III, Ch. 14** — Bayesian mechanics: ergodic density, entropy/VFE bounds, Markov-blanket flow, and coupling diagnostics.
+- [x] **Repository** — the Chapter 9 weather model is declared as GNN in `specs/` and gated by a pinned-parser conformance test and validator; CI (`.github/workflows/ci.yml`) covers lint, the full test suite, the artifact validators, and the pinned GNN parser.
 
 ## Contributing
 

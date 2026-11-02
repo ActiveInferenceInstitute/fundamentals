@@ -197,6 +197,25 @@ its runner helpers directly through `active_inference.extra_topics`.
 | `build_topic_demo` / `render_topic_figure` / `build_topic_animation` | same | Deterministic data and artifact builders for extras wrappers. |
 | `main_visualize` / `main_simulate` / `main_animation` / `main_interactive` / `topic_artifact_path` | same | Thin CLI entry points used by `extras/<topic>/` scripts. |
 
+### GNN Spec Reader
+
+The top-level module `active_inference.gnn_spec` reads the committed GNN
+declaration of the Chapter 9 weather model (`specs/weather_pomdp.gnn.md`) and
+its pin record. Like `extra_topics` it is not re-exported through the package
+`__all__`: it is internal machinery for the chapter conformance test and
+`scripts/validate_gnn_spec.py`, and it needs only the standard library and
+NumPy. See [`docs/gnn.md`](../../docs/gnn.md) for the adoption and the
+commands.
+
+| Name | Module | Role |
+|---|---|---|
+| `ROOT` / `GNN_SPEC_PATH` / `GNN_PIN_PATH` | `gnn_spec` | Repository root and the committed declaration and pin paths. |
+| `REQUIRED_SECTIONS` / `SPEC_MATRIX_KEYS` | same | Required GNN sections, and the declared matrices the conformance test binds. |
+| `GNNVariable` | same | Frozen declaration of one variable: name, dimensions, dtype, section. |
+| `parse_sections` / `parse_variables` / `parse_parameterization` | same | Section, variable, and parameter parsing for the document. |
+| `declared_arrays` / `spec_summary` | same | `A` and `D` reshaped to their declared dimensions, and a reporting summary. |
+| `load_pin` | same | Pin-record reader with field checks. |
+
 ### Web
 
 | Name | Module | Role |

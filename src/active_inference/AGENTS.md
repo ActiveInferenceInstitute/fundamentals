@@ -61,6 +61,13 @@ repo-root `extras/` wrappers. Keep new reusable numerical logic in `core/`,
 `estimators/`, or `visualizations/`; the registry should assemble small,
 deterministic teaching datasets and call public lower-layer APIs.
 
+`gnn_spec.py` is a second top-level module outside `__all__`: a dependency-free
+reader for the committed GNN declaration in `specs/`. It is used by
+`tests/test_gnn_spec.py` and `scripts/validate_gnn_spec.py`, not by chapter
+scripts. Keep it free of third-party imports beyond NumPy, and keep the
+declaration the only place the model's structure and parameters are authored;
+see `docs/gnn.md`.
+
 `menu/` and `web/` are strict UI layers: stdlib-only, no domain imports. Keep
 numerical code out of them.
 

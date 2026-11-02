@@ -4,7 +4,7 @@ task: Keep the textbook companion source of truth aligned with live code
 effort: E5
 phase: pdf-grounded-expansion
 mode: implementation
-updated: 2026-08-01
+updated: 2026-11-01
 ---
 
 # ISA — Fundamentals of Active Inference, Python Companion
@@ -41,6 +41,17 @@ repository and with the inspected PDF source spine, not with stale plans.
 - Appendices B-D contribute executable math helpers and extras topics.
   Appendix A is represented as historical/future-context documentation and
   source-map extras rather than algorithmic code.
+- The Chapter 9 §9.1 weather model is declared in Generalized Notation
+  Notation under [`specs/`](specs/) — `weather_pomdp.gnn.md` plus the pinned
+  upstream parser revision `gnn-pin.json` (GNN v5.0.3). The declaration is bound
+  to the chapter's literals and the book's Eq. 15 posterior by
+  `tests/test_gnn_spec.py` and validated against the pinned parser by
+  `scripts/validate_gnn_spec.py`; see [`docs/gnn.md`](docs/gnn.md).
+- `.github/workflows/ci.yml` gates the repository: lint plus the unit and
+  contract suites on Python 3.11 and 3.15, the static validators (including the
+  tracked-media check), and a required `gnn conformance` job that provisions the
+  pinned parser runtime. The render-heavy smoke suite and the batch renderers
+  stay local.
 
 ## Current Increment
 
@@ -72,6 +83,15 @@ The acceptance gates for this state are:
 - `uv run python scripts/validate_book_topic_coverage.py --require-rendered`
 - `uv run python scripts/validate_raw_data_exports.py --root output/data`
 - `uv run python scripts/validate_rendered_figures.py --root output/figures`
+- `uv run pytest tests/test_gnn_spec.py`
+- `uv run python scripts/validate_gnn_spec.py --gnn-runtime <pinned-venv>/bin/python`
+
+`.github/workflows/ci.yml` runs the lint, unit, and contract suites on every
+push to `main` and every pull request, the static validators, and the GNN gate
+against the parser revision pinned in `specs/gnn-pin.json`. The render-heavy
+`uv run pytest` smoke suite, the batch renderers, and the `--require-pdf` forms
+stay local: the inspected source PDF is machine-local, and its absence is
+reported as *not run*.
 
 ## Open Work
 <!-- Review record 2026-08-01: deepest hostile red-team review found no MAJOR
@@ -93,6 +113,11 @@ The acceptance gates for this state are:
 - Continue adding mutation-style negative controls for Part III and appendices:
   sign flips, `A` vs `A.T`, raw vs softmax/log preferences, tensor axis order,
   stale manifests/source APIs, and non-finite trajectories.
+- Declare further book models as GNN where a conformance check can cross the
+  spec↔code boundary: Chapters 10-14 hold `POMDPModel`-family literals that a
+  later pass could bind exactly as Chapter 9's weather model is bound now. No
+  LLM or service-based rendering stage is planned; this repository has none by
+  design.
 
 ## Non-Negotiables
 

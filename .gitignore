@@ -35,6 +35,7 @@ htmlcov/
 .vscode/
 
 # Generated artifacts (docs stay visible; media/data are reproducible)
+docs/_build/
 output/figures/**/*.gif
 output/figures/**/*.mp4
 output/figures/**/*.pdf

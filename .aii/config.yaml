@@ -1,6 +1,6 @@
 # AII sidecar — InstituteOS metadata. Schema: instituteos.platform.aii_sidecar
 meta:
-  updated: '2026-06-30'
+  updated: '2026-11-01'
 repo:
   name: fundamentals
   slug: fundamentals
@@ -25,9 +25,39 @@ artifacts:
 - path: README.md
   kind: doc
   description: Repository overview.
+- path: AGENTS.md
+  kind: doc
+  description: Agent and contributor conventions.
 - path: src
   kind: code
-  description: Source tree.
+  description: Library source tree (`active_inference`).
+- path: chapters
+  kind: code
+  description: Thin chapter orchestrators for Chapters 1-14.
+- path: extras
+  kind: code
+  description: Cross-cutting extras topic orchestrators from the extra-topics registry.
+- path: demo
+  kind: code
+  description: Application demos (eye saccades, bicycle, drone flight).
+- path: specs
+  kind: doc
+  description: GNN declaration of the Chapter 9 weather model and its upstream parser pin.
+- path: tests
+  kind: code
+  description: pytest suite — unit, contract, and chapter/extras/demo smoke tests.
+- path: docs
+  kind: doc
+  description: Documentation hub, including the GNN adoption page and reference pages.
+- path: scripts
+  kind: code
+  description: Batch renderers and artifact validators, including the pinned GNN conformance validator.
+- path: output
+  kind: data
+  description: Generated figures, raw-data sidecars, and notebooks (gitignored, regenerable).
+- path: manuscript
+  kind: doc
+  description: Manuscript scaffold describing the companion's artifacts and evidence.
 - path: pyproject.toml
   kind: code
   description: Python package config.

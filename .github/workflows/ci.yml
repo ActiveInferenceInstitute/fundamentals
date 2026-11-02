@@ -1,0 +1,155 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# The workflow only reads the repository; every job installs and runs code.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Ruff plus the unit, contract, and documentation suites on the interpreter
+  # floor declared in pyproject.toml (3.11) and on the newest interpreter the
+  # committed lock installs on (3.14).
+  #
+  # Python 3.15 is deliberately not a leg: the locked dependency set publishes no
+  # cp315 wheels yet — PyYAML 6.0.3 (a runtime dependency) stops at cp314, and
+  # rpds-py 0.30.0 (through nbformat -> jsonschema) would need a Rust build — so
+  # `uv sync --locked` cannot install here. The leg returns when the wheels exist;
+  # pyproject.toml still declares support for 3.11 and newer.
+  #
+  # `tests/test_gnn_spec.py` runs the drift guard, the posterior oracle, and the
+  # reader's rejection cases here; its pinned-parser case needs a runtime and is
+  # covered by the `gnn conformance` job below.
+  tests:
+    name: tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
+
+    env:
+      MPLBACKEND: Agg
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install the locked environment
+        run: uv sync --locked --python ${{ matrix.python-version }}
+
+      - name: Ruff
+        run: uv run ruff check .
+
+      - name: Unit and repository contract tests
+        run: >-
+          uv run python -m pytest -q
+          tests/core tests/estimators tests/utils tests/visualizations tests/web
+          tests/test_*.py
+
+  # The repository validators on one interpreter. They are static or read the
+  # tracked artifact sample, so they need no render: the orchestrator contract
+  # and provenance gates cover all 319 chapter/extras/demo scripts, the
+  # book-topic gate covers the extras registry and matrix, the source-spine gate
+  # covers the inspected ledger (the machine-local PDF form stays local), and the
+  # rendered-media gate checks the tracked sample under output/figures/.
+  # `validate_raw_data_exports.py` needs generated sidecars, which are
+  # gitignored, and the full `uv run pytest` smoke suite renders every
+  # orchestrator in a temporary root; both stay local (see scripts/README.md).
+  validators:
+    name: repository validators
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python 3.14
+        run: uv python install 3.14
+
+      - name: Install the locked environment
+        run: uv sync --locked --python 3.14
+
+      - name: Orchestrator contracts and provenance
+        run: |
+          uv run python scripts/validate_orchestrator_contracts.py
+          uv run python scripts/validate_orchestrator_provenance.py
+
+      - name: Extras coverage and source spine
+        run: |
+          uv run python scripts/validate_book_topic_coverage.py
+          uv run python scripts/validate_source_spine.py
+
+      - name: Tracked rendered media
+        run: uv run python scripts/validate_rendered_figures.py --root output/figures
+
+  # Required check: validates specs/weather_pomdp.gnn.md with the parser
+  # revision pinned in specs/gnn-pin.json, digest-verifying the installed parser
+  # files before parsing, and re-runs tests/test_gnn_spec.py with that runtime so
+  # the pinned-parser case executes instead of skipping. The pinned runtime is
+  # provisioned on Python 3.12 in its own environment; it never becomes a skip.
+  gnn-conformance:
+    name: gnn conformance (pinned v5.0.3)
+    runs-on: ubuntu-latest
+
+    env:
+      MPLBACKEND: Agg
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python 3.14 and the pinned-runtime interpreter
+        run: |
+          uv python install 3.14 3.12
+
+      - name: Install the locked environment
+        run: uv sync --locked --python 3.14
+
+      - name: Provision the pinned GNN parser runtime
+        run: |
+          uv venv --python 3.12 "$RUNNER_TEMP/gnn-runtime"
+          uv pip install --python "$RUNNER_TEMP/gnn-runtime/bin/python" \
+            "generalized-notation-notation @ git+https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation@8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1"
+
+      - name: Validate the GNN declaration against the pinned parser
+        run: >-
+          uv run python scripts/validate_gnn_spec.py
+          --gnn-runtime "$RUNNER_TEMP/gnn-runtime/bin/python" --json
+
+      - name: Re-run the specification/code drift guard against the pinned parser
+        # The pinned-parser case of tests/test_gnn_spec.py skips without a runtime;
+        # this step hands it the interpreter provisioned above.
+        env:
+          GNN_RUNTIME_PYTHON: ${{ runner.temp }}/gnn-runtime/bin/python
+        run: uv run pytest -q tests/test_gnn_spec.py

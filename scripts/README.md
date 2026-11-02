@@ -18,6 +18,8 @@ historical batch workflow.
 | `validate_rendered_figures.py` | Check rendered PNG/GIF artifacts for corruption, blank output, tiny dimensions, and trivial GIFs. |
 | `validate_raw_data_exports.py` | Check `output/data/` NPZ+JSON sidecars for missing partners, invalid arrays, and manifest drift. |
 | `validate_source_spine.py` | Check the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
+| `gnn_parser_probe.py` | Parse `specs/weather_pomdp.gnn.md` with the installed upstream `gnn` package and print what it read as JSON. Run by `validate_gnn_spec.py` under the pinned revision; not called directly. |
+| `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
 | `run_all_chapter_03.sh` | Shell shortcut for `--chapters 3`. |
@@ -54,6 +56,11 @@ uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
 uv run python scripts/validate_raw_data_exports.py --root output/data --chapters 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 uv run python scripts/validate_raw_data_exports.py --root output/data
+
+# Validate the GNN declaration against the pinned upstream parser
+# (see docs/gnn.md; exits 2 when no pinned runtime or checkout is available)
+uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --json
+GNN_ROOT=/path/to/Generalized_Notation_Notation GNN_PYTHON=/path/to/python uv run python scripts/validate_gnn_spec.py
 
 # Export Jupyter notebooks
 uv sync --extra notebooks
@@ -124,6 +131,7 @@ surface fits the situation:
 | Orchestrator/source-method QA | `scripts/validate_orchestrator_provenance.py` |
 | Artifact QA after render | `scripts/validate_rendered_figures.py` |
 | Raw-data QA after render | `scripts/validate_raw_data_exports.py` |
+| GNN declaration QA (needs the pinned parser runtime) | `scripts/validate_gnn_spec.py` |
 | Notebook export | `scripts/export_notebooks.py` |
 | Notebook QA after export | `scripts/validate_notebook_exports.py` |
 | Re-render a single chapter | any of the three |
@@ -132,5 +140,24 @@ surface fits the situation:
 
 ## CI Integration
 
-These scripts are used by the GitHub Actions CI workflow to generate
-figures and verify they render without errors on every push / PR.
+`.github/workflows/ci.yml` runs three jobs. `tests` (on Python 3.11 and 3.15)
+installs `uv.lock` with `uv sync --locked` (the lock must be current with
+`pyproject.toml`), runs `ruff check .`, and runs the unit, contract, and
+documentation suites (`tests/core tests/estimators tests/utils
+tests/visualizations tests/web` plus the top-level contract test modules).
+`validators` runs `validate_orchestrator_contracts.py`,
+`validate_orchestrator_provenance.py`, `validate_book_topic_coverage.py`,
+`validate_source_spine.py` (the PDF-free form), and
+`validate_rendered_figures.py --root output/figures` over the tracked media
+sample. `gnn-conformance` provisions the GNN revision pinned in
+`specs/gnn-pin.json` into its own runtime, validates `specs/weather_pomdp.gnn.md`
+with it, and re-runs `tests/test_gnn_spec.py` against that runtime so the
+pinned-parser case executes rather than skipping.
+
+Not in CI, and why: the batch renderers (`run_all_figures.py`,
+`export_notebooks.py`, the `run_all_chapter_*.sh` wrappers) write the gitignored
+`output/` trees of a working copy; the full `uv run pytest` suite renders every
+chapter, extras, and demo orchestrator through its `--save` CLI in a temporary
+root and stays a local gate; `--require-pdf` forms need the machine-local
+inspected source PDF; and `validate_raw_data_exports.py` needs generated
+sidecars, which are gitignored.

@@ -1,11 +1,11 @@
 {
   "repository": "https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation",
-  "tag": "v5.0.3",
-  "commit": "8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1",
+  "tag": "v5.0.2",
+  "commit": "a2383c0215a0d0b2591d150eb6d4d2aec53ee3e2",
   "language_version": "GNN v1.1",
-  "recorded": "2026-11-01",
+  "recorded": "2026-11-03",
   "parser_files": {
-    "src/gnn/__init__.py": "4303d2cec14db42ad1a3f9ca557aaf48f42efc6b1566bcf099d2bf878c2b26ff",
+    "src/gnn/__init__.py": "cd70221a85b46b80f3aa5e7b62dd7da54f312dd6ec1a4deda15db60356e6a23e",
     "src/gnn/parsers/__init__.py": "257f10d65b54ed2cc421fe25257d6ae506dc3dbde8685b7a5672aba06f0c4991",
     "src/gnn/parsers/common.py": "c27da82a05058ec2f96b4c675374a848e64535122bf3a63155a47b8b23e3076e",
     "src/gnn/parsers/markdown_parser.py": "24a30ea7e67d597e891fe16e521e13be5f2013af90eeb282cfe257940b281e82",

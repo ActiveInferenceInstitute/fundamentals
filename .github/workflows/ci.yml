@@ -147,6 +147,11 @@ jobs:
           # The install follows specs/gnn-pin.json; a pin bump re-points it.
           uv pip install --python "$RUNNER_TEMP/gnn-runtime/bin/python" \
             "generalized-notation-notation @ git+${REPO}@${COMMIT}"
+          VERSION=$("$RUNNER_TEMP/gnn-runtime/bin/python" -c 'import gnn; print(gnn.__version__)')
+          TAG=$("$PY" -c "import json;print(json.load(open('$PIN'))['tag'])")
+          test -n "$VERSION"
+          test "$VERSION" = "${TAG#v}"
+          echo "gnn-version=${VERSION}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate the GNN declaration against the pinned parser
         run: >-

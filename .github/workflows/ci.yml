@@ -113,7 +113,7 @@ jobs:
   # the pinned-parser case executes instead of skipping. The pinned runtime is
   # provisioned on Python 3.12 in its own environment; it never becomes a skip.
   gnn-conformance:
-    name: gnn conformance (pinned v5.0.3)
+    name: gnn conformance (pinned)
     runs-on: ubuntu-latest
 
     env:

@@ -36,7 +36,8 @@ dependencies = [
     "numpy>=1.23",
     "scipy>=1.10",
     "matplotlib>=3.6",
-    "pillow>=10.0",
+    # 13.0.0 is the first Pillow release with no open advisory. Do not lower this floor.
+    "pillow>=13.0.0",
 ]
 
 [project.optional-dependencies]

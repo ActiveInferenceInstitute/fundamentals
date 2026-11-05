@@ -95,6 +95,7 @@ target-version = "py311"
 #     uv run ./run.sh               # launch the chapter runner menu
 #
 [tool.uv]
+required-version = "==0.13.7"
 package = true
 
 # PEP 735 dependency groups. `uv sync` installs the `dev` group by default;

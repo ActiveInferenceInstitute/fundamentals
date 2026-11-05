@@ -47,6 +47,7 @@ jobs:
         # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
+          version: "0.13.7"
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
@@ -85,6 +86,7 @@ jobs:
         # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
+          version: "0.13.7"
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
@@ -113,7 +115,7 @@ jobs:
   # the pinned-parser case executes instead of skipping. The pinned runtime is
   # provisioned on Python 3.12 in its own environment; it never becomes a skip.
   gnn-conformance:
-    name: gnn conformance (pinned v5.0.3)
+    name: gnn conformance (pinned)
     runs-on: ubuntu-latest
 
     env:
@@ -126,6 +128,7 @@ jobs:
         # v10.3.3; setup-uv publishes no floating major tag, so @v10 is unresolvable
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
+          version: "0.13.7"
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 

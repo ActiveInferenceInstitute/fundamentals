@@ -17,6 +17,7 @@ docs/
 ├── notation.md                ← cross-cutting · symbol-to-identifier table
 ├── cookbook.md                ← copy-paste recipes for the 10 most-used workflows
 ├── reading_order.md           ← reader-path guide
+├── learn_by_hand.md           ← by-hand learning loop (no LLM/generation stage)
 ├── uv.md                      ← quick reference for the uv workflow
 ├── web.md                     ← local browser UI launched by `run.sh --web`
 ├── gnn.md                     ← GNN declaration of the Chapter 9 model, its pin, and the adoption contract
@@ -73,6 +74,7 @@ docs/
 | How to set up an environment | [`uv.md`](uv.md) |
 | Browse figures + docs in a local web UI | [`web.md`](web.md) |
 | Where to start reading | [`reading_order.md`](reading_order.md) |
+| How to practice deliberately with no LLM stage | [`learn_by_hand.md`](learn_by_hand.md) |
 | A copy-paste-ready recipe for a common workflow | [`cookbook.md`](cookbook.md) |
 | How the package is organized | [`architecture.md`](architecture.md) |
 | Which Python identifier maps to a book symbol | [`notation.md`](notation.md) |

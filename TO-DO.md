@@ -1,7 +1,25 @@
 # Documentation review TODO
 
 Date: 2026-08-02
-Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension)
+Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3)
+
+## Institute improvements pass 3 (2026-11-11)
+
+Documentation-completeness re-check. `docs/README.md` now indexes the
+`learn_by_hand.md` page in both its tree and its "Pick the right page" table; no
+other `docs/` page is unreachable. A relative-link walk over every tracked
+`*.md` reports one intentional placeholder only (`manuscript/SYNTAX.md` →
+`../output/figures/example.png`, already listed under "Open / deferred"), and
+`grep` finds no `docs/FAQ.md` reference anywhere in the tree. Every top-level
+folder with three or more tracked files already carries a `README.md`/`AGENTS.md`
+pair, so no folder guide was needed.
+
+Environment prerequisite: the bounded offline documentation gate
+`PYTHONPATH=src MPLBACKEND=Agg python -m pytest -q -x tests/utils
+tests/test_documentation_contracts.py` (53 tests, previously passing) could not
+be re-run here — no interpreter on this machine has the cached
+`numpy`/`scipy`/`matplotlib`, and the uv cache has no `scipy` wheel, so the check
+was done statically (YAML/JSON parse, link walk, contract tests inspected).
 
 This file records findings from the repository-wide documentation review. Severity:
 
@@ -9,7 +27,7 @@ This file records findings from the repository-wide documentation review. Severi
 - Medium — stale section rewrite, documentation restructure, or missing high-value guide.
 - Major — large documentation-system overhaul, new documentation site, or cross-cutting refactor.
 
-All 274 Markdown files were reviewed: the root README/AGENTS/ISA, the `docs/`
+All 284 Markdown files were reviewed: the root README/AGENTS/ISA, the `docs/`
 hub (root pages + chapters/ topics/ statistics/ reference/), the manuscript
 scaffold, per-directory AGENTS/README pairs, and generated-output docs. The
 family-level audit was fanned out to three parallel review subagents (chapters,

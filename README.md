@@ -465,6 +465,9 @@ The directory mirrors `src/active_inference/` one-for-one (see
 | `tests/visualizations/` | `visualizations/` | Figures save correctly, animations are valid `FuncAnimation` objects, diagnostic plots, interactive slider callbacks |
 | `tests/chapters/` | `chapters/` | Subprocess smoke tests running every orchestrator with `--save` and checking raw-data sidecars |
 | `tests/extras/` | `extras/` | Smoke tests for every non-interactive extras wrapper, registry/source API invariants, animation raw data, and README coverage |
+| `tests/demo/` | `demo/` | Subprocess smoke tests for every application demo script with `--save` and fresh raw-data sidecars |
+| `tests/menu/` | `menu/` | Chapter/script discovery, classification, menu rendering, and invocation resolution |
+| `tests/web/` | `web/` | HTTP routes, Markdown converter, render endpoint, templates, metadata, and static assets |
 
 ## Roadmap
 

@@ -30,6 +30,7 @@ jobs:
   # reader's rejection cases here; its pinned-parser case needs a runtime and is
   # covered by the `gnn conformance` job below.
   tests:
+    timeout-minutes: 120
     name: tests (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
@@ -76,6 +77,7 @@ jobs:
   # gitignored, and the full `uv run pytest` smoke suite renders every
   # orchestrator in a temporary root; both stay local (see scripts/README.md).
   validators:
+    timeout-minutes: 120
     name: repository validators
     runs-on: ubuntu-latest
 
@@ -115,6 +117,7 @@ jobs:
   # the pinned-parser case executes instead of skipping. The pinned runtime is
   # provisioned on Python 3.12 in its own environment; it never becomes a skip.
   gnn-conformance:
+    timeout-minutes: 120
     name: gnn conformance (pinned)
     runs-on: ubuntu-latest
 

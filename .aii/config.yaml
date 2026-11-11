@@ -1,6 +1,7 @@
-# AII sidecar — InstituteOS metadata. Schema: instituteos.platform.aii_sidecar
+# AII sidecar — InstituteOS metadata. Schema: aii_platform.aii_sidecar
 meta:
-  updated: '2026-11-01'
+  sidecar_version: 1.2.1
+  updated: '2026-11-10'
 repo:
   name: fundamentals
   slug: fundamentals
@@ -8,7 +9,7 @@ repo:
   description: Unofficial repo for materials and code related to "Fundamentals of
     Active Inference" (Namjoshi 2026).
 institute:
-  category: research-software
+  category: education
   maturity: released
   steward: Active Inference Institute
 ecosystem:
@@ -42,7 +43,8 @@ artifacts:
   description: Application demos (eye saccades, bicycle, drone flight).
 - path: specs
   kind: doc
-  description: GNN declaration of the Chapter 9 weather model and its upstream parser pin.
+  description: GNN declaration of the Chapter 9 weather model and its upstream parser
+    pin.
 - path: tests
   kind: code
   description: pytest suite — unit, contract, and chapter/extras/demo smoke tests.
@@ -51,7 +53,8 @@ artifacts:
   description: Documentation hub, including the GNN adoption page and reference pages.
 - path: scripts
   kind: code
-  description: Batch renderers and artifact validators, including the pinned GNN conformance validator.
+  description: Batch renderers and artifact validators, including the pinned GNN conformance
+    validator.
 - path: output
   kind: data
   description: Generated figures, raw-data sidecars, and notebooks (gitignored, regenerable).
@@ -71,16 +74,23 @@ provenance:
 instituteos:
   tags:
   - fundamentals
-  - unofficial
-  - repo
+  - education
   - materials
-  - code
   - python
 capabilities:
 - python-package
 - tested
 - documentation
+- ci
+- manuscript-publication
 tasks:
   test:
     cmd: python -m pytest
     description: Run the test suite.
+docs:
+- README.md
+- AGENTS.md
+- docs/INTEGRATION.md
+- docs/README.md
+- docs/AGENTS.md
+schema: aii-sidecar/v1

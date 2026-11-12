@@ -69,9 +69,10 @@ GNN_ROOT=/path/to/Generalized_Notation_Notation \
 GNN_PYTHON=/path/to/parser-runtime/bin/python \
 uv run python scripts/validate_gnn_spec.py --json
 
-# Installed pinned runtime (what CI uses)
+# Installed pinned runtime (what CI uses); --verify-tag-remote resolves the
+# pin's tag upstream with `git ls-remote` and needs network access
 uv run python scripts/validate_gnn_spec.py \
-  --gnn-runtime /path/to/venv/bin/python --json
+  --gnn-runtime /path/to/venv/bin/python --verify-tag-remote --json
 
 # The drift guard and the runtime posterior
 uv run pytest tests/test_gnn_spec.py -v
@@ -98,7 +99,7 @@ The receipt is written to `docs/_build/gnn/validation-receipt.json`
 |---|---|
 | `test_declared_arrays_equal_the_chapter_literals` | The GNN declaration and the implementation's literals are the same model, field by field. |
 | `test_infer_states_reproduces_the_book_posterior` | The declared model, run through this repository's inference, reproduces the book's Eq. 15 numbers. |
-| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. |
+| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. The parser files are digest-verified before the document is parsed, and the pin's `tag` is resolved to its `commit` in the GNN object store (a `--gnn-root` checkout, or `--verify-tag-remote`); a tag that resolves elsewhere fails as `tag-commit-mismatch`. For an installed runtime the installer's recorded VCS commit is compared with the pin; an install without that metadata is reported as `unresolvable-offline` in the receipt rather than assumed. With `--verify-tag-remote`, a remote that cannot answer ends the run as *not run* (exit 2), never a pass. |
 
 Nothing above proves the model is scientifically adequate, that the book's
 numbers are correct beyond the asserted Eq. 15 posterior, or that a future

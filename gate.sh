@@ -116,7 +116,7 @@ provision_gnn_runtime() {
 arm_gnn() {
     local runtime
     runtime="$(provision_gnn_runtime)"
-    uv run python scripts/validate_gnn_spec.py --gnn-runtime "$runtime" --json
+    uv run python scripts/validate_gnn_spec.py --gnn-runtime "$runtime" --verify-tag-remote --json
     # Without this the pinned-parser test skips instead of parsing.
     GNN_RUNTIME_PYTHON="$runtime" uv run pytest -q tests/test_gnn_spec.py
 }

@@ -14,6 +14,11 @@ Ephemeral, regenerable storage for figures (PNGs) and animations (GIFs).
 4. **Do not add new generated media to history without intent.** `.gitignore`
    excludes new PNG/GIF media recursively; historical sample artifacts may
    remain tracked.
+5. **`figure_registry.json` is the exception and is hand-maintained.** It binds
+   each manuscript-cited figure to its file, producer, caption, and alternative
+   text; `scripts/render_manuscript.py` (the `manuscript-check` gate arm)
+   enforces the binding in both directions, so add the entry and the citation
+   together.
 
 ## Subfolder layout
 

@@ -39,10 +39,12 @@ metadata:
 manuscript_dir: "manuscript"
 
 render:
+  # The project renderer (scripts/render_manuscript.py) produces html and pdf.
+  # A format enabled here must be one it produces, or the render is refused.
   formats:
     pdf: true
     html: true
-    slides: true
+    slides: false
     docx: false
     epub: false
 

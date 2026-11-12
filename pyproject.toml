@@ -55,6 +55,9 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
     "nbformat>=5.10",
+    # scripts/render_manuscript.py reads manuscript/config.yaml and
+    # manuscript/variables.yaml; the manuscript gate needs a YAML reader.
+    "pyyaml>=6.0.3",
 ]
 
 [project.urls]
@@ -107,6 +110,9 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
     "nbformat>=5.10",
+    # scripts/render_manuscript.py reads manuscript/config.yaml and
+    # manuscript/variables.yaml; the manuscript gate needs a YAML reader.
+    "pyyaml>=6.0.3",
 ]
 
 [tool.ruff.lint]

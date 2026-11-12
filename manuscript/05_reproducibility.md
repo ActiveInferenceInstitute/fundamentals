@@ -2,14 +2,30 @@
 
 ## Local Commands
 
-Start with the project-local README and AGENTS instructions. Then validate this manuscript surface through the sibling template checkout:
+The manuscript renders from this checkout; no sibling repository is required.
 
 ```bash
-uv run python -m infrastructure.orchestration link-projects
-uv run python -m infrastructure.validation.cli markdown projects/<lifecycle>/<project>/manuscript/
+# validate every manuscript surface without needing a TeX installation
+./gate.sh manuscript-check
+
+# render every format enabled in manuscript/config.yaml
+./gate.sh manuscript
 ```
 
-Replace `<lifecycle>/<project>` with the qualified sidecar path for this project.
+The renderer writes `docs/_build/manuscript/<slug>.html`, the matching PDF when
+`render.formats.pdf` is enabled, and a receipt at
+`docs/_build/manuscript/render-receipt.json` recording the checked sections,
+resolved variables, figures, citations, pandoc version, and each output's SHA-256.
+
+## Figures
+
+Figures are generated, not committed as a second copy:
+
+```bash
+uv run python chapters/chapter_01/03_bayes_intuition.py --save
+uv run python chapters/chapter_01/04_inverse_problem.py --save
+uv run python scripts/validate_rendered_figures.py --root output/figures
+```
 
 ## Reproducibility Contract
 

@@ -1,0 +1,16 @@
+{
+  "fig:bayes_three_panel": {
+    "label": "fig:bayes_three_panel",
+    "filename": "chapter_01/03_bayes_three_panel.png",
+    "generated_by": "chapters/chapter_01/03_bayes_intuition.py",
+    "caption": "Prior, likelihood, and posterior on a shared x-axis for the single-observation linear-Gaussian model with y = 7, beta0 = 3, beta1 = 2, sigma^2_y = 0.25, and a Gaussian prior centred at x = 4 with variance 0.25. The dashed line marks the true inverse (y - beta0) / beta1 = 2; the posterior mode is a precision-weighted compromise between prior and likelihood.",
+    "alt_text": "Three stacked line panels sharing one horizontal axis: a wide prior centred at four, a narrow likelihood peaking near two, and a posterior between them with a dashed vertical line at the true inverse."
+  },
+  "fig:inverse_posterior": {
+    "label": "fig:inverse_posterior",
+    "filename": "chapter_01/04_inverse_posterior.png",
+    "generated_by": "chapters/chapter_01/04_inverse_problem.py",
+    "caption": "Prior, likelihood, and posterior for the non-injective generator g(x) = 3 + 2x^2 observed at y = 5 under a uniform prior on [-2.5, 2.5] and likelihood variance 0.05. Both +x and -x explain the observation, so the posterior has two modes instead of one.",
+    "alt_text": "Three stacked line panels sharing one horizontal axis over minus two point five to two point five: a flat uniform prior, a likelihood with two sharp peaks at equal height on either side of zero, and a posterior with the same two separated modes."
+  }
+}

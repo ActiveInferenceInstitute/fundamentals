@@ -11,6 +11,9 @@ purpose*, plus several cross-cutting files at the root.
 
 ## Map
 
+For a flat list of every documentation page, including folder and agent guides,
+open the [documentation index](documentation-index.md).
+
 ```
 docs/
 ├── architecture.md            ← cross-cutting · system design + layer diagram

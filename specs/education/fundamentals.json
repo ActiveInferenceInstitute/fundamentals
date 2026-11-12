@@ -2,13 +2,18 @@
   "schema": "education-contract/v1",
   "provenance": {
     "repository": "ActiveInferenceInstitute/fundamentals",
-    "revision": "15fefcb0d99792f21a4cdce04ca57a5f18314194"
+    "revision": "eb64397d4843e8767443349ad0271f006cf77e69"
   },
   "units": [
     {
       "unit_id": "fundamentals.chapter_01",
       "title": "Chapter 1 — The Hypothesis-Testing Brain",
-      "objectives": [],
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Explain how Bayes' theorem combines a prior and a likelihood to infer hidden states from observations."
+        }
+      ],
       "prerequisites": [],
       "source_path": "chapters/chapter_01/README.md"
     },
@@ -105,5 +110,12 @@
     }
   ],
   "prerequisite_edges": [],
-  "glossary": []
+  "glossary": [
+    {
+      "term_id": "generative-model",
+      "term": "Generative model",
+      "definition": "A generative model is the agent's internal representation of the environment, expressed as the joint distribution `p(x, y) = p(y | x) p(x)` over hidden states `x` and observations `y`.",
+      "source": "manuscript/98_symbols_glossary.md"
+    }
+  ]
 }

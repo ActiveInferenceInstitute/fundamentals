@@ -54,21 +54,51 @@ requires a chapter bundle and glossary transcription.
 The draft transcribes chapter README titles verbatim and records each source path.
 Unit IDs are member-prefixed to avoid cross-member collisions.
 
-**Do not merge this migration yet.** The chapter READMEs describe coverage and
-scripts but do not supply explicit learning objectives. Their `objectives`
-arrays remain empty rather than recasting descriptions as authored objectives;
-the unchanged schema rejects these arrays with `EC006`.
-[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md)
-says “This placeholder is reserved for project terminology and API symbols.”
-It contains no definitions to transcribe, so `glossary` remains empty.
-Schema acceptance of an empty glossary would not establish completion of the
-requested migration. Prerequisites and edges are empty: chapter numbering and
-coverage references are not authored hard prerequisites.
+**Do not merge this migration yet.** Chapter 1 now has an authored learning
+objective, and the glossary source has one authored definition; both are
+transcribed verbatim. The other thirteen chapters supply none, and the unchanged
+schema rejects an empty objective list with `EC006`.
 
-To unblock: authors must supply chapter learning objectives and definitions in
-the required glossary source; then transcribe those statements verbatim into
-the bundle and rerun the checks. No schema relaxation or substitute glossary
-is part of this migration.
+Transcribed from
+[`chapters/chapter_01/README.md`](../chapters/chapter_01/README.md#L11):
+
+> ## Learning objective
+>
+> - Explain how Bayes' theorem combines a prior and a likelihood to infer hidden
+>   states from observations.
+
+Transcribed from
+[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md#L3):
+
+> ## Generative model
+>
+> A generative model is the agent's internal representation of the environment,
+> expressed as the joint distribution `p(x, y) = p(y | x) p(x)` over hidden states
+> `x` and observations `y`.
+
+Every other chapter README has the same shape as
+[`chapters/chapter_02/README.md`](../chapters/chapter_02/README.md): a
+description paragraph, a run snippet, and a `## Scripts` coverage table. Chapter
+2 opens "Chapter 2 turns the conceptual ideas of Chapter 1 into the canonical
+linear-Gaussian Bayesian inference recipe and walks through ten numbered examples
+(2.1–2.10) that explore variations of it." That sentence describes the chapter;
+it is not an authored learning objective, and recasting it or a table row as one
+would invent the statement the contract asks to quote. Chapters 2–14 therefore
+keep empty `objectives` arrays, which the schema rejects with thirteen `EC006`
+issues.
+
+The same holds for the glossary: one definition exists, and no other term is
+defined in the required source. Prerequisites and edges are empty because the
+only authored ordering,
+[`docs/reading_order.md`](../docs/reading_order.md) "Path A — *I'm following the
+book chapter by chapter*", is a reading path with no prerequisite statement to
+quote as an edge rationale. Chapter numbering and coverage references are not
+authored hard prerequisites.
+
+To unblock: authors must supply learning objectives for chapters 2–14, and
+further glossary definitions, in the required sources; then transcribe those
+statements verbatim and rerun the checks. No schema relaxation, substitute
+glossary, or inferred prerequisite chain is part of this migration.
 
 The schema and `vendor/education_contract/{schema,rules,registry}.py`
 are byte-identical copies from `ActiveInferenceInstitute/courses` commit
@@ -93,9 +123,10 @@ python -B ../courses/software/scripts/check_education_contract.py \
 ```
 
 Local migration verification: the lead checker reported
-`FAILED (14 issue(s))`, all `EC006` on empty objective lists.
-The member `contract` arm reported `diverged -- 14 contract violation(s)`
-and exited nonzero in 0.111 s measured around the command.
+`FAILED (13 issue(s))`, all `EC006` on the thirteen chapter objective lists
+that have no authored source. The member `contract` arm reported
+`diverged -- 13 contract violation(s)` and exited 1. The chapter 1 objective and
+the `generative-model` term pass the schema and coherence rules.
 After documentation integration fixes, `docs` and `fast` passed.
 The full arm was run before those fixes and failed: its summary recorded
 190 subprocess-launch errors (`Errno 62: Too many levels of symbolic links`

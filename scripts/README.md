@@ -20,7 +20,7 @@ historical batch workflow.
 | `validate_source_spine.py` | Check the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `gnn_parser_probe.py` | Parse `specs/weather_pomdp.gnn.md` with the installed upstream `gnn` package and print what it read as JSON. Run by `validate_gnn_spec.py` under the pinned revision; not called directly. |
 | `render_manuscript.py` | The authoritative manuscript render path: validates declared variables, the figure registry, bibliography keys, and section labels, then assembles `manuscript/` and renders the formats enabled in `manuscript/config.yaml`. `--check` stops after validation. |
-| `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Verifies the parser digests *before* parsing, binds the pin's tag to its commit (`--gnn-root` checkout or `--verify-tag-remote`; mismatch fails as `tag-commit-mismatch`), and compares the installed runtime's recorded revision with the pin. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
+| `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Verifies the parser digests *before* parsing, binds the pin's tag to its commit (`--gnn-root` checkout or `--verify-tag-remote`; mismatch fails as `tag-commit-mismatch`), and compares the installed runtime's recorded revision with the pin. Exits 2 when no pinned runtime is available (a reported *not run*) or when the tag/revision binding cannot be verified (a reported *not verified*, with `provenance-unverified` in the receipt); neither is a pass. A `--gnn-root` tree without git metadata is attested as digest-verified only, not as the pinned revision. |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
 | `run_all_chapter_03.sh` | Shell shortcut for `--chapters 3`. |
@@ -59,7 +59,8 @@ uv run python scripts/validate_raw_data_exports.py --root output/data --chapters
 uv run python scripts/validate_raw_data_exports.py --root output/data
 
 # Validate the GNN declaration against the pinned upstream parser
-# (see docs/gnn.md; exits 2 when no pinned runtime or checkout is available)
+# (see docs/gnn.md; exits 2 when no pinned runtime/checkout is available or the
+# tag/revision binding is unverified)
 uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --verify-tag-remote --json
 GNN_ROOT=/path/to/Generalized_Notation_Notation GNN_PYTHON=/path/to/python uv run python scripts/validate_gnn_spec.py
 

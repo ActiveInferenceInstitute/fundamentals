@@ -183,6 +183,10 @@ def test_pinned_parser_validates_the_committed_spec(tmp_path: Path) -> None:
         str(ROOT / "scripts" / "validate_gnn_spec.py"),
         "--receipt",
         str(receipt),
+        # A pass requires the pin's tag to be bound to its commit. The checkout
+        # path resolves it in the local object store and ignores this flag; the
+        # installed-runtime path resolves it upstream.
+        "--verify-tag-remote",
     ]
     for flag, value in source.items():
         command += [flag, value]

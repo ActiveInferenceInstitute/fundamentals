@@ -23,6 +23,21 @@ commands, and exactly what each check proves.
 | [`scripts/validate_gnn_spec.py`](../scripts/validate_gnn_spec.py) | The pinned-parser validator: materializes the pinned commit, verifies parser digests, and requires the pinned parser and the dependency-free reader to agree. |
 | [`tests/test_gnn_spec.py`](../tests/test_gnn_spec.py) | The drift guard: binds the declared `A`/`D` to the chapter script's own literals and to the runtime posterior, and runs the validator against the pinned revision. |
 
+## Where the pin and the check live
+
+| Surface | Value |
+|---|---|
+| Pin file | [`specs/gnn-pin.json`](../specs/gnn-pin.json) |
+| Pin schema | `gnn-importer-pin/v1` |
+| Pointer that records what the job parses | [`.github/GNN.md`](../.github/GNN.md) |
+| Workflow job key | `gnn-conformance` in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
+| Job display name | `gnn conformance (pinned)` |
+| Local arm that runs the same commands | `./gate.sh gnn` (see [`docs/gate.md`](gate.md)) |
+| Shared setup step used by the job | `ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448` |
+
+The pin file is the only record of the reviewed revision; `.github/GNN.md` is a
+human pointer to it, not a second copy of the values.
+
 ## What the declaration is bound to
 
 The model is stated twice, deliberately, and the tests make the two copies
@@ -45,6 +60,10 @@ fabricated.
 ## Commands
 
 ```bash
+# The gate arm: provisions the pinned runtime, runs the validator, then the
+# drift guard and pinned-parser test with that runtime
+./gate.sh gnn
+
 # Validate with the pinned upstream parser from a GNN checkout
 GNN_ROOT=/path/to/Generalized_Notation_Notation \
 GNN_PYTHON=/path/to/parser-runtime/bin/python \

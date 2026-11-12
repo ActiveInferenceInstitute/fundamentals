@@ -8,6 +8,14 @@ This folder contains short, runnable orchestrators that turn each conceptual
 diagram from the chapter into something you can poke. Every script imports
 helpers from `active_inference` rather than re-deriving anything inline.
 
+## Learning objective
+
+- Explain how Bayes' theorem combines a prior and a likelihood to infer hidden
+  states from observations.
+
+Practice this objective with `03_bayes_intuition.py`, which shows the update
+step by step.
+
 ## Scripts
 
 | Script | What it shows |

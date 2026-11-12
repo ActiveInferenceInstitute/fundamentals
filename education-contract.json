@@ -1,0 +1,7 @@
+{
+  "contract": "education-contract/v1",
+  "schema_sha256": "3084b75c8421fa518119d73838957f2156dede6680c42ed56e5e963b60a867c8",
+  "bundles": [
+    "specs/education/fundamentals.json"
+  ]
+}

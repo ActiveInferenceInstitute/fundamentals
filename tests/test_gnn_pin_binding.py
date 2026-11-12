@@ -380,3 +380,40 @@ def test_non_git_root_ends_unverified_not_as_a_git_archive(
     assert "git archive" not in receipt["revision"]["detail"]
     assert receipt["tag_binding"]["status"] == "unresolvable-offline"
     assert receipt["provenance"]["verified"] is False
+
+
+def test_verified_tag_does_not_make_a_non_git_tree_a_git_revision(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    pin = _pin(parser_files={})
+    pin_path = tmp_path / "pin.json"
+    pin_path.write_text(json.dumps(pin), encoding="utf-8")
+    tree = tmp_path / "tree"
+    (tree / "src" / "gnn").mkdir(parents=True)
+    (tree / "src" / "gnn" / "__init__.py").write_text("parser", encoding="utf-8")
+    monkeypatch.setattr(vgs, "tag_binding", lambda *_a, **_k: _verified_tag(pin))
+    monkeypatch.setattr(vgs, "run_probe", lambda *_a, **_k: _probe_payload())
+    monkeypatch.setattr(vgs, "conformance_failures", lambda *_a, **_k: [])
+
+    code = vgs.main(
+        [
+            "--gnn-root",
+            str(tree),
+            "--python",
+            sys.executable,
+            "--verify-tag-remote",
+            "--pin",
+            str(pin_path),
+            "--receipt",
+            str(tmp_path / "receipt.json"),
+        ]
+    )
+    receipt = json.loads((tmp_path / "receipt.json").read_text(encoding="utf-8"))
+
+    # The upstream tag is proven, but the parsed source tree is not a git
+    # revision; the two facts must not be conflated.
+    assert receipt["tag_binding"]["status"] == "verified"
+    assert receipt["revision"]["status"] == "unverified"
+    assert code == 2
+    assert receipt["ok"] is False
+    assert receipt["provenance"]["verified"] is False

@@ -3,6 +3,16 @@
 Date: 2026-08-02
 Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3)
 
+## Education member migration — open
+
+The migration draft adds the chapter bundle, unchanged Education schema, adoption
+pointer, and `./gate.sh contract` using the vendored lead checker. It must remain
+unmerged until chapter learning objectives and glossary definitions are authored:
+the chapter READMEs have coverage descriptions rather than explicit objectives,
+and `manuscript/98_symbols_glossary.md` is still a placeholder.
+The draft keeps missing data empty so the checker exposes it rather than
+inventing statements. See [the exact blockers and verification commands](docs/gate.md#education-migration--blocked-on-authored-content).
+
 ## Manuscript and gate pass (2026-11-12)
 
 - The manuscript no longer renders only through a sibling template checkout.

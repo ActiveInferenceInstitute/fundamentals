@@ -18,6 +18,7 @@ never restates a command that runs elsewhere.
 | `fast` | `uv run python -m pytest -q tests/core tests/estimators tests/utils tests/visualizations tests/web tests/test_*.py` | `tests (py3.11)`, `tests (py3.14)` |
 | `full` | `uv run python -m pytest -q` | local only |
 | `docs` | `uv run python -m pytest -q tests/test_documentation_contracts.py tests/test_method_documentation_contracts.py` | local fast path (a strict subset of `fast`) |
+| `contract` | `uv run python scripts/check_education_contract.py` | local only; migration blocked on authored content |
 | `validators` | the orchestrator-contract, provenance, book-topic, source-spine, and rendered-figure validators | `repository validators` |
 | `manuscript-check` | `uv run python scripts/render_manuscript.py --check` | `repository validators` |
 | `manuscript` | `uv run python scripts/render_manuscript.py` | local only (needs `pandoc` and `xelatex`) |
@@ -43,6 +44,64 @@ under `$GATE_CACHE/gnn-runtime-<commit>` and refuses a runtime whose
 fresh runtime instead of reusing a stale one, and CI keeps the cache on the runner
 with `GATE_CACHE=${{ runner.temp }}/gate-cache`. Set `GNN_RUNTIME_PYTHON` to use
 an existing interpreter instead of provisioning.
+
+## Education migration — blocked on authored content
+
+The [Education workflow contract](https://github.com/ActiveInferenceInstitute/courses/blob/f1e5af62dc2581b9d4c09746c8b7c4fa09dc5e1b/docs/workflows/education.md)
+requires a chapter bundle and glossary transcription.
+[`education-contract.json`](../education-contract.json) points to
+[`specs/education/fundamentals.json`](../specs/education/fundamentals.json).
+The draft transcribes chapter README titles verbatim and records each source path.
+Unit IDs are member-prefixed to avoid cross-member collisions.
+
+**Do not merge this migration yet.** The chapter READMEs describe coverage and
+scripts but do not supply explicit learning objectives. Their `objectives`
+arrays remain empty rather than recasting descriptions as authored objectives;
+the unchanged schema rejects these arrays with `EC006`.
+[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md)
+says “This placeholder is reserved for project terminology and API symbols.”
+It contains no definitions to transcribe, so `glossary` remains empty.
+Schema acceptance of an empty glossary would not establish completion of the
+requested migration. Prerequisites and edges are empty: chapter numbering and
+coverage references are not authored hard prerequisites.
+
+To unblock: authors must supply chapter learning objectives and definitions in
+the required glossary source; then transcribe those statements verbatim into
+the bundle and rerun the checks. No schema relaxation or substitute glossary
+is part of this migration.
+
+The schema and `vendor/education_contract/{schema,rules,registry}.py`
+are byte-identical copies from `ActiveInferenceInstitute/courses` commit
+`f1e5af62dc2581b9d4c09746c8b7c4fa09dc5e1b`. The local adapter passes an explicit
+schema path to the vendored `check_member`; it does not reimplement the rules.
+The local arm checks the pointer digest, schema, and declared bundles. Only a
+comparison with the lead can establish that the vendored schema is still current.
+These unchanged modules are by the Active Inference Institute, licensed under
+CC BY 4.0; the upstream notice is retained at
+[`vendor/education_contract/LICENSE`](../vendor/education_contract/LICENSE).
+Upstream modules live outside the local library/chapter/script trees; their
+source and documentation remain unchanged rather than adopting local style rules.
+
+```bash
+./gate.sh contract
+# From this checkout, read the sibling lead without writing bytecode there:
+python -B ../courses/software/scripts/check_education_contract.py \
+  --schema ../courses/specs/education/schema.json specs/education/fundamentals.json
+./gate.sh docs
+./gate.sh fast
+./gate.sh full
+```
+
+Local migration verification: the lead checker reported
+`FAILED (14 issue(s))`, all `EC006` on empty objective lists.
+The member `contract` arm reported `diverged -- 14 contract violation(s)`
+and exited nonzero in 0.111 s measured around the command.
+After documentation integration fixes, `docs` and `fast` passed.
+The full arm was run before those fixes and failed: its summary recorded
+190 subprocess-launch errors (`Errno 62: Too many levels of symbolic links`
+at `.venv/bin/python`) and two documentation failures. It was not rerun
+after the documentation corrections; full-suite verification remains open.
+
 
 ## Measured wall time
 

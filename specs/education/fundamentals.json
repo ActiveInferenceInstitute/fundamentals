@@ -1,0 +1,109 @@
+{
+  "schema": "education-contract/v1",
+  "provenance": {
+    "repository": "ActiveInferenceInstitute/fundamentals",
+    "revision": "15fefcb0d99792f21a4cdce04ca57a5f18314194"
+  },
+  "units": [
+    {
+      "unit_id": "fundamentals.chapter_01",
+      "title": "Chapter 1 — The Hypothesis-Testing Brain",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_01/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_02",
+      "title": "Chapter 2 — Hidden State Estimation",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_02/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_03",
+      "title": "Chapter 3 — Combining Learning and Inference",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_03/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_04",
+      "title": "Chapter 4 — Variational Bayesian Inference",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_04/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_05",
+      "title": "Chapter 5 — Predictive Coding",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_05/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_06",
+      "title": "Chapter 6 — Generalized Filtering for Perception",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_06/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_07",
+      "title": "Chapter 7 — Active Generalized Filtering",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_07/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_08",
+      "title": "Chapter 8 — Learning, attention, and hierarchical models",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_08/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_09",
+      "title": "Chapter 9 — Active Inference in POMDPs",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_09/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_10",
+      "title": "Chapter 10 — Learning and extensions in POMDPs",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_10/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_11",
+      "title": "Chapter 11 — Part III planning extensions",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_11/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_12",
+      "title": "Chapter 12 — Factor graphs and message passing",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_12/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_13",
+      "title": "Chapter 13 — Applications",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_13/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_14",
+      "title": "Chapter 14 — Bayesian mechanics and Markov blankets",
+      "objectives": [],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_14/README.md"
+    }
+  ],
+  "prerequisite_edges": [],
+  "glossary": []
+}

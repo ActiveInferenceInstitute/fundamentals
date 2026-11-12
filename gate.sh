@@ -9,6 +9,7 @@
 #   ./gate.sh fast             unit, contract, and documentation suites (CI default)
 #   ./gate.sh full             the entire pytest suite, including the smoke tests
 #   ./gate.sh docs             documentation and Markdown-link contracts only
+#   ./gate.sh contract         Education pointer, schema, and bundle coherence
 #   ./gate.sh validators       the repository validators (artifacts, coverage, spine)
 #   ./gate.sh manuscript-check manuscript surfaces without Pandoc or TeX
 #   ./gate.sh manuscript       render every format enabled in manuscript/config.yaml
@@ -59,6 +60,10 @@ arm_full() {
 arm_docs() {
     uv run python -m pytest -q \
         tests/test_documentation_contracts.py tests/test_method_documentation_contracts.py
+}
+
+arm_contract() {
+    uv run python scripts/check_education_contract.py
 }
 
 arm_validators() {
@@ -125,6 +130,7 @@ arm_all() {
     run_arm lint arm_lint
     run_arm fast arm_fast
     run_arm docs arm_docs
+    run_arm contract arm_contract
     run_arm validators arm_validators
     run_arm manuscript-check arm_manuscript_check
     run_arm manuscript arm_manuscript
@@ -151,7 +157,7 @@ run_arm() {
     printf 'gate: %s ok (%d.%03ds)\n' "$name" "$((elapsed / 1000000))" "$((elapsed / 1000 % 1000))"
 }
 
-ARMS="lint fast full docs validators manuscript-check manuscript gnn all"
+ARMS="lint fast full docs contract validators manuscript-check manuscript gnn all"
 
 usage() {
     printf 'usage: ./gate.sh <%s>\n' "${ARMS// /|}"
@@ -168,6 +174,7 @@ case "$1" in
     fast) run_arm fast arm_fast ;;
     full) run_arm full arm_full ;;
     docs) run_arm docs arm_docs ;;
+    contract) run_arm contract arm_contract ;;
     validators) run_arm validators arm_validators ;;
     manuscript-check) run_arm manuscript-check arm_manuscript_check ;;
     manuscript) run_arm manuscript arm_manuscript ;;

@@ -21,6 +21,7 @@ historical batch workflow.
 | `gnn_parser_probe.py` | Parse `specs/weather_pomdp.gnn.md` with the installed upstream `gnn` package and print what it read as JSON. Run by `validate_gnn_spec.py` under the pinned revision; not called directly. |
 | `render_manuscript.py` | The authoritative manuscript render path: validates declared variables, the figure registry, bibliography keys, and section labels, then assembles `manuscript/` and renders the formats enabled in `manuscript/config.yaml`. `--check` stops after validation. |
 | `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
+| `check_education_contract.py` | Check the Education adoption pointer and bundle with the vendored lead checker; see [migration blockers](../docs/gate.md#education-migration--blocked-on-authored-content). |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
 | `run_all_chapter_03.sh` | Shell shortcut for `--chapters 3`. |

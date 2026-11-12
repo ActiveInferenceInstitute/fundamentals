@@ -1,7 +1,31 @@
 # Documentation review TODO
 
 Date: 2026-08-02
-Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3)
+Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3); re-checked 2026-11-12 (estate to-do refresh at `eb64397`)
+
+## Estate alignment pass (2026-11-12)
+
+`specs/gnn-pin.json` now carries the canonical `gnn-importer-pin/v1` schema
+(`b3f5ab5`, #29), and `.github/GNN.md` records the pin file, the `gnn-conformance`
+job key and display name, and the `./gate.sh gnn` arm (`4212d58`, #31). That arm
+provisions or accepts a runtime at the pinned revision, runs
+`scripts/validate_gnn_spec.py --gnn-runtime` — which verifies every recorded
+parser digest and requires the pinned parser and the dependency-free reader in
+`active_inference.gnn_spec` to agree — and then runs `tests/test_gnn_spec.py`.
+The pin itself still names `v5.0.3` at
+`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, and this repository still reads it
+with its own `load_pin`; the estate-wide cutover to the shared reader is open,
+below.
+
+Authored education source text now exists (`eb64397`, #34): a
+`## Learning objective` section in `chapters/chapter_01/README.md` and the first
+definition in `manuscript/98_symbols_glossary.md`. That is one objective and one
+glossary term against fourteen chapters; the education contract needs at least one
+objective per unit, so this is a start, not an adoption.
+
+`pymdp` is not a dependency of this repository: `pyproject.toml`,
+`requirements.txt`, and `uv.lock` contain no `pymdp` occurrence at all, so no
+`inferactively-pymdp` floor applies here.
 
 ## Manuscript and gate pass (2026-11-12)
 
@@ -85,6 +109,34 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 
 ## Open / deferred
 
+- **GNN–FEP cutover to the shared reader is not applied here.**
+  `specs/gnn-pin.json` names `v5.0.3` at
+  `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, a revision that predates
+  `gnn/importers.py`, so this repository's `active_inference.gnn_spec.load_pin`
+  still reads and verifies the pin itself instead of calling
+  `python -m gnn.importers check --repo .`. **Blocker:** the pin bump to `v5.1.0`
+  (`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`) invalidates every recorded parser
+  digest, so the bump, the digest re-record, `.github/GNN.md`, and `./gate.sh gnn`
+  have to change together against the new runtime. **Owner:** the `fundamentals`
+  maintainers. The upstream tag exists, so nothing outside this repository blocks
+  it; an unavailable runtime must keep failing the arm rather than skipping it.
+- **The education contract cannot be emitted for this repository.** `courses`
+  names `fundamentals` a member whose pointer is `education-contract.json` and
+  whose schema is `specs/education/schema.json` (`courses`
+  `specs/education/contract.json`, member `members[2]`, read at `f1e5af62`);
+  neither file exists here. `$defs.unit.properties.objectives` is `minItems: 1`
+  and `objectives` is required, so a unit with no authored objective cannot be
+  written at all. **Missing artefact:** authored learning objectives for
+  chapters 2–14 in their chapter sources — only
+  `chapters/chapter_01/README.md` carries a `## Learning objective` heading — plus
+  further authored glossary definitions in `manuscript/98_symbols_glossary.md`,
+  which currently defines one term (`## Generative model`). **Owner:** the chapter
+  authors and `fundamentals` maintainers; the lead `courses` contract cannot
+  supply them, because its content covers the Institute's courses, not this
+  book's chapters. No bundle can be emitted without them, and recasting a chapter
+  description as an objective would invent the statement the contract has to
+  quote. The vendored contract and the full triage live in open PR #33, which
+  stays open rather than record a partial adoption.
 - Extras-family M3 (boilerplate consolidation): the 57 full-template topic
   READMEs share identical Scripts/Outputs sections that drifted (m1/m4 fixed
   here). A durable fix would generate those sections from the

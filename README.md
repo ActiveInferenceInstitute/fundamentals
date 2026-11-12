@@ -117,9 +117,32 @@ uv run active-inference-web         # ditto, for the browser UI
 See [`docs/web.md`](docs/web.md) for the full HTTP surface and design
 notes.
 
-The batch pipeline is documented for local use; CI runs lint plus the unit and
-contract suites and the static validators below (see
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+### The repository gate
+
+One entry point runs everything CI runs, arm by arm. A job in
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) installs the locked
+environment and then calls one arm, so the command you run locally is the
+command CI runs.
+
+```bash
+./gate.sh --list            # lint, fast, full, docs, validators, manuscript-check, manuscript, gnn
+./gate.sh lint              # ruff over the tree
+./gate.sh fast              # the CI test job: unit, contract, and documentation suites
+./gate.sh docs              # documentation and Markdown-link contracts only
+./gate.sh validators        # artifact, coverage, and source-spine validators
+./gate.sh manuscript-check  # manuscript variables, figures, citations, labels (no Pandoc)
+./gate.sh manuscript        # render the manuscript HTML and PDF
+./gate.sh gnn               # pinned GNN conformance plus the drift guard
+./gate.sh full              # the whole pytest suite, including smoke tests
+./gate.sh all               # every arm, in that order
+```
+
+[`docs/gate.md`](docs/gate.md) documents each arm, the exact command it runs,
+and its measured wall time on a development host. `./gate.sh manuscript` writes
+the manuscript to `docs/_build/manuscript/`; see
+[`manuscript/README.md`](manuscript/README.md).
+
+The batch pipeline is documented for local use too:
 
 ```bash
 # render every figure from all discovered chapters
@@ -433,7 +456,8 @@ Chapters 1-14 and Appendices A-D, and no Chapter 15.
 [`tests/test_gnn_spec.py`](tests/test_gnn_spec.py) binds the declaration to the
 chapter's literals and to the book's Eq. 15 posterior;
 [`scripts/validate_gnn_spec.py`](scripts/validate_gnn_spec.py) parses it with the
-pinned parser. CI runs that validator in its `gnn conformance` job. See
+pinned parser. CI runs that validator through `./gate.sh gnn`, in its
+`gnn conformance (pinned)` job. See
 [`docs/gnn.md`](docs/gnn.md).
 
 ### `docs/` — reference documentation
@@ -489,7 +513,7 @@ The directory mirrors `src/active_inference/` one-for-one (see
 
 ## Contributing
 
-Pull requests welcome. Please run `uv run pytest` (or `pytest`) before
+Pull requests welcome. Please run `./gate.sh fast` (or `uv run pytest`) before
 submitting and follow the existing structure: configurable, documented
 building blocks in `src/`, thin orchestrators in `chapters/`. See
 [`docs/architecture.md`](docs/architecture.md) for the layer design and

@@ -1,0 +1,41 @@
+# Declared manuscript variables.
+#
+# Every token here has a producer inside `scripts/render_manuscript.py`, which
+# recomputes the value from tracked repository state on every run and refuses to
+# render when the declaration has drifted. Editing a value by hand therefore
+# cannot make the prose claim something the repository does not contain; the
+# fix for a changed count is to update the value and the `source` note here
+# after reviewing the change.
+schema: manuscript-variables/v1
+
+variables:
+  PACKAGE_NAME:
+    value: "active-inference-fundamentals"
+    source: "pyproject.toml [project].name"
+  PACKAGE_VERSION:
+    value: "0.1.0"
+    source: "pyproject.toml [project].version"
+  REPOSITORY_SLUG:
+    value: "ActiveInferenceInstitute/fundamentals"
+    source: "pyproject.toml [project.urls].Homepage"
+  CHAPTER_COUNT:
+    value: "14"
+    source: "chapters/chapter_NN directories"
+  CHAPTER_SCRIPT_COUNT:
+    value: "108"
+    source: "chapters/*/*.py excluding __init__.py"
+  EXTRAS_TOPIC_COUNT:
+    value: "71"
+    source: "extras/<topic> directories"
+  GNN_PIN_SCHEMA:
+    value: "gnn-importer-pin/v1"
+    source: "specs/gnn-pin.json schema"
+  GNN_PIN_TAG:
+    value: "v5.0.3"
+    source: "specs/gnn-pin.json tag"
+  GNN_PIN_COMMIT:
+    value: "8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1"
+    source: "specs/gnn-pin.json commit"
+  GNN_PIN_LANGUAGE_VERSION:
+    value: "GNN v1.1"
+    source: "specs/gnn-pin.json language_version"

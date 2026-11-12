@@ -23,6 +23,16 @@ with `--save`. The directory is **fully regenerable** from source.
 | [`chapter_14/`](chapter_14/) | `chapters/chapter_14/*.py --save` | 4 PNGs for ergodic density, survival/viability, entropy/VFE bounds, Bayesian mechanics, and Markov blankets. |
 | [`extras/`](extras/) | `extras/<topic>/*.py --save` | 71 book-grounded extras topics with static PNGs, simulation PNGs, and GIFs when declared by `active_inference.extra_topics`; interactive wrappers are GUI-only and do not write media. |
 
+## Figure registry
+
+`figure_registry.json` is the one **tracked** file here. It is not generated: it
+records, for every figure the manuscript cites, the label, the path relative to
+this directory, the producing orchestrator, the caption, and the alternative
+text. `scripts/render_manuscript.py` binds the registry caption and alternative
+to the rendered figure and fails when a registered file is missing, a manuscript
+figure is unregistered, or a registry entry goes unused. Validate with
+`./gate.sh manuscript-check`.
+
 ## Regenerate
 
 ```bash

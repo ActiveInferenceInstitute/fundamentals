@@ -21,6 +21,7 @@ docs/
 ├── uv.md                      ← quick reference for the uv workflow
 ├── web.md                     ← local browser UI launched by `run.sh --web`
 ├── gnn.md                     ← GNN declaration of the Chapter 9 model, its pin, and the adoption contract
+├── gate.md                    ← the repository gate: each arm's command and measured wall time
 ├── chapters/                  ← per-book-chapter concept maps
 │   ├── chapter_01.md
 │   ├── chapter_02.md
@@ -79,6 +80,7 @@ docs/
 | How the package is organized | [`architecture.md`](architecture.md) |
 | Which Python identifier maps to a book symbol | [`notation.md`](notation.md) |
 | How the Chapter 9 model is declared as GNN and validated | [`gnn.md`](gnn.md) |
+| Which command CI runs, and how to run one arm locally | [`gate.md`](gate.md) |
 | What Chapter *N* of the book covers and which scripts mirror it | [`chapters/chapter_<N>.md`](chapters/) |
 | How Bayesian inference / regression / EM / ... works in this codebase | [`topics/`](topics/) |
 | Which book sections are covered by each extras topic | [`reference/book_topic_matrix.md`](reference/book_topic_matrix.md) |
@@ -109,6 +111,8 @@ it. The high-level rule is:
 - `reference/orchestrator_provenance.md`: edit when the chapter/extras wrapper
   contract, source API metadata, or validation gates change; validate with
   `uv run python scripts/validate_orchestrator_provenance.py`.
+- `gate.md`: edit when an arm, a CI job, or a measured arm time changes;
+  validate with the arm itself and with `./gate.sh --list`.
 - `gnn.md`: edit when the GNN declaration, the pin, or the conformance contract
   changes; validate with `uv run pytest tests/test_gnn_spec.py` and
   `uv run python scripts/validate_gnn_spec.py` (see the page for the pinned

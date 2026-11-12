@@ -19,6 +19,7 @@ historical batch workflow.
 | `validate_raw_data_exports.py` | Check `output/data/` NPZ+JSON sidecars for missing partners, invalid arrays, and manifest drift. |
 | `validate_source_spine.py` | Check the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `gnn_parser_probe.py` | Parse `specs/weather_pomdp.gnn.md` with the installed upstream `gnn` package and print what it read as JSON. Run by `validate_gnn_spec.py` under the pinned revision; not called directly. |
+| `render_manuscript.py` | The authoritative manuscript render path: validates declared variables, the figure registry, bibliography keys, and section labels, then assembles `manuscript/` and renders the formats enabled in `manuscript/config.yaml`. `--check` stops after validation. |
 | `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
@@ -61,6 +62,10 @@ uv run python scripts/validate_raw_data_exports.py --root output/data
 # (see docs/gnn.md; exits 2 when no pinned runtime or checkout is available)
 uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --json
 GNN_ROOT=/path/to/Generalized_Notation_Notation GNN_PYTHON=/path/to/python uv run python scripts/validate_gnn_spec.py
+
+# Validate and render the manuscript (see docs/gate.md)
+uv run python scripts/render_manuscript.py --check
+uv run python scripts/render_manuscript.py
 
 # Export Jupyter notebooks
 uv sync --extra notebooks
@@ -132,6 +137,7 @@ surface fits the situation:
 | Artifact QA after render | `scripts/validate_rendered_figures.py` |
 | Raw-data QA after render | `scripts/validate_raw_data_exports.py` |
 | GNN declaration QA (needs the pinned parser runtime) | `scripts/validate_gnn_spec.py` |
+| Manuscript validation / render | `scripts/render_manuscript.py` |
 | Notebook export | `scripts/export_notebooks.py` |
 | Notebook QA after export | `scripts/validate_notebook_exports.py` |
 | Re-render a single chapter | any of the three |
@@ -140,21 +146,22 @@ surface fits the situation:
 
 ## CI Integration
 
-`.github/workflows/ci.yml` runs three jobs. `tests` (on Python 3.11 and 3.15)
-installs `uv.lock` with `uv sync --locked` (the lock must be current with
-`pyproject.toml`), runs `ruff check .`, and runs the unit, contract, and
-documentation suites (`tests/core tests/estimators tests/utils
-tests/visualizations tests/web` plus the top-level contract test modules).
-`validators` runs `validate_orchestrator_contracts.py`,
-`validate_orchestrator_provenance.py`, `validate_book_topic_coverage.py`,
-`validate_source_spine.py` (the PDF-free form), and
-`validate_rendered_figures.py --root output/figures` over the tracked media
-sample. `gnn-conformance` provisions the GNN revision pinned in
-`specs/gnn-pin.json` into its own runtime, validates `specs/weather_pomdp.gnn.md`
-with it, and re-runs `tests/test_gnn_spec.py` against that runtime so the
-pinned-parser case executes rather than skipping.
+`.github/workflows/ci.yml` runs four jobs, and every job calls one arm of
+`./gate.sh` after installing the locked environment with `uv sync --locked`
+(the lock must be current with `pyproject.toml`):
 
-Not in CI, and why: the batch renderers (`run_all_figures.py`,
+| Job | Arm | What it runs |
+|---|---|---|
+| `lint` | `./gate.sh lint` | `ruff check .` once, not once per interpreter |
+| `tests (py3.11)` / `tests (py3.14)` | `./gate.sh fast` | the unit, contract, and documentation suites |
+| `repository validators` | `./gate.sh validators`, `./gate.sh manuscript-check` | the validators listed above, plus the manuscript contract check |
+| `gnn conformance (pinned)` | `./gate.sh gnn` | the pinned-runtime provisioning, `validate_gnn_spec.py`, and `tests/test_gnn_spec.py` with that runtime so the pinned-parser case executes rather than skipping |
+
+Every job installs `uv` and its interpreter through the shared composite step
+`ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448`.
+
+Not in CI, and why: the manuscript HTML/PDF render (`./gate.sh manuscript`)
+needs `pandoc` and `xelatex` on the runner; the batch renderers (`run_all_figures.py`,
 `export_notebooks.py`, the `run_all_chapter_*.sh` wrappers) write the gitignored
 `output/` trees of a working copy; the full `uv run pytest` suite renders every
 chapter, extras, and demo orchestrator through its `--save` CLI in a temporary

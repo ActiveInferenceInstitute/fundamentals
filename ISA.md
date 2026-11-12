@@ -47,11 +47,13 @@ repository and with the inspected PDF source spine, not with stale plans.
   to the chapter's literals and the book's Eq. 15 posterior by
   `tests/test_gnn_spec.py` and validated against the pinned parser by
   `scripts/validate_gnn_spec.py`; see [`docs/gnn.md`](docs/gnn.md).
-- `.github/workflows/ci.yml` gates the repository: lint plus the unit and
-  contract suites on Python 3.11 and 3.15, the static validators (including the
-  tracked-media check), and a required `gnn conformance` job that provisions the
-  pinned parser runtime. The render-heavy smoke suite and the batch renderers
-  stay local.
+- `.github/workflows/ci.yml` gates the repository through `./gate.sh` arms:
+  `lint` once, `fast` (the unit, contract, and documentation suites) on Python
+  3.11 and 3.14, `validators` plus `manuscript-check` (the manuscript variables,
+  figure registry, citations, and section labels, without Pandoc), and the
+  required `gnn conformance (pinned)` job, whose `gnn` arm provisions the pinned
+  parser runtime. The render-heavy smoke suite, the batch renderers, and the
+  manuscript HTML/PDF render stay local.
 
 ## Current Increment
 

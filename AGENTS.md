@@ -170,9 +170,22 @@ and does not prove.
   oriented and stdlib-first. If they need numerical source behavior, import it
   from `active_inference` instead of reaching into chapter or extras wrappers.
 
+## Gate
+
+`./gate.sh <arm>` is the one entry point; each arm is separately runnable and
+calls the same command the matching CI job calls. `./gate.sh --list` prints the
+arms (`lint`, `fast`, `full`, `docs`, `validators`, `manuscript-check`,
+`manuscript`, `gnn`, `all`). There is no `types` arm because the repository
+configures no type checker. Add a command to `gate.sh` and have CI call that arm
+rather than writing the command twice. [`docs/gate.md`](docs/gate.md) records
+each arm's command and measured wall time.
+
 ## Testing
 
 ```bash
+# Everything CI runs, in one go
+./gate.sh all
+
 # Full suite (unit tests + chapter smoke tests)
 uv run pytest                                # or: pytest
 

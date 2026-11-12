@@ -3,6 +3,22 @@
 Date: 2026-08-02
 Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3)
 
+## Manuscript and gate pass (2026-11-12)
+
+- The manuscript no longer renders only through a sibling template checkout.
+  `scripts/render_manuscript.py` validates `manuscript/variables.yaml` against
+  its repository producers, binds `output/figures/figure_registry.json` to the
+  cited figures, resolves citations, and renders the formats enabled in
+  `manuscript/config.yaml`. It is reachable as `./gate.sh manuscript-check` and
+  `./gate.sh manuscript`, and `manuscript/README.md` and `manuscript/SYNTAX.md`
+  document the contract.
+- `./gate.sh` is the single gate entry point; `.github/workflows/ci.yml` calls
+  its arms instead of restating commands, lint runs once instead of in both
+  matrix legs, and every job uses the shared `setup-python-uv` composite step.
+  [`docs/gate.md`](docs/gate.md) records the arms and their measured times.
+- The deferred item below is therefore resolved for the manuscript; the figure
+  sample it cites is deliberately two figures, not the whole inventory.
+
 ## Institute improvements pass 3 (2026-11-11)
 
 Documentation-completeness re-check. `docs/README.md` now indexes the
@@ -75,10 +91,10 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
   `active_inference.extra_topics` registry (a small doc-gen step in
   `scripts/`); deferred because it is a code change, not a docs edit, and the
   two concrete drift symptoms are now fixed and validator-checked.
-- The manuscript directory remains an explicitly marked scaffold. Its
-  sibling-template reference and example figure path are intentional
-  placeholders; resolving them would require importing or reproducing a
-  separate template contract, which is outside this repository-only pass.
+- ~~The manuscript directory remains an explicitly marked scaffold.~~ Resolved
+  2026-11-12: the manuscript has a project-local render path, declared
+  variables, and a validated figure registry. The prose itself is still a
+  scaffold — it remains an evidence map, not a publication draft.
 - No `CITATION.cff`, `SECURITY.md`, or `CONTRIBUTING.md` files were added
   because equivalent citation, contribution, and license guidance already
   exists in `README.md`, and no repository-specific security policy was

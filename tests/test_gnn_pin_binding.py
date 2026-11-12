@@ -7,6 +7,7 @@ uses a throwaway local git repository.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -231,3 +232,151 @@ def test_verify_tag_remote_that_cannot_answer_is_not_run_not_a_pass(
     assert code == 2
     assert probed == []
     assert "--verify-tag-remote" in capsys.readouterr().err
+
+
+def _verified_tag(pin: dict) -> dict:
+    return {
+        "status": "verified",
+        "tag": pin["tag"],
+        "commit": pin["commit"],
+        "resolved": pin["commit"],
+        "detail": "stub remote",
+    }
+
+
+def _probe_payload() -> dict:
+    """Return the payload keys ``main`` reads once conformance is stubbed out."""
+    return {
+        "gnn_version": "9.9.9",
+        "gnn_module": "/stub/gnn/__init__.py",
+        "parser": {"success": True, "version": "1.1"},
+        "semantic": {"is_valid": True},
+        "orientation": {"tensors": []},
+        "consistency": {"consistency_score": 1.0},
+    }
+
+
+def test_provenance_requires_a_verified_tag_and_revision() -> None:
+    pin = _pin()
+    tag = _verified_tag(pin)
+    verified = {"status": "verified", "commit": pin["commit"]}
+    unknown = {"status": "unresolvable-offline", "commit": None}
+
+    assert vgs.provenance_failures(tag, verified) == []
+    (unverified_tag,) = vgs.provenance_failures(None, verified)
+    assert unverified_tag.startswith(vgs.PROVENANCE_UNVERIFIED)
+    (unverified_revision,) = vgs.provenance_failures(tag, unknown)
+    assert "revision" in unverified_revision
+
+
+def test_unresolved_runtime_revision_is_not_a_pass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pin = _pin()
+    pin_path = tmp_path / "pin.json"
+    pin_path.write_text(json.dumps(pin), encoding="utf-8")
+    package = tmp_path / "gnn"
+    package.mkdir()
+
+    monkeypatch.setattr(
+        vgs, "_locate_package", lambda *_a, **_k: (package, str(package / "__init__.py"))
+    )
+    monkeypatch.setattr(vgs, "_verify_digests", lambda *_a, **_k: {})
+    monkeypatch.setattr(
+        vgs,
+        "_installed_revision",
+        lambda *_a, **_k: {
+            "status": "unresolvable-offline",
+            "commit": None,
+            "version": "9.9.9",
+            "detail": "the installer recorded no VCS commit",
+        },
+    )
+    monkeypatch.setattr(vgs, "tag_binding", lambda *_a, **_k: _verified_tag(pin))
+    monkeypatch.setattr(vgs, "run_probe", lambda *_a, **_k: _probe_payload())
+    monkeypatch.setattr(vgs, "conformance_failures", lambda *_a, **_k: [])
+
+    code = vgs.main(
+        [
+            "--gnn-runtime",
+            sys.executable,
+            "--pin",
+            str(pin_path),
+            "--receipt",
+            str(tmp_path / "receipt.json"),
+        ]
+    )
+    receipt = json.loads((tmp_path / "receipt.json").read_text(encoding="utf-8"))
+
+    assert code == 2
+    assert receipt["ok"] is False
+    assert receipt["revision"]["status"] == "unresolvable-offline"
+    assert receipt["provenance"]["verified"] is False
+    assert any("revision" in f for f in receipt["provenance"]["failures"])
+    assert "gnn provenance not verified" in capsys.readouterr().err
+
+
+def test_non_git_source_tree_is_unverified_not_a_git_revision(tmp_path: Path) -> None:
+    tree = tmp_path / "tree"
+    parser = tree / "src" / "gnn" / "__init__.py"
+    parser.parent.mkdir(parents=True)
+    parser.write_text("parser", encoding="utf-8")
+    digest = hashlib.sha256(parser.read_bytes()).hexdigest()
+    pin = _pin(parser_files={"src/gnn/__init__.py": digest})
+
+    source, origin, revision = vgs.materialize_pin(tree, pin)
+
+    assert source == tree
+    assert "no git metadata" in origin
+    assert revision["status"] == "unverified"
+    assert revision["commit"] is None
+    assert "git archive" not in revision["detail"]
+    assert vgs.provenance_failures(_verified_tag(pin), revision)
+
+
+def test_git_checkout_is_attested_as_the_pinned_revision(checkout: tuple[Path, str]) -> None:
+    repo, head = checkout
+    pin = _pin(commit=head, parser_files={})
+
+    source, origin, revision = vgs.materialize_pin(repo, pin)
+
+    assert source != repo
+    assert origin == f"git archive of {head}"
+    assert revision["status"] == "verified"
+    assert revision["commit"] == head
+    assert vgs.provenance_failures(_verified_tag(pin), revision) == []
+
+
+def test_non_git_root_ends_unverified_not_as_a_git_archive(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    pin = _pin(parser_files={})
+    pin_path = tmp_path / "pin.json"
+    pin_path.write_text(json.dumps(pin), encoding="utf-8")
+    tree = tmp_path / "tree"
+    (tree / "src" / "gnn").mkdir(parents=True)
+    (tree / "src" / "gnn" / "__init__.py").write_text("parser", encoding="utf-8")
+    monkeypatch.setattr(vgs, "run_probe", lambda *_a, **_k: _probe_payload())
+    monkeypatch.setattr(vgs, "conformance_failures", lambda *_a, **_k: [])
+
+    code = vgs.main(
+        [
+            "--gnn-root",
+            str(tree),
+            "--python",
+            sys.executable,
+            "--pin",
+            str(pin_path),
+            "--receipt",
+            str(tmp_path / "receipt.json"),
+        ]
+    )
+    receipt = json.loads((tmp_path / "receipt.json").read_text(encoding="utf-8"))
+
+    assert code == 2
+    assert receipt["ok"] is False
+    assert "no git metadata" in receipt["pin_source"]
+    assert receipt["revision"]["status"] == "unverified"
+    assert "git archive" not in receipt["revision"]["detail"]
+    assert receipt["tag_binding"]["status"] == "unresolvable-offline"
+    assert receipt["provenance"]["verified"] is False

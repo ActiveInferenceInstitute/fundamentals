@@ -15,8 +15,13 @@ verified sources for that pin:
 
 Both sources also bind the pin's ``tag`` to its ``commit`` where an object store
 is available: a GNN checkout resolves the tag locally (``--gnn-root``),
-``--verify-tag-remote`` resolves it upstream with ``git ls-remote``. An
-unresolvable binding is reported in the receipt, never treated as a pass.
+``--verify-tag-remote`` resolves it upstream with ``git ls-remote``. A binding
+that could not be verified — no object store, no remote answer, a tag that
+resolves elsewhere, or an install with no recorded VCS commit — is reported in
+the receipt and ends the run as *unverified* (``ok: false``, exit 2), never a
+pass. The same holds for a ``--gnn-root`` directory without git metadata: its
+parser files must match the pin's digests, but it is attested as a
+digest-verified tree, not as the pinned Git revision.
 
 Either way the document is parsed by ``scripts/gnn_parser_probe.py`` in a
 subprocess and checked for conformance: the pinned parser's view of the
@@ -27,8 +32,9 @@ The binding of the declaration to the implementation lives in
 ``tests/test_gnn_spec.py``; this script proves the document is well-formed GNN
 and that two independent readers agree on it.
 
-Exit codes: ``0`` pass, ``1`` conformance failure, ``2`` pinned runtime or
-checkout unavailable (the run is then explicitly *not run*, never a pass).
+Exit codes: ``0`` pass with the tag and revision verified, ``1`` conformance
+failure, ``2`` pinned runtime or checkout unavailable or the tag/revision
+binding unverified (the run is then explicitly *not a pass*).
 
 Usage:
 
@@ -37,8 +43,9 @@ Usage:
     GNN_PYTHON=/path/to/parser-runtime/bin/python \\
     uv run python scripts/validate_gnn_spec.py --json
 
-    # Pinned installed runtime (used by CI)
-    uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/venv/bin/python
+    # Pinned installed runtime (used by CI); --verify-tag-remote binds the tag
+    uv run python scripts/validate_gnn_spec.py \\
+        --gnn-runtime /path/to/venv/bin/python --verify-tag-remote
 """
 
 from __future__ import annotations
@@ -113,6 +120,10 @@ def _verify_digests(package_dir: Path, pin: dict[str, Any], *, origin: str) -> d
 #: A named conformance failure: the pin's ``tag`` and ``commit`` name one
 #: revision, so a tag that resolves elsewhere is reported by name.
 TAG_COMMIT_MISMATCH = "tag-commit-mismatch"
+
+#: A named provenance result: the parsed source was not proven to be the pin's
+#: revision. Recorded in the receipt and never surfaced as ``ok: true``.
+PROVENANCE_UNVERIFIED = "provenance-unverified"
 
 # Locating the installed package and reading its installer metadata never parses
 # a document, so the digest and revision checks can run before the probe.
@@ -317,14 +328,55 @@ def revision_failures(revision: dict[str, Any], pin: dict[str, Any]) -> list[str
     return []
 
 
-def materialize_pin(gnn_root: Path, pin: dict[str, Any]) -> tuple[Path, str]:
-    """Return a directory holding the pinned source tree and how it was obtained."""
+def provenance_failures(
+    tag: dict[str, Any] | None, revision: dict[str, Any] | None
+) -> list[str]:
+    """Return one named failure for each part of the pin binding left unverified.
+
+    Only ``status == "verified"`` is evidence for the pin. Anything else — no
+    object store, no remote answer, no installer-recorded commit, or a source
+    tree with no git metadata — leaves the run unverified, so it cannot end with
+    ``ok: true`` even when the document itself conforms.
+    """
+
+    failures: list[str] = []
+    for label, record in (("tag binding", tag), ("revision", revision)):
+        record = record or {}
+        if record.get("status") != "verified":
+            detail = record.get("detail") or "no detail recorded"
+            failures.append(
+                f"{PROVENANCE_UNVERIFIED}: {label} is "
+                f"{record.get('status', 'absent')}: {detail}"
+            )
+    return failures
+
+
+def materialize_pin(
+    gnn_root: Path, pin: dict[str, Any]
+) -> tuple[Path, str, dict[str, Any]]:
+    """Return the pinned source tree, how it was obtained, and its revision record.
+
+    A directory with git metadata is materialized from the pinned commit, so its
+    revision is verified. A directory without git metadata is only digest-verified:
+    its parser files must match the pin, but nothing proves which revision it is,
+    so the revision record says so instead of claiming a git archive.
+    """
 
     if not gnn_root.is_dir():
         raise Unavailable(f"GNN checkout is not a directory: {gnn_root}")
     if not (gnn_root / ".git").exists():
         _verify_digests(gnn_root / "src" / "gnn", pin, origin=str(gnn_root))
-        return gnn_root, f"digest-verified source tree {gnn_root} (no git metadata)"
+        return (
+            gnn_root,
+            f"digest-verified source tree {gnn_root} (no git metadata)",
+            {
+                "status": "unverified",
+                "commit": None,
+                "version": None,
+                "detail": "the source tree has no git metadata; its parser files match "
+                "the pin's digests but no revision was resolved",
+            },
+        )
 
     commit = pin["commit"]
     resolved = subprocess.run(
@@ -357,7 +409,16 @@ def materialize_pin(gnn_root: Path, pin: dict[str, Any]) -> tuple[Path, str]:
             handle.extractall(target)
     archive.unlink()
     _verify_digests(target / "src" / "gnn", pin, origin=f"archive of {commit}")
-    return target, f"git archive of {commit}"
+    return (
+        target,
+        f"git archive of {commit}",
+        {
+            "status": "verified",
+            "commit": commit,
+            "version": None,
+            "detail": f"git archive of {commit}",
+        },
+    )
 
 
 def run_probe(python: str, spec: Path, output: Path, *, source: Path | None) -> dict[str, Any]:
@@ -557,17 +618,11 @@ def main(argv: list[str] | None = None) -> int:
         output = Path(directory) / "probe.json"
         try:
             if args.gnn_root is not None:
-                source, origin = materialize_pin(args.gnn_root, pin)
+                source, origin, revision = materialize_pin(args.gnn_root, pin)
                 payload = run_probe(
                     args.python or sys.executable, args.spec, output, source=source
                 )
                 package_dir = None
-                revision = {
-                    "status": "verified",
-                    "commit": pin["commit"],
-                    "version": None,
-                    "detail": "git archive of the pinned commit",
-                }
             else:
                 source = None
                 # The digest and revision checks come before the parser runs, so
@@ -586,8 +641,9 @@ def main(argv: list[str] | None = None) -> int:
         )
         failures.extend(revision_failures(revision, pin))
 
+    provenance = provenance_failures(tag, revision)
     receipt = {
-        "ok": not failures,
+        "ok": not failures and not provenance,
         "spec": str(args.spec),
         "pin": pin,
         "pin_source": origin,
@@ -597,6 +653,7 @@ def main(argv: list[str] | None = None) -> int:
         "parser_language_version": payload["parser"].get("version"),
         "tag_binding": tag,
         "revision": revision,
+        "provenance": {"verified": not provenance, "failures": provenance},
         "parser_success": payload["parser"]["success"],
         "semantic_valid": payload["semantic"].get("is_valid"),
         "orientation": [
@@ -614,11 +671,19 @@ def main(argv: list[str] | None = None) -> int:
         for message in failures:
             print(f"  {message}", file=sys.stderr)
         return 1
+    if provenance:
+        # The document conforms, but the source it was parsed by was not proven
+        # to be the pin's revision; that is not a pass.
+        print("gnn provenance not verified:", file=sys.stderr)
+        for message in provenance:
+            print(f"  {message}", file=sys.stderr)
+        print(f"gnn validation not verified; receipt {args.receipt}", file=sys.stderr)
+        return 2
     print(
         f"gnn validation passed: {args.spec} parsed by gnn {payload['gnn_version']} "
         f"({origin}); language version {payload['parser'].get('version')}; "
-        f"tag {tag['tag']} -> {tag['status']}; revision {revision['status']}; "
-        f"receipt {args.receipt}"
+        f"tag {tag['tag']} -> {tag['status']}; revision {revision['status']} "
+        f"({revision.get('detail')}); receipt {args.receipt}"
     )
     return 0
 

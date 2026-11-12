@@ -163,9 +163,10 @@ uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
 
 # validate the committed GNN declaration against the upstream parser pinned in
-# specs/gnn-pin.json (exits 2, "not run", when no pinned runtime is available);
-# docs/gnn.md documents the GNN_ROOT / GNN_RUNTIME_PYTHON forms
-uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --json
+# specs/gnn-pin.json (exits 2, not a pass, when no pinned runtime is available
+# or the tag/revision binding is unverified); docs/gnn.md documents the
+# GNN_ROOT / GNN_RUNTIME_PYTHON forms
+uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --verify-tag-remote --json
 
 # export Jupyter notebooks (chapters + extras + demos)
 uv sync --extra notebooks

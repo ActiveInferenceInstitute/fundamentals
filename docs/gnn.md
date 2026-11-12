@@ -79,7 +79,7 @@ The receipt is written to `docs/_build/gnn/validation-receipt.json`
 |---|---|
 | `test_declared_arrays_equal_the_chapter_literals` | The GNN declaration and the implementation's literals are the same model, field by field. |
 | `test_infer_states_reproduces_the_book_posterior` | The declared model, run through this repository's inference, reproduces the book's Eq. 15 numbers. |
-| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. |
+| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. The parser files are digest-verified before the document is parsed, and the pin's `tag` is resolved to its `commit` in the GNN object store (local tags, or `--verify-tag-remote`). For an installed runtime the installer's recorded VCS commit is compared with the pin; an install without that metadata, or a run with no object store, is reported as unresolvable rather than assumed. |
 
 Nothing above proves the model is scientifically adequate, that the book's
 numbers are correct beyond the asserted Eq. 15 posterior, or that a future

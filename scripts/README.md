@@ -19,7 +19,7 @@ historical batch workflow.
 | `validate_raw_data_exports.py` | Check `output/data/` NPZ+JSON sidecars for missing partners, invalid arrays, and manifest drift. |
 | `validate_source_spine.py` | Check the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `gnn_parser_probe.py` | Parse `specs/weather_pomdp.gnn.md` with the installed upstream `gnn` package and print what it read as JSON. Run by `validate_gnn_spec.py` under the pinned revision; not called directly. |
-| `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
+| `validate_gnn_spec.py` | Validate the Chapter 9 GNN declaration with the parser revision pinned in `specs/gnn-pin.json` and require it to agree with `active_inference.gnn_spec`. Verifies the parser digests *before* parsing, binds the pin's tag to its commit where an object store exists, and compares the installed runtime's recorded revision with the pin. Exits 2 when no pinned runtime is available (a reported *not run*, never a pass). |
 | `run_all_chapter_01.sh` | Shell shortcut for `--chapters 1`. |
 | `run_all_chapter_02.sh` | Shell shortcut for `--chapters 2`. |
 | `run_all_chapter_03.sh` | Shell shortcut for `--chapters 3`. |

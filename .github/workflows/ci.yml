@@ -157,12 +157,23 @@ jobs:
           TAG=$("$PY" -c "import json;print(json.load(open('$PIN'))['tag'])")
           test -n "$VERSION"
           test "$VERSION" = "${TAG#v}"
+          # Resolve the tag in the upstream object store; an annotated tag also
+          # advertises its peeled commit. A tag that points elsewhere is a pin
+          # failure, never a warning.
+          RESOLVED=$(git ls-remote --tags "$REPO" "refs/tags/${TAG}^{}" | awk '{print $1}')
+          if [ -z "$RESOLVED" ]; then
+            RESOLVED=$(git ls-remote --tags "$REPO" "refs/tags/${TAG}" | awk '{print $1}')
+          fi
+          test -n "$RESOLVED"
+          test "$RESOLVED" = "$COMMIT"
           echo "gnn-version=${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "gnn-tag=${TAG} commit=${COMMIT}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate the GNN declaration against the pinned parser
         run: >-
           uv run python scripts/validate_gnn_spec.py
-          --gnn-runtime "$RUNNER_TEMP/gnn-runtime/bin/python" --json
+          --gnn-runtime "$RUNNER_TEMP/gnn-runtime/bin/python"
+          --verify-tag-remote --json
 
       - name: Re-run the specification/code drift guard against the pinned parser
         # The pinned-parser case of tests/test_gnn_spec.py skips without a runtime;

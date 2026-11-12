@@ -108,3 +108,11 @@ dev = [
     "ruff>=0.1.0",
     "nbformat>=5.10",
 ]
+
+[tool.ruff.lint]
+# ruff 0.17 replaced the classic E4/E7/E9/F default set with roughly 400 rules,
+# so a linter release alone turned this repository's `ruff check .` red (899
+# findings, all outside the classic set). State the policy the code is written
+# against explicitly; adopting the wider set is its own reviewed migration, not
+# a side effect of a version bump.
+select = ["E4", "E7", "E9", "F"]

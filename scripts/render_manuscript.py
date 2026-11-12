@@ -34,7 +34,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -206,18 +206,6 @@ class Source:
     text: str
     label: str
     heading: str
-
-
-@dataclass
-class Manuscript:
-    """The assembled manuscript and the observations made while assembling it."""
-
-    config: dict[str, Any]
-    sources: list[Source] = field(default_factory=list)
-    variables: dict[str, str] = field(default_factory=dict)
-    figures: dict[str, dict[str, Any]] = field(default_factory=dict)
-    citations: list[str] = field(default_factory=list)
-    unused_bib_keys: list[str] = field(default_factory=list)
 
 
 def _section_sort_key(path: Path) -> tuple[int, str]:

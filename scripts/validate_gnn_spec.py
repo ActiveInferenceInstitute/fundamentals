@@ -589,9 +589,15 @@ def main(argv: list[str] | None = None) -> int:
         help="parser interpreter used with --gnn-root (default: $GNN_PYTHON or this interpreter)",
     )
     parser.add_argument(
+        "--gnn-tag-checkout",
+        type=Path,
+        default=os.environ.get("GNN_TAG_CHECKOUT"),
+        help="local Git tag store for the installed parser (default: $GNN_TAG_CHECKOUT)",
+    )
+    parser.add_argument(
         "--verify-tag-remote",
         action="store_true",
-        help="resolve the pin's tag with git ls-remote when no GNN checkout is supplied",
+        help="require a verified tag and use git ls-remote when no checkout is supplied",
     )
     parser.add_argument("--spec", type=Path, default=GNN_SPEC_PATH)
     parser.add_argument("--pin", type=Path, default=GNN_PIN_PATH)
@@ -608,10 +614,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    tag = tag_binding(args.gnn_root, pin, remote=args.verify_tag_remote)
+    if args.gnn_tag_checkout is not None and (args.gnn_root is not None or not args.gnn_runtime):
+        parser.error("--gnn-tag-checkout requires the installed GNN runtime without --gnn-root")
+    tag = tag_binding(
+        args.gnn_tag_checkout or args.gnn_root,
+        pin,
+        remote=args.verify_tag_remote and args.gnn_tag_checkout is None,
+    )
     if args.verify_tag_remote and tag["status"] != "verified":
-        # An explicit request to verify the tag upstream must not degrade into a
-        # silent pass when the remote cannot answer (offline, tag not listed).
+        # A required tag check must fail when the selected source cannot resolve it.
         print(f"gnn validation not run: --verify-tag-remote: {tag['detail']}", file=sys.stderr)
         return 2
     with tempfile.TemporaryDirectory(prefix="fundamentals-gnn-") as directory:

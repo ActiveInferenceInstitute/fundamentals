@@ -24,6 +24,7 @@
 #                           (default: ${XDG_CACHE_HOME:-$HOME/.cache}/fundamentals-gate)
 #   GNN_RUNTIME_PYTHON      interpreter with the pinned GNN distribution installed;
 #                           when unset the gate provisions the pin into GATE_CACHE
+#   GNN_TAG_CHECKOUT       Git checkout with the verified upstream tag for offline use
 #
 # Every arm prints `gate: <arm> ok (S.mmms)`; those numbers are the ones recorded
 # in docs/gate.md. An arm that needs more than about ten minutes is not measured

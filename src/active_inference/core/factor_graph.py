@@ -211,8 +211,13 @@ def hybrid_model_bridge(
 def marginal_message_passing(
     factors: list[np.ndarray] | tuple[np.ndarray, ...],
     incoming: np.ndarray | list[float],
-) -> np.ndarray:
-    """Repeatedly pass a categorical marginal through a chain of pairwise factors."""
+) -> tuple[np.ndarray, ...]:
+    """Return one normalized vector per boundary, including the incoming vector.
+
+    Each factor has shape ``(S_next, S_current)``. The tuple can therefore
+    contain vectors with different lengths. Consumers of square chains may
+    explicitly use ``np.stack(trace)`` to obtain a rectangular time series.
+    """
     message = normalize_message(incoming)
     out = [message]
     for factor in factors:
@@ -221,7 +226,7 @@ def marginal_message_passing(
             raise ValueError("each factor must have shape (S_next, S_current)")
         message = normalize_message(fac @ message)
         out.append(message)
-    return np.asarray(out)
+    return tuple(out)
 
 
 def active_inference_factor_messages(

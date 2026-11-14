@@ -53,7 +53,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.6" },
     { name = "nbformat", marker = "extra == 'dev'", specifier = ">=5.10" },
     { name = "nbformat", marker = "extra == 'notebooks'", specifier = ">=5.10" },
-    { name = "numpy", specifier = ">=1.23" },
+    { name = "numpy", specifier = ">=2.0" },
     { name = "pillow", specifier = ">=13.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },

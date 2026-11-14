@@ -10,14 +10,25 @@ Navigation and control as preference-seeking active inference.
 
 ## Scripts
 
-- `visualize_robotics_navigation.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_robotics_navigation.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_robotics_navigation.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
-- `animation_robotics_navigation.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_robotics_navigation.py` - Static visualization using shared library APIs.
+- `simulate_robotics_navigation.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_robotics_navigation.py` - Host GUI sliders; no saved media or data sidecars.
+- `animation_robotics_navigation.py` - Animated trajectory using shared library APIs.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/robotics_navigation/` and raw-data sidecars under `output/data/extras/robotics_navigation/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/robotics_navigation/` and `output/data/extras/robotics_navigation/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_robotics_navigation.py --save` | `visualize_robotics_navigation.png` | `visualize_robotics_navigation.npz`, `visualize_robotics_navigation.json` |
+| `simulate_robotics_navigation.py --save` | `simulate_robotics_navigation.png` | `simulate_robotics_navigation.npz`, `simulate_robotics_navigation.json` |
+| `animation_robotics_navigation.py --save` | `animation_robotics_navigation.gif` | `animation_robotics_navigation.npz`, `animation_robotics_navigation.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/robotics_navigation/visualize_robotics_navigation.py --save
@@ -25,3 +36,4 @@ uv run python extras/robotics_navigation/simulate_robotics_navigation.py --save
 uv run python extras/robotics_navigation/interactive_robotics_navigation.py
 uv run python extras/robotics_navigation/animation_robotics_navigation.py --save
 ```
+

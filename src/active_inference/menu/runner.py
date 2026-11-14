@@ -23,9 +23,10 @@ import os
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Iterable, Sequence
+from types import MappingProxyType
+from typing import Iterable, Mapping, Sequence
 
 from active_inference.demo_topics import demo_topic_slugs, demo_topic_spec
 from active_inference.extra_topics import extra_topic_slugs, extra_topic_spec
@@ -53,72 +54,34 @@ EXTRAS_ROOT: Path = REPO_ROOT / "extras"
 DEMO_ROOT: Path = REPO_ROOT / "demo"
 OUTPUT_DIR: Path = REPO_ROOT / "output" / "figures"
 
-# Chapter index. Extend by dropping new ``chapter_<NN>/`` folders into
-# ``chapters/`` — discovery picks them up automatically.
-CHAPTER_DIRS: dict[int, Path] = {}
-EXTRA_TOPIC_DIRS: dict[str, Path] = {}
-DEMO_TOPIC_DIRS: dict[str, Path] = {}
 
 
 _CHAPTER_PATTERN = re.compile(r"^chapter_(\d+)$")
 _EXTRA_PATTERN = re.compile(r"^[a-z0-9_]+$")
 
 
-def _refresh_chapter_dirs() -> None:
-    """Refresh chapter discovery caches after filesystem changes."""
-    CHAPTER_DIRS.clear()
+def _chapter_dirs() -> dict[int, Path]:
+    """Capture chapter directories locally; never publish a rebuilding cache."""
     if not CHAPTERS_ROOT.is_dir():
-        return
-    for entry in sorted(CHAPTERS_ROOT.iterdir()):
-        if not entry.is_dir():
-            continue
-        match = _CHAPTER_PATTERN.match(entry.name)
-        if not match:
-            continue
-        CHAPTER_DIRS[int(match.group(1))] = entry
+        return {}
+    return {
+        int(match.group(1)): entry
+        for entry in sorted(CHAPTERS_ROOT.iterdir())
+        if entry.is_dir() and (match := _CHAPTER_PATTERN.fullmatch(entry.name))
+    }
 
 
-def _refresh_extra_topic_dirs() -> None:
-    """Refresh extras topic discovery caches after filesystem changes."""
-    EXTRA_TOPIC_DIRS.clear()
-    if not EXTRAS_ROOT.is_dir():
-        return
-    discovered: dict[str, Path] = {}
-    for entry in sorted(EXTRAS_ROOT.iterdir()):
-        if not entry.is_dir():
-            continue
-        if not _EXTRA_PATTERN.match(entry.name):
-            continue
-        discovered[entry.name] = entry
-    for slug in extra_topic_slugs():
-        if slug in discovered:
-            EXTRA_TOPIC_DIRS[slug] = discovered.pop(slug)
-    for slug, path in sorted(discovered.items()):
-        EXTRA_TOPIC_DIRS[slug] = path
-
-
-def _refresh_demo_topic_dirs() -> None:
-    """Refresh demo topic discovery caches after filesystem changes."""
-    DEMO_TOPIC_DIRS.clear()
-    if not DEMO_ROOT.is_dir():
-        return
-    discovered: dict[str, Path] = {}
-    for entry in sorted(DEMO_ROOT.iterdir()):
-        if not entry.is_dir():
-            continue
-        if not _EXTRA_PATTERN.match(entry.name):
-            continue
-        discovered[entry.name] = entry
-    for slug in demo_topic_slugs():
-        if slug in discovered:
-            DEMO_TOPIC_DIRS[slug] = discovered.pop(slug)
-    for slug, path in sorted(discovered.items()):
-        DEMO_TOPIC_DIRS[slug] = path
-
-
-_refresh_chapter_dirs()
-_refresh_extra_topic_dirs()
-_refresh_demo_topic_dirs()
+def _topic_dirs(root: Path, registered: Sequence[str]) -> dict[str, Path]:
+    """Capture one topic root, ordered by registry then additional local names."""
+    if not root.is_dir():
+        return {}
+    discovered = {
+        entry.name: entry for entry in sorted(root.iterdir())
+        if entry.is_dir() and _EXTRA_PATTERN.fullmatch(entry.name)
+    }
+    ordered = {slug: discovered.pop(slug) for slug in registered if slug in discovered}
+    ordered.update(discovered)
+    return ordered
 
 
 @dataclass(frozen=True)
@@ -145,13 +108,13 @@ class ScriptEntry:
             return str(self.path)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ChapterEntry:
     """A chapter folder and its scripts."""
 
     number: int
     path: Path
-    scripts: list[ScriptEntry] = field(default_factory=list)
+    scripts: tuple[ScriptEntry, ...] = ()
 
     @property
     def title(self) -> str:
@@ -167,13 +130,13 @@ class ChapterEntry:
             return str(self.path)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ExtraTopicEntry:
     """An extras topic folder and its runnable scripts."""
 
     slug: str
     path: Path
-    scripts: list[ScriptEntry] = field(default_factory=list)
+    scripts: tuple[ScriptEntry, ...] = ()
 
     @property
     def title(self) -> str:
@@ -225,13 +188,13 @@ class ExtraTopicEntry:
             return str(self.path)
 
 
-@dataclass
+@dataclass(frozen=True)
 class DemoTopicEntry:
     """A demo topic folder and its runnable scripts."""
 
     slug: str
     path: Path
-    scripts: list[ScriptEntry] = field(default_factory=list)
+    scripts: tuple[ScriptEntry, ...] = ()
 
     @property
     def title(self) -> str:
@@ -266,6 +229,24 @@ class DemoTopicEntry:
             return str(self.path)
 
 
+@dataclass(frozen=True)
+class DiscoverySnapshot:
+    """Complete operation-local discovery; later operations capture fresh state."""
+
+    chapters: Mapping[int, ChapterEntry]
+    extras: Mapping[str, ExtraTopicEntry]
+    demos: Mapping[str, DemoTopicEntry]
+
+
+def discover_snapshot() -> DiscoverySnapshot:
+    """Scan each root and each script directory once, without shared mutation."""
+    return DiscoverySnapshot(
+        MappingProxyType({entry.number: entry for entry in discover_chapters(include_interactive=True)}),
+        MappingProxyType({entry.slug: entry for entry in discover_extras(include_interactive=True)}),
+        MappingProxyType({entry.slug: entry for entry in discover_demos(include_interactive=True)}),
+    )
+
+
 def _classify(script: Path) -> str:
     """Classify a chapter script by filename convention."""
     name = script.name
@@ -284,149 +265,133 @@ def _classify(script: Path) -> str:
     return "other"
 
 
-def _is_runnable(script: Path) -> bool:
-    """Skip dunder files, READMEs, and GUI-only scripts."""
-    if script.suffix != ".py":
-        return False
-    if script.name.startswith("_"):
-        return False
-    if "interactive" in script.name:
-        return False
-    return True
+def _scan_scripts(
+    base: Path, *, chapter: int | None = None,
+    topic: str | None = None, demo: str | None = None,
+) -> tuple[ScriptEntry, ...]:
+    """Capture all launchable Python scripts, including GUI scripts, once."""
+    return tuple(
+        ScriptEntry(path, chapter, _classify(path), topic=topic, demo=demo)
+        for path in sorted(base.glob("*.py"))
+        if path.is_file() and not path.name.startswith("_")
+    )
 
 
-def discover_chapters() -> list[ChapterEntry]:
-    """Return every chapter folder, populated with its scripts.
+def _select_scripts(
+    scripts: Iterable[ScriptEntry], *, include_animations: bool = True,
+    include_visualizations: bool = True, include_interactive: bool = False,
+) -> list[ScriptEntry]:
+    """Filter an existing script inventory without another filesystem scan."""
+    excluded = set()
+    if not include_animations:
+        excluded.add("animation")
+    if not include_visualizations:
+        excluded.add("visualize")
+    if not include_interactive:
+        excluded.add("interactive")
+    return [script for script in scripts if script.kind not in excluded]
 
-    The list is sorted by chapter number ascending. Chapter ``0X`` folders
-    that don't yet contain any ``.py`` orchestrators are still returned
-    (with an empty ``scripts`` list) so callers can communicate "in
-    progress".
-    """
-    _refresh_chapter_dirs()
-    return [
-        ChapterEntry(
-            number=number,
-            path=path,
-            scripts=discover_scripts(number),
+
+def discover_chapters(
+    *, snapshot: DiscoverySnapshot | None = None, include_interactive: bool = False,
+) -> list[ChapterEntry]:
+    """Return numerically ordered chapters, retaining empty chapter folders."""
+    entries = (
+        snapshot.chapters.values() if snapshot is not None else
+        (
+            ChapterEntry(number, path, _scan_scripts(path, chapter=number))
+            for number, path in sorted(_chapter_dirs().items())
         )
-        for number, path in sorted(CHAPTER_DIRS.items())
+    )
+    return [
+        replace(entry, scripts=tuple(_select_scripts(
+            entry.scripts, include_interactive=include_interactive,
+        ))) for entry in entries
     ]
 
 
-def discover_extras() -> list[ExtraTopicEntry]:
-    """Return every extras topic folder, populated with runnable scripts."""
-    _refresh_extra_topic_dirs()
-    return [
-        ExtraTopicEntry(
-            slug=slug,
-            path=path,
-            scripts=discover_extra_scripts(slug),
+def discover_extras(
+    *, snapshot: DiscoverySnapshot | None = None, include_interactive: bool = False,
+) -> list[ExtraTopicEntry]:
+    """Return ordered extras using one local directory and script inventory."""
+    entries = (
+        snapshot.extras.values() if snapshot is not None else
+        (
+            ExtraTopicEntry(slug, path, _scan_scripts(path, topic=slug))
+            for slug, path in _topic_dirs(EXTRAS_ROOT, extra_topic_slugs()).items()
         )
-        for slug, path in EXTRA_TOPIC_DIRS.items()
+    )
+    return [
+        replace(entry, scripts=tuple(_select_scripts(
+            entry.scripts, include_interactive=include_interactive,
+        ))) for entry in entries
     ]
 
 
-def discover_demos() -> list[DemoTopicEntry]:
-    """Return every demo topic folder, populated with runnable scripts."""
-    _refresh_demo_topic_dirs()
-    return [
-        DemoTopicEntry(
-            slug=slug,
-            path=path,
-            scripts=discover_demo_scripts(slug),
+def discover_demos(
+    *, snapshot: DiscoverySnapshot | None = None, include_interactive: bool = False,
+) -> list[DemoTopicEntry]:
+    """Return ordered demos using one local directory and script inventory."""
+    entries = (
+        snapshot.demos.values() if snapshot is not None else
+        (
+            DemoTopicEntry(slug, path, _scan_scripts(path, demo=slug))
+            for slug, path in _topic_dirs(DEMO_ROOT, demo_topic_slugs()).items()
         )
-        for slug, path in DEMO_TOPIC_DIRS.items()
+    )
+    return [
+        replace(entry, scripts=tuple(_select_scripts(
+            entry.scripts, include_interactive=include_interactive,
+        ))) for entry in entries
     ]
 
 
 def discover_scripts(
-    chapter: int,
-    *,
-    include_animations: bool = True,
-    include_visualizations: bool = True,
-    include_interactive: bool = False,
+    chapter: int, *, include_animations: bool = True,
+    include_visualizations: bool = True, include_interactive: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[ScriptEntry]:
-    """List the runnable scripts in one chapter.
-
-    The default policy matches the headless smoke tests:
-
-    * Include every ``example_*.py``, ``visualize_*.py``, ``animation_*.py``
-      and ``NN_*.py`` script.
-    * Skip files whose name contains ``interactive`` (slider windows that
-      block until the user closes them).
-    """
-    _refresh_chapter_dirs()
-    if chapter not in CHAPTER_DIRS:
-        raise KeyError(f"Unknown chapter: {chapter!r}")
-    base = CHAPTER_DIRS[chapter]
-    out: list[ScriptEntry] = []
-    for candidate in sorted(base.glob("*.py")):
-        if not _is_runnable(candidate) and not include_interactive:
-            continue
-        kind = _classify(candidate)
-        if kind == "animation" and not include_animations:
-            continue
-        if kind == "visualize" and not include_visualizations:
-            continue
-        if kind == "interactive" and not include_interactive:
-            continue
-        out.append(ScriptEntry(path=candidate, chapter=chapter, kind=kind))
-    return out
+    """Select a chapter's scripts from a captured or freshly read inventory."""
+    if snapshot is None:
+        scripts = _scan_scripts(_chapter_dirs()[chapter], chapter=chapter)
+    else:
+        scripts = snapshot.chapters[chapter].scripts
+    return _select_scripts(
+        scripts, include_animations=include_animations,
+        include_visualizations=include_visualizations, include_interactive=include_interactive,
+    )
 
 
 def discover_extra_scripts(
-    topic: str,
-    *,
-    include_animations: bool = True,
-    include_visualizations: bool = True,
-    include_interactive: bool = False,
+    topic: str, *, include_animations: bool = True,
+    include_visualizations: bool = True, include_interactive: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[ScriptEntry]:
-    """List runnable scripts in one extras topic folder."""
-    _refresh_extra_topic_dirs()
-    if topic not in EXTRA_TOPIC_DIRS:
-        raise KeyError(f"Unknown extras topic: {topic!r}")
-    base = EXTRA_TOPIC_DIRS[topic]
-    out: list[ScriptEntry] = []
-    for candidate in sorted(base.glob("*.py")):
-        if not _is_runnable(candidate) and not include_interactive:
-            continue
-        kind = _classify(candidate)
-        if kind == "animation" and not include_animations:
-            continue
-        if kind == "visualize" and not include_visualizations:
-            continue
-        if kind == "interactive" and not include_interactive:
-            continue
-        out.append(ScriptEntry(path=candidate, chapter=None, kind=kind, topic=topic))
-    return out
+    """Select an extras topic's scripts without rebuilding shared state."""
+    if snapshot is None:
+        scripts = _scan_scripts(_topic_dirs(EXTRAS_ROOT, extra_topic_slugs())[topic], topic=topic)
+    else:
+        scripts = snapshot.extras[topic].scripts
+    return _select_scripts(
+        scripts, include_animations=include_animations,
+        include_visualizations=include_visualizations, include_interactive=include_interactive,
+    )
 
 
 def discover_demo_scripts(
-    slug: str,
-    *,
-    include_animations: bool = True,
-    include_visualizations: bool = True,
-    include_interactive: bool = False,
+    slug: str, *, include_animations: bool = True,
+    include_visualizations: bool = True, include_interactive: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[ScriptEntry]:
-    """List runnable scripts in one demo topic folder."""
-    _refresh_demo_topic_dirs()
-    if slug not in DEMO_TOPIC_DIRS:
-        raise KeyError(f"Unknown demo topic: {slug!r}")
-    base = DEMO_TOPIC_DIRS[slug]
-    out: list[ScriptEntry] = []
-    for candidate in sorted(base.glob("*.py")):
-        if not _is_runnable(candidate) and not include_interactive:
-            continue
-        kind = _classify(candidate)
-        if kind == "animation" and not include_animations:
-            continue
-        if kind == "visualize" and not include_visualizations:
-            continue
-        if kind == "interactive" and not include_interactive:
-            continue
-        out.append(ScriptEntry(path=candidate, chapter=None, kind=kind, demo=slug))
-    return out
+    """Select a demo's scripts without rebuilding shared state."""
+    if snapshot is None:
+        scripts = _scan_scripts(_topic_dirs(DEMO_ROOT, demo_topic_slugs())[slug], demo=slug)
+    else:
+        scripts = snapshot.demos[slug].scripts
+    return _select_scripts(
+        scripts, include_animations=include_animations,
+        include_visualizations=include_visualizations, include_interactive=include_interactive,
+    )
 
 
 def _build_env(extra_path: Iterable[Path] | None = None) -> dict[str, str]:
@@ -486,6 +451,7 @@ def run_chapter(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[tuple[ScriptEntry, int]]:
     """Run every script in one chapter, returning ``(script, returncode)`` pairs."""
     results: list[tuple[ScriptEntry, int]] = []
@@ -493,6 +459,7 @@ def run_chapter(
         chapter,
         include_animations=include_animations,
         include_visualizations=include_visualizations,
+        snapshot=snapshot,
     )
     if not quiet:
         print(f"\n=== Chapter {chapter:02d} ({len(scripts)} scripts) ===", flush=True)
@@ -518,6 +485,7 @@ def run_extra_topic(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[tuple[ScriptEntry, int]]:
     """Run every script in one extras topic, returning ``(script, returncode)`` pairs."""
     results: list[tuple[ScriptEntry, int]] = []
@@ -525,6 +493,7 @@ def run_extra_topic(
         topic,
         include_animations=include_animations,
         include_visualizations=include_visualizations,
+        snapshot=snapshot,
     )
     if not quiet:
         print(f"\n=== Extra: {topic} ({len(scripts)} scripts) ===", flush=True)
@@ -550,6 +519,7 @@ def run_demo(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> list[tuple[ScriptEntry, int]]:
     """Run every script in one demo topic, returning ``(script, returncode)`` pairs."""
     results: list[tuple[ScriptEntry, int]] = []
@@ -557,6 +527,7 @@ def run_demo(
         slug,
         include_animations=include_animations,
         include_visualizations=include_visualizations,
+        snapshot=snapshot,
     )
     if not quiet:
         print(f"\n=== Demo: {slug} ({len(scripts)} scripts) ===", flush=True)
@@ -581,10 +552,12 @@ def run_all_chapters(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> dict[int, list[tuple[ScriptEntry, int]]]:
     """Run every chapter, returning a per-chapter results dict."""
     out: dict[int, list[tuple[ScriptEntry, int]]] = {}
-    for entry in discover_chapters():
+    snapshot = discover_snapshot() if snapshot is None else snapshot
+    for entry in discover_chapters(snapshot=snapshot):
         out[entry.number] = run_chapter(
             entry.number,
             save=save,
@@ -592,6 +565,7 @@ def run_all_chapters(
             include_animations=include_animations,
             include_visualizations=include_visualizations,
             quiet=quiet,
+            snapshot=snapshot,
         )
         first_failure = next(
             (rc for _, rc in out[entry.number] if rc != 0), 0
@@ -608,10 +582,12 @@ def run_all_extras(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> dict[str, list[tuple[ScriptEntry, int]]]:
     """Run every extras topic, returning a per-topic results dict."""
     out: dict[str, list[tuple[ScriptEntry, int]]] = {}
-    for entry in discover_extras():
+    snapshot = discover_snapshot() if snapshot is None else snapshot
+    for entry in discover_extras(snapshot=snapshot):
         out[entry.slug] = run_extra_topic(
             entry.slug,
             save=save,
@@ -619,6 +595,7 @@ def run_all_extras(
             include_animations=include_animations,
             include_visualizations=include_visualizations,
             quiet=quiet,
+            snapshot=snapshot,
         )
         first_failure = next((rc for _, rc in out[entry.slug] if rc != 0), 0)
         if first_failure and not keep_going:
@@ -633,10 +610,12 @@ def run_all_demos(
     include_animations: bool = True,
     include_visualizations: bool = True,
     quiet: bool = False,
+    snapshot: DiscoverySnapshot | None = None,
 ) -> dict[str, list[tuple[ScriptEntry, int]]]:
     """Run every demo topic, returning a per-topic results dict."""
     out: dict[str, list[tuple[ScriptEntry, int]]] = {}
-    for entry in discover_demos():
+    snapshot = discover_snapshot() if snapshot is None else snapshot
+    for entry in discover_demos(snapshot=snapshot):
         out[entry.slug] = run_demo(
             entry.slug,
             save=save,
@@ -644,6 +623,7 @@ def run_all_demos(
             include_animations=include_animations,
             include_visualizations=include_visualizations,
             quiet=quiet,
+            snapshot=snapshot,
         )
         first_failure = next((rc for _, rc in out[entry.slug] if rc != 0), 0)
         if first_failure and not keep_going:

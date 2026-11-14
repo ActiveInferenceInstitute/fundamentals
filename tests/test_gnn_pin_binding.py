@@ -417,3 +417,89 @@ def test_verified_tag_does_not_make_a_non_git_tree_a_git_revision(
     assert code == 2
     assert receipt["ok"] is False
     assert receipt["provenance"]["verified"] is False
+
+
+class TestSelectedDocument:
+    @staticmethod
+    def document():
+        sections = {
+            "GNNVersionAndFlags": "GNN v1.1",
+            "ModelName": "SelectedAlternate",
+            "StateSpaceBlock": "A[2,2,type=float]\nD[2,type=float]",
+            "InitialParameterization": "A = {0.6, 0.3, 0.4, 0.7}\nD = {0.2, 0.8}",
+        }
+        return "\n".join(
+            f"## {name}\n{sections.get(name, '')}\n" for name in vgs.REQUIRED_SECTIONS
+        )
+
+    @staticmethod
+    def payload():
+        return {
+            "gnn_version": "9.9.9",
+            "gnn_module": "/synthetic/gnn/__init__.py",
+            "parser": {
+                "success": True, "errors": [], "warnings": [],
+                "sections": list(vgs.REQUIRED_SECTIONS),
+                "model_name": "SelectedAlternate", "version": "1.1",
+                "variables": [
+                    {"name": "A", "dimensions": [2, 2]},
+                    {"name": "D", "dimensions": [2]},
+                ],
+                "parameters": {"A": [0.6, 0.3, 0.4, 0.7], "D": [0.2, 0.8]},
+            },
+            "semantic": {"is_valid": True},
+            "orientation": {"tensors": []},
+            "consistency": {"consistent": True, "consistency_score": 1.0},
+        }
+
+    def test_alternate_model_and_parameters_are_compared_to_selected_text(self):
+        payload = self.payload()
+        assert vgs.conformance_failures(
+            payload, spec_text=self.document(), pin=_pin(), source=None,
+        ) == []
+        payload["parser"]["parameters"]["D"] = [0.8, 0.2]
+        failures = vgs.conformance_failures(
+            payload, spec_text=self.document(), pin=_pin(), source=None,
+        )
+        assert any("parameter D differs" in failure for failure in failures)
+
+    def test_cli_binds_captured_bytes_despite_selected_file_replacement(
+        self, tmp_path, monkeypatch,
+    ):
+        # Inject unavailable provenance and a concurrent input replacement;
+        # this tests document custody, not authenticity of an upstream parser.
+        selected = tmp_path / "alternate.gnn.md"
+        original = self.document().encode()
+        selected.write_bytes(original)
+        pin_path = tmp_path / "pin.json"
+        pin_path.write_text(json.dumps(_pin()))
+        receipt_path = tmp_path / "receipt.json"
+        package = tmp_path / "gnn"
+        package.mkdir()
+        for name in ("GNN_ROOT", "GNN_TAG_CHECKOUT"):
+            monkeypatch.delenv(name, raising=False)
+        monkeypatch.setattr(vgs, "_locate_package", lambda *a, **k: (package, package / "__init__.py"))
+        monkeypatch.setattr(
+            vgs, "_installed_revision",
+            lambda *a, **k: {
+                "status": "unresolvable-offline", "commit": None, "detail": "test unavailable",
+            },
+        )
+
+        def replace_selected(_python, spec, _output, *, source):
+            selected.write_text("replaced after capture")
+            assert spec.read_bytes() == original
+            result = self.payload()
+            result["gnn_module"] = str(package / "__init__.py")
+            return result
+
+        monkeypatch.setattr(vgs, "run_probe", replace_selected)
+        assert vgs.main([
+            "--gnn-runtime", sys.executable, "--spec", str(selected),
+            "--pin", str(pin_path), "--receipt", str(receipt_path),
+        ]) == 2
+        receipt = json.loads(receipt_path.read_text())
+        assert receipt["spec"] == str(selected)
+        assert receipt["spec_sha256"] == hashlib.sha256(original).hexdigest()
+        assert receipt["failures"] == []
+        assert receipt["ok"] is False

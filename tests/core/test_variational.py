@@ -284,3 +284,32 @@ class TestHelpers:
         assert isinstance(c, VFEComponents)
         with pytest.raises(Exception):
             c.free_energy = 0.0  # type: ignore[misc]
+
+
+class TestBoundedSupport:
+    @pytest.mark.filterwarnings("error")
+    def test_exact_posterior_ignores_zero_density_outside_prior_support(self):
+        grid = np.linspace(-2.0, 3.0, 2001)
+        model = LinearGaussianModel(
+            prior_kind="uniform", uniform_low=0.0, uniform_high=1.0,
+        )
+        exact = GridBayesianInference(model, grid).infer(0.4)
+        with np.errstate(invalid="raise"):
+            components = variational_free_energy(exact.posterior, model, 0.4, grid)
+        assert np.isfinite(components.free_energy)
+        assert components.divergence == pytest.approx(0.0, abs=1e-10)
+        assert components.free_energy == pytest.approx(-exact.log_evidence)
+        components.check()
+
+    @pytest.mark.filterwarnings("error")
+    def test_positive_mass_outside_prior_support_retains_infinite_divergence(self):
+        grid = np.linspace(-2.0, 3.0, 2001)
+        model = LinearGaussianModel(
+            prior_kind="uniform", uniform_low=0.0, uniform_high=1.0,
+        )
+        with np.errstate(invalid="raise"):
+            components = variational_free_energy(np.ones_like(grid), model, 0.4, grid)
+        assert np.isposinf(components.free_energy)
+        assert np.isposinf(components.divergence)
+        assert np.isposinf(components.complexity)
+        assert np.isfinite(components.accuracy)

@@ -139,7 +139,7 @@ Small categorical factor-graph helpers for extras and teaching examples.
 | `FactorGraphChain` | Frozen categorical chain container with normalized prior, transition, and likelihood messages. |
 | `backward_smoothing_messages(transitions, likelihoods)` | Normalized backward messages for a categorical chain. |
 | `forward_backward_smoothing(prior, transitions, likelihoods)` | Forward-backward smoothed categorical state beliefs. |
-| `marginal_message_passing(factors, incoming)` | Approximate marginal messages from local factors and incoming beliefs. |
+| `marginal_message_passing(factors, incoming)` | Tuple of normalized one-dimensional messages: incoming first, then one per factor. Each factor has shape `(next_cardinality, current_cardinality)`. Cardinalities may differ; use `np.stack(trace)` only when every message has the same shape. |
 | `active_inference_factor_messages(likelihood, prior, preferences)` | Preference-weighted categorical messages for active-inference factor graphs. |
 | `learning_attention_message(evidence, precision)` | Precision-weighted evidence message for learning/attention examples. |
 | `hybrid_model_bridge(continuous_state, discrete_belief)` | Outer-product bridge from continuous features to a categorical belief. |
@@ -281,6 +281,11 @@ computes each from a different grouping of the same integrals and `.check()`
 verifies their agreement. The D-form builds `log p(x|y) = log p(x,y) − log p(y)`
 directly (not `log` of the normalized posterior array) so it stays stable even
 for beliefs far in the tail where the posterior array underflows.
+
+Weighted logarithms use the convention `0 log p = 0`, including grid points
+where both the variational density and model support are zero. They do not
+evaluate `0 * -inf`. Positive variational mass outside model support retains
+infinite divergence/free energy; it is not clipped into a finite answer.
 
 ## `core.thermodynamics` — thermodynamic / FEP bridge
 

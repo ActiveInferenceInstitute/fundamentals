@@ -171,23 +171,45 @@ def test_extract_figure_data_handles_bar_container_legends() -> None:
     plt.close(fig)
 
 
-def test_data_paths_for_figure_maps_output_figures_to_output_data() -> None:
-    """Map a rendered artifact path to the matching chapter data sidecar paths."""
+@pytest.mark.parametrize("redirected", [False, True])
+def test_data_paths_for_figure_maps_output_figures_to_output_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, redirected: bool,
+) -> None:
+    """Map chapter sidecars independently of the caller's output environment."""
+    from active_inference.utils import io
+
+    monkeypatch.setattr(io, "_REPO_ROOT", tmp_path)
+    monkeypatch.delenv("ACTIVE_INFERENCE_OUTPUT_ROOT", raising=False)
+    monkeypatch.delenv("ACTIVE_INFERENCE_DATA_DIR", raising=False)
+    output = tmp_path / ("redirected" if redirected else "output")
+    if redirected:
+        monkeypatch.setenv("ACTIVE_INFERENCE_OUTPUT_ROOT", str(output))
     npz_path, json_path = data_paths_for_figure(
-        REPO_ROOT / "output" / "figures" / "chapter_08" / "demo.png"
+        tmp_path / "output" / "figures" / "chapter_08" / "demo.png"
     )
-    assert npz_path == REPO_ROOT / "output" / "data" / "chapter_08" / "demo.npz"
-    assert json_path == REPO_ROOT / "output" / "data" / "chapter_08" / "demo.json"
+    assert npz_path == output / "data" / "chapter_08" / "demo.npz"
+    assert json_path == output / "data" / "chapter_08" / "demo.json"
 
 
-def test_data_paths_for_extra_figure_maps_output_figures_to_output_data() -> None:
-    """Map extras rendered artifacts to matching topic raw-data sidecars."""
+@pytest.mark.parametrize("redirected", [False, True])
+def test_data_paths_for_extra_figure_maps_output_figures_to_output_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, redirected: bool,
+) -> None:
+    """Map extras sidecars independently of the caller's output environment."""
+    from active_inference.utils import io
+
+    monkeypatch.setattr(io, "_REPO_ROOT", tmp_path)
+    monkeypatch.delenv("ACTIVE_INFERENCE_OUTPUT_ROOT", raising=False)
+    monkeypatch.delenv("ACTIVE_INFERENCE_DATA_DIR", raising=False)
+    output = tmp_path / ("redirected" if redirected else "output")
+    if redirected:
+        monkeypatch.setenv("ACTIVE_INFERENCE_OUTPUT_ROOT", str(output))
     npz_path, json_path = data_paths_for_extra_figure(
-        REPO_ROOT / "output" / "figures" / "extras" / "entropy" / "demo.png"
+        tmp_path / "output" / "figures" / "extras" / "entropy" / "demo.png"
     )
-    assert npz_path == REPO_ROOT / "output" / "data" / "extras" / "entropy" / "demo.npz"
-    assert json_path == REPO_ROOT / "output" / "data" / "extras" / "entropy" / "demo.json"
-    assert extra_data_dir("entropy") == REPO_ROOT / "output" / "data" / "extras" / "entropy"
+    assert npz_path == output / "data" / "extras" / "entropy" / "demo.npz"
+    assert json_path == output / "data" / "extras" / "entropy" / "demo.json"
+    assert extra_data_dir("entropy") == output / "data" / "extras" / "entropy"
 
 
 def test_infer_path_helpers_reject_unmatched_paths() -> None:
@@ -311,3 +333,44 @@ def test_validate_raw_data_exports_accepts_extras_topics(tmp_path: Path) -> None
     )
 
     assert good.returncode == 0, good.stderr
+
+
+@pytest.mark.parametrize("mutation,diagnostic", [
+    ("nonfinite", "non-finite"),
+    ("stale_dtype", "dtype mismatch"),
+    ("stale_names", "array names mismatch"),
+    ("missing_manifest", "missing JSON manifest"),
+    ("missing_arrays", "missing NPZ arrays"),
+])
+def test_saved_trajectory_corruption_fails_the_real_validator(
+    tmp_path: Path, mutation: str, diagnostic: str,
+) -> None:
+    trajectory = np.array([[0.0, 1.0], [0.25, 0.75], [0.5, 0.5]])
+    npz_path, manifest_path = save_chapter_data(
+        2, "owned_trajectory", arrays={"trajectory": trajectory},
+        metadata={"script": "owned_trajectory.py"}, root=tmp_path,
+    )
+    command = [
+        sys.executable, "-B", str(REPO_ROOT / "scripts/validate_raw_data_exports.py"),
+        "--root", str(tmp_path), "--chapters", "2",
+    ]
+    valid = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert valid.returncode == 0, valid.stderr
+    original_manifest = manifest_path.read_bytes()
+    if mutation == "nonfinite":
+        trajectory[1, 0] = np.nan
+        np.savez(npz_path, trajectory=trajectory)
+    elif mutation == "stale_dtype":
+        np.savez(npz_path, trajectory=trajectory.astype(np.float32))
+    elif mutation == "stale_names":
+        np.savez(npz_path, unrelated_trajectory=trajectory)
+    elif mutation == "missing_manifest":
+        manifest_path.unlink()
+    else:
+        npz_path.unlink()
+    invalid = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert invalid.returncode == 1
+    assert diagnostic in invalid.stderr
+    assert "owned_trajectory" in invalid.stderr
+    if mutation != "missing_manifest":
+        assert manifest_path.read_bytes() == original_manifest

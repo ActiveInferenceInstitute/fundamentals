@@ -158,10 +158,15 @@ print(res.mu_star)   # ≈ 2.4 — the Ch.4 grid posterior mean (cross-chapter o
 | `PredictiveCodingResult` | `mus`, `free_energies`, `eps_x`, `eps_y`, `mu_y`, `mu_star`, `converged`, `n_iter_run`; `final_free_energy`, `summary()`. |
 | `MultivariatePCResult` / `HierarchicalPCResult` | vector / per-layer analogues (`mus`, `errors`, `free_energies`, `layer_free_energies`, `mu_star`, …). |
 
-Every PC free-energy trace is monotone non-increasing (verified by
-`convergence_report`). The linear fixed point equals the exact posterior mean
-across a 144-config sweep (`TestLinearOracleSweep`); the nonlinear fixed point
-equals the grid argmin of `F`.
+`predictive_coding_inference` and `multivariate_predictive_coding` report
+convergence only when both the absolute free-energy change and the final
+recognition-gradient norm are below `tol`. The scalar routine uses the
+absolute gradient; the vector routine uses its infinity norm. Equal-energy
+cycles and tiny-step stagnation are not convergence.
+
+Fixed-step stability still depends on the step size and model curvature;
+a convergence flag is not a claim that every free-energy trace is monotone.
+The analytical fixed points remain independent numerical oracles.
 
 ## `estimators.generalized_filtering` (Chapter 6)
 

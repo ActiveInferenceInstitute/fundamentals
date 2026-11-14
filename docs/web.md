@@ -31,10 +31,9 @@ expose it on the LAN (use cautiously: there is no authentication).
 
 ## What's on the page
 
-The sidebar lists every detected chapter, every registry-backed extras topic,
-and a small set of top-level docs (architecture, notation, cookbook, reading
-order, uv workflow). Each chapter or extras tab is divided into the relevant
-subset of:
+The sidebar lists detected chapters, extras topics, demo topics, and the
+available documentation pages. Chapter, extras, and demo tabs share
+owner-qualified script controls and the relevant gallery/documentation views:
 
 1. **Figure gallery** — every PNG / GIF in
    `output/figures/chapter_<N>/`. Click a thumbnail to open the full
@@ -63,18 +62,38 @@ All endpoints return JSON unless otherwise noted.
 | GET    | `/`                               | SPA shell (HTML). |
 | GET    | `/favicon.svg` (or `.ico`)        | Inline SVG favicon (mono with red dot). |
 | GET    | `/static/app.css`, `app.js`       | Inline asset bundles. |
-| GET    | `/api/index`                      | Chapters and extras with per-kind counts, subtitles, figure counts, and extras family/section metadata. |
+| GET    | `/api/index`                      | Chapters, extras, and demos with script inventories, per-kind counts, and metadata. |
 | GET    | `/api/chapter/<N>`                | Scripts (with size, mtime, docstring, example number), figures (with size, mtime, dimensions, generated_by), inline-rendered README, and chapter doc links. |
 | GET    | `/api/extra/<topic>`              | Extras scripts, figures, README HTML, family, summary, chapters, and book sections. |
+| GET    | `/api/demo/<slug>`                | Demo scripts, figures, README HTML, summary, chapters, and source API metadata. |
 | GET    | `/api/doc/<id>`                   | Rendered Markdown for one doc page. |
 | GET    | `/figures/<NN>/<file>`            | Static file under `output/figures/`. |
 | GET    | `/figures/extras/<topic>/<file>`  | Static file under `output/figures/extras/<topic>/`. |
+| GET    | `/figures/demo/<slug>/<file>`     | Static file under the selected demo figure directory. |
 | GET    | `/docs-raw/<path>`                | Static file under `docs/`. |
-| POST   | `/api/run`                        | Render one chapter or extras script (non-interactive). |
+| POST   | `/api/run`                        | Render one owner-qualified chapter, extras, or demo script. |
 | POST   | `/api/launch-interactive`         | Launch a slider script on the host. |
 
-Every static path is canonicalized and rejected if it escapes its
-allowed base directory.
+Static paths and selected script targets must remain within their admitted
+repository roots.
+
+Execution requests require UTF-8 `application/json`, one unambiguous
+Content-Length, and a body no larger than 1 MiB. Supply `script` plus exactly
+one owner: integer `chapter`, string `topic`, or string `demo`. For example:
+
+```json
+{"demo":"selected_demo","script":"visualize_selected_demo.py"}
+```
+
+The server validates Host and rejects foreign/null Origin and cross-site
+browser execution requests before dispatch. Requests without browser Origin
+metadata remain available to local CLI clients. These checks are not
+authentication; do not expose this execution service to untrusted users.
+
+Malformed requests return 400, forbidden provenance 403, missing resources
+404, missing length 411, oversized bodies 413, unsupported media types 415,
+and internal failures 500. A completed script response preserves its actual
+return code; dispatch success does not imply scientific success.
 
 ## Design
 
@@ -84,18 +103,16 @@ allowed base directory.
 - **Single page, vanilla JS.** Tab switching, gallery rendering, the
   filter input, the lightbox, and the action menu are all in
   `templates.JS`.
-- **Same discovery layer as the menu.** Both UIs converge on
-  `active_inference.menu.runner.discover_chapters` and
-  `discover_extras`; if you add a new chapter or registry-backed extras
-  folder, both pick it up automatically.
-- **Subprocess for execution.** The "Render" button reuses
-  `active_inference.menu.runner.run_script`, so figures land in the
-  same `output/figures/chapter_<NN>/` or `output/figures/extras/<topic>/`
-  directory as the CLI workflows. Interactive extras launchers call tested
-  shared constructors but do not write media. After rendering extras through
-  the web UI, `uv run python scripts/validate_book_topic_coverage.py
-  --require-rendered` checks registry declarations against the resulting
-  PNG/GIF media and NPZ+JSON sidecars.
+- **Operation-local discovery.** `discover_snapshot()` captures immutable
+  chapter/extras/demo inventories. Menu, batch, and HTTP operations reuse
+  their capture without rebuilding shared global maps. Later operations see
+  later filesystem changes. This is not an atomic filesystem snapshot.
+- **Owner-qualified execution.** Browser requests identify chapter, extras,
+  or demo ownership explicitly. Command dialogs show the exact relative
+  script path; completion refreshes that owner's tab.
+- **Shared subprocess runner.** Non-interactive rendering uses `run_script`
+  with `--save` and `MPLBACKEND=Agg`. Interactive launch accepts a host
+  process launch, not proof that a GUI window opened.
 
 ## Visual identity
 
@@ -119,6 +136,9 @@ allowed base directory.
 - Click any figure to open the lightbox. Click the "generator" name
   in a figure caption to scroll to the script row that produced it
   (briefly highlighted in red).
+  Demo generator names resolve against the captured script inventory, including
+  the `.py` suffix and figure-name prefixes; unmatched figures have no generator
+  link rather than an invented script destination.
 - The **Command** button on each script row opens a copyable shell
   command — `Copy` puts it on the clipboard via the Async Clipboard
   API.

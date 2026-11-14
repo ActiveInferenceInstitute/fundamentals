@@ -96,6 +96,15 @@ available.
 The receipt is written to `docs/_build/gnn/validation-receipt.json`
 (`--receipt` overrides it); `docs/_build/` is generated and gitignored.
 
+`--spec PATH` selects the document for both upstream parsing and local
+comparison. The validator captures its raw bytes once and records their
+SHA-256 as `spec_sha256`; replacing the original file during parsing does not
+change the admitted document. The receipt's `spec` identifies the selected
+source path.
+
+Document binding does not relax parser provenance. Missing or unresolved
+pinned-runtime/tag evidence remains unavailable or unverified, never a pass.
+
 ## What each check proves
 
 | Check | Proves |

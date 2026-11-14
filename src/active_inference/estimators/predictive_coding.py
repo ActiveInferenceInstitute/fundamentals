@@ -5,9 +5,9 @@ Three algorithms, all gradient descent on the MAP/Laplace free energy
 weighted prediction errors:
 
 * :func:`predictive_coding_inference` — **Algorithm 5.2.1**, univariate perception.
-  Iterates ``μ_x ← μ_x − κ ∂F/∂μ_x`` (Eq. 15/16) until the free energy stops
-  changing.  Its fixed point is the MAP estimate; for a linear generating function
-  that equals Chapter 4's exact grid posterior mean (the verification oracle).
+  Iterates ``μ_x ← μ_x − κ ∂F/∂μ_x`` (Eq. 15/16) until both the free-energy
+  change and gradient are small. Its fixed point is the MAP estimate; for a
+  linear generating function that equals Chapter 4's exact grid posterior mean.
 * :func:`multivariate_predictive_coding` — **§5.3**, vector states/observations with
   precision *matrices* and a Jacobian matrix.  Reduces exactly to the univariate
   routine on a 1-D problem.
@@ -58,7 +58,7 @@ class PredictiveCodingResult:
     mu_star : float
         Final belief mean (the MAP estimate).
     converged : bool
-        Whether ``|ΔF| < tol`` fired before ``n_iter``.
+        Whether both ``|ΔF| < tol`` and the final gradient norm are below ``tol``.
     n_iter_run : int
         Number of update steps taken.
     """
@@ -104,7 +104,7 @@ def predictive_coding_inference(
 
     Initialised at the prior mean ``mu0 = m_x`` (book line 1). ``kappa`` is the
     learning rate :math:`\kappa`; the book notes convergence is sensitive to it.
-    Stops when ``|ΔF| < tol`` or after ``n_iter`` steps.
+    Stops when both ``|ΔF| < tol`` and ``|∂F/∂μ_x| < tol``, or after ``n_iter`` steps.
     """
     mu = float(model.m_x if mu0 is None else mu0)
 
@@ -131,7 +131,7 @@ def predictive_coding_inference(
         eps_y.append(c.eps_y)
         mu_y.append(c.mu_y)
         n_run += 1
-        if abs(fes[-2] - fes[-1]) < tol:
+        if abs(fes[-2] - fes[-1]) < tol and abs(pc_free_energy_grad(model, y, mu)) < tol:
             converged = True
             break
 
@@ -228,6 +228,8 @@ def multivariate_predictive_coding(
     ``precision_y`` / ``precision_x`` accept a scalar, a **precision** vector (used
     as the diagonal of the precision matrix — *not* inverted), or a full precision
     matrix. Reduces exactly to :func:`predictive_coding_inference` on a 1-D problem.
+    Convergence requires both the free-energy change and the final gradient's
+    infinity norm to be below ``tol``; an equal-loss cycle is not stationary.
     """
     y = np.atleast_1d(np.asarray(y, dtype=float))
     m_x = np.atleast_1d(np.asarray(m_x, dtype=float))
@@ -269,8 +271,11 @@ def multivariate_predictive_coding(
         eps_xs.append(eps_x_next)
         n_run += 1
         if abs(fes[-2] - fes[-1]) < tol:
-            converged = True
-            break
+            final_jacobian = np.asarray(jacobian(mu), dtype=float).reshape(D, C)
+            final_grad = Pi_x @ eps_x_next - final_jacobian.T @ Pi_y @ eps_y_next
+            if np.linalg.norm(final_grad, ord=np.inf) < tol:
+                converged = True
+                break
 
     return MultivariatePCResult(
         mus=np.asarray(mus),

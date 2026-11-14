@@ -275,10 +275,11 @@ def _trapz(values: np.ndarray, x_grid: np.ndarray) -> float:
     return float(np.trapezoid(values, x_grid))
 
 
-def _xlogx_safe(q: np.ndarray, log_q: np.ndarray) -> np.ndarray:
-    """``q * log q`` with the convention ``0 * log 0 = 0``."""
-    out = q * log_q
-    return np.where(q > 0, out, 0.0)
+def _weighted_log(q: np.ndarray, log_values: np.ndarray) -> np.ndarray:
+    """Multiply only on q's support, retaining infinities at positive density."""
+    out = np.zeros_like(q)
+    np.multiply(q, log_values, out=out, where=q > 0)
+    return out
 
 
 def variational_free_energy(
@@ -335,13 +336,14 @@ def variational_free_energy(
         log_evidence = float(result.log_evidence)
 
     # E / G form pieces.
-    neg_entropy = _trapz(_xlogx_safe(q_vals, log_q), x_grid)   # E_q[log q] = -H[q]
-    energy = _trapz(q_vals * log_joint, x_grid)                # E_q[log p(x,y)]
+    q_log_q = _weighted_log(q_vals, log_q)
+    neg_entropy = _trapz(q_log_q, x_grid)                     # E_q[log q] = -H[q]
+    energy = _trapz(_weighted_log(q_vals, log_joint), x_grid)  # E_q[log p(x,y)]
     free_energy = neg_entropy - energy
 
     # C form pieces.
-    complexity = _trapz(_xlogx_safe(q_vals, log_q) - q_vals * log_prior, x_grid)
-    accuracy = _trapz(q_vals * log_lik, x_grid)               # E_q[log p(y|x)]
+    complexity = _trapz(q_log_q - _weighted_log(q_vals, log_prior), x_grid)
+    accuracy = _trapz(_weighted_log(q_vals, log_lik), x_grid)  # E_q[log p(y|x)]
 
     # D form pieces — divergence from the *true posterior*.
     #
@@ -349,11 +351,11 @@ def variational_free_energy(
     # ``log p(x, y) − log p(y) = log_joint − log_evidence`` rather than taking the
     # log of the normalized posterior *array*: the array underflows to exactly 0
     # in the deep tail (where ``log 0 = −∞`` would be silently dropped), whereas
-    # ``log_joint`` is finite everywhere ``q`` has support. This keeps the D-form
-    # in agreement with the G/C/E forms even for beliefs far from the posterior.
+    # ``log_joint`` retains the model's true support. Zero q contributes zero;
+    # positive q outside model support retains infinite divergence.
     # (``posterior`` is still accepted/returned as the grid oracle.)
     log_post = log_joint - float(log_evidence)
-    integrand = _xlogx_safe(q_vals, log_q) - q_vals * log_post
+    integrand = q_log_q - _weighted_log(q_vals, log_post)
     divergence = _trapz(integrand, x_grid)
     surprisal = -float(log_evidence)
 

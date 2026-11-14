@@ -23,6 +23,7 @@ Everything stays in the repository sandbox via path-canonicalization in
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import logging
 import mimetypes
@@ -42,19 +43,14 @@ from urllib.parse import unquote, urlparse
 
 from ..demo_topics import demo_topic_spec
 from ..menu.runner import (
-    CHAPTER_DIRS,
-    DEMO_TOPIC_DIRS,
-    EXTRA_TOPIC_DIRS,
     OUTPUT_DIR,
     REPO_ROOT,
     ScriptEntry,
     _build_env,
     discover_chapters,
-    discover_demo_scripts,
+    discover_snapshot,
     discover_demos,
-    discover_extra_scripts,
     discover_extras,
-    discover_scripts,
     run_script,
 )
 from ..extra_topics import extra_topic_spec
@@ -91,7 +87,7 @@ def _demo_figure_dir(slug: str) -> Path:
 _DOC_SUMMARY_LIMIT = 220
 
 
-def _list_figures(chapter: int) -> list[dict[str, Any]]:
+def _list_figures(chapter: int, scripts: Sequence[ScriptEntry]) -> list[dict[str, Any]]:
     """List repository resources needed by the local browser UI."""
     base = _chapter_figure_dir(chapter)
     if not base.is_dir():
@@ -115,12 +111,12 @@ def _list_figures(chapter: int) -> list[dict[str, Any]]:
             "mtime_human": _human_time(stat.st_mtime),
             "width": width,
             "height": height,
-            "generated_by": _guess_generator(p, chapter),
+            "generated_by": _guess_generator(p, scripts),
         })
     return out
 
 
-def _list_extra_figures(topic: str) -> list[dict[str, Any]]:
+def _list_extra_figures(topic: str, scripts: Sequence[ScriptEntry]) -> list[dict[str, Any]]:
     """List rendered figure files for one extras topic."""
     base = _extra_figure_dir(topic)
     if not base.is_dir():
@@ -144,12 +140,12 @@ def _list_extra_figures(topic: str) -> list[dict[str, Any]]:
             "mtime_human": _human_time(stat.st_mtime),
             "width": width,
             "height": height,
-            "generated_by": _guess_extra_generator(p, topic),
+            "generated_by": _guess_generator(p, scripts),
         })
     return out
 
 
-def _list_demo_figures(slug: str) -> list[dict[str, Any]]:
+def _list_demo_figures(slug: str, scripts: Sequence[ScriptEntry]) -> list[dict[str, Any]]:
     """List rendered figure files for one demo topic."""
     base = _demo_figure_dir(slug)
     if not base.is_dir():
@@ -173,7 +169,7 @@ def _list_demo_figures(slug: str) -> list[dict[str, Any]]:
             "mtime_human": _human_time(stat.st_mtime),
             "width": width,
             "height": height,
-            "generated_by": p.stem,
+            "generated_by": _guess_generator(p, scripts),
         })
     return out
 
@@ -276,13 +272,10 @@ def _extract_example_number(name: str) -> str | None:
     return None
 
 
-def _guess_generator(figure: Path, chapter: int) -> str | None:
-    """Best-effort match of a figure file back to the script that wrote it."""
+def _guess_generator(figure: Path, inventory: Sequence[ScriptEntry]) -> str | None:
+    """Match a figure against the operation's captured scripts without rescanning."""
     stem = figure.stem
-    base = CHAPTER_DIRS.get(chapter)
-    if base is None:
-        return None
-    scripts = [p.stem for p in base.glob("*.py")]
+    scripts = {script.path.stem for script in inventory}
     if stem in scripts:
         return f"{stem}.py"
     # Strip trailing suffixes like "_posterior", "_curve" until we hit a script stem.
@@ -294,21 +287,6 @@ def _guess_generator(figure: Path, chapter: int) -> str | None:
     return None
 
 
-def _guess_extra_generator(figure: Path, topic: str) -> str | None:
-    """Best-effort match of an extras figure file back to its script."""
-    stem = figure.stem
-    base = EXTRA_TOPIC_DIRS.get(topic)
-    if base is None:
-        return None
-    scripts = [p.stem for p in base.glob("*.py")]
-    if stem in scripts:
-        return f"{stem}.py"
-    parts = stem.split("_")
-    for i in range(len(parts), 0, -1):
-        candidate = "_".join(parts[:i])
-        if candidate in scripts:
-            return f"{candidate}.py"
-    return None
 
 
 def _human_bytes(n: int) -> str:
@@ -381,11 +359,11 @@ _CHAPTER_SUBTITLES: dict[int, str] = {
 }
 
 
-def _chapter_subtitle(chapter: int) -> str:
+def _chapter_subtitle(chapter: int, directory: Path) -> str:
     """Return chapter-specific metadata used for discovery and display."""
     if chapter in _CHAPTER_SUBTITLES:
         return _CHAPTER_SUBTITLES[chapter]
-    readme = CHAPTER_DIRS.get(chapter, Path()) / "README.md"
+    readme = directory / "README.md"
     if readme.is_file():
         for line in readme.read_text(encoding="utf-8", errors="replace").splitlines():
             line = line.strip()
@@ -668,9 +646,101 @@ def _safe_subpath(base: Path, rel: str) -> Path | None:
 # ---------------------------------------------------------------------------
 
 
+class _RequestError(Exception):
+    """An explicitly classified client request failure, not a server exception."""
+
+    def __init__(self, status: HTTPStatus, message: str) -> None:
+        super().__init__(message)
+        self.status = status
+
+
+def _reject_json_constant(value: str) -> None:
+    """Reject non-JSON NaN/infinity tokens before execution admission."""
+    raise ValueError(f"invalid JSON constant: {value}")
+
+
 class _Handler(BaseHTTPRequestHandler):
     """Handle local web-server state for the chapter browser UI."""
     server_version = "ActiveInferenceWeb/0.1"
+
+    def _admit_host(self) -> tuple[str, int]:
+        """Admit only an explicitly bound hostname or this socket's local address."""
+        hosts = self.headers.get_all("Host", [])
+        if len(hosts) != 1 or any(character.isspace() for character in hosts[0]):
+            raise _RequestError(HTTPStatus.FORBIDDEN, "A single local Host is required")
+        try:
+            authority = urlparse("//" + hosts[0])
+            host = authority.hostname
+            port = authority.port if authority.port is not None else 80
+        except ValueError:
+            raise _RequestError(HTTPStatus.FORBIDDEN, "Invalid Host") from None
+        local_address = self.connection.getsockname()[0]
+        allowed = {local_address.lower(), self.server.requested_host}
+        if ipaddress.ip_address(local_address).is_loopback:
+            allowed.add("localhost")
+        if (
+            host not in allowed or port != self.server.server_port
+            or authority.username is not None or authority.password is not None
+            or authority.path or authority.params or authority.query or authority.fragment
+        ):
+            raise _RequestError(HTTPStatus.FORBIDDEN, "Host is not bound by this server")
+        return host, port
+
+    def _execution_json(self) -> dict[str, Any]:
+        """Check browser provenance and a bounded JSON envelope before dispatch."""
+        host, port = self._admit_host()
+        origins = self.headers.get_all("Origin", [])
+        if len(origins) > 1:
+            raise _RequestError(HTTPStatus.FORBIDDEN, "Multiple origins are not admitted")
+        if origins:
+            try:
+                origin = urlparse(origins[0])
+                same_origin = (
+                    origin.scheme == "http" and origin.hostname == host
+                    and (origin.port if origin.port is not None else 80) == port
+                    and origin.username is None and origin.password is None
+                    and not any((origin.path, origin.params, origin.query, origin.fragment))
+                )
+            except ValueError:
+                same_origin = False
+            if not same_origin:
+                raise _RequestError(HTTPStatus.FORBIDDEN, "A same-origin request is required")
+        if self.headers.get("Sec-Fetch-Site") not in (None, "same-origin", "none"):
+            raise _RequestError(HTTPStatus.FORBIDDEN, "Cross-site execution is not admitted")
+        if (
+            len(self.headers.get_all("Content-Type", [])) != 1
+            or self.headers.get_content_type() != "application/json"
+            or self.headers.get_content_charset("utf-8").lower() not in ("utf-8", "utf8")
+        ):
+            raise _RequestError(HTTPStatus.UNSUPPORTED_MEDIA_TYPE, "UTF-8 application/json is required")
+        lengths = self.headers.get_all("Content-Length", [])
+        if self.headers.get("Transfer-Encoding") is not None or len(lengths) > 1:
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "Ambiguous request framing")
+        if not lengths:
+            raise _RequestError(HTTPStatus.LENGTH_REQUIRED, "Content-Length is required")
+        if not lengths[0].isascii() or not lengths[0].isdecimal():
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "Invalid Content-Length")
+        length_text = lengths[0].lstrip("0") or "0"
+        if len(length_text) > 7:
+            raise _RequestError(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "JSON body exceeds 1 MiB")
+        length = int(length_text)
+        if length > 1024 * 1024:
+            raise _RequestError(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "JSON body exceeds 1 MiB")
+        try:
+            data = json.loads(
+                self.rfile.read(length).decode("utf-8"), parse_constant=_reject_json_constant,
+            )
+        except (UnicodeError, ValueError):
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "Malformed UTF-8 JSON") from None
+        if not isinstance(data, dict):
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "JSON body must be an object")
+        return data
+
+    def _request_path(self) -> str:
+        try:
+            return urlparse(self.path).path
+        except ValueError:
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "Malformed request target") from None
 
     # Quieter access logs.
     def log_message(self, fmt: str, *args: Any) -> None:  # noqa: D401
@@ -680,9 +750,10 @@ class _Handler(BaseHTTPRequestHandler):
     # ---------- routing ----------------------------------------------------
     def do_GET(self) -> None:  # noqa: N802
         """Support request handling for the local chapter browser UI."""
-        url = urlparse(self.path)
-        path = url.path
+        path = self.path
         try:
+            self._admit_host()
+            path = self._request_path()
             if path == "/" or path == "/index.html":
                 return self._send_html(render_index_html(
                     host=self.server.server_address[0],
@@ -730,23 +801,26 @@ class _Handler(BaseHTTPRequestHandler):
             if m:
                 return self._serve_static_file(DOCS_DIR, unquote(m.group(1)))
             return self._send_error(HTTPStatus.NOT_FOUND, f"No route for {path!r}")
+        except _RequestError as exc:
+            return self._send_error(exc.status, str(exc))
         except Exception as exc:  # noqa: BLE001
             LOG.exception("GET %s failed", path)
             return self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
 
     def do_POST(self) -> None:  # noqa: N802
         """Support request handling for the local chapter browser UI."""
-        url = urlparse(self.path)
-        path = url.path
+        path = self.path
         try:
-            length = int(self.headers.get("Content-Length") or 0)
-            raw = self.rfile.read(length) if length else b""
-            data = json.loads(raw.decode("utf-8")) if raw else {}
+            path = self._request_path()
+            if path not in ("/api/run", "/api/launch-interactive"):
+                self._admit_host()
+                return self._send_error(HTTPStatus.NOT_FOUND, f"No POST route for {path!r}")
+            data = self._execution_json()
             if path == "/api/run":
                 return self._send_json(self._run_payload(data))
-            if path == "/api/launch-interactive":
-                return self._send_json(self._launch_interactive_payload(data))
-            return self._send_error(HTTPStatus.NOT_FOUND, f"No POST route for {path!r}")
+            return self._send_json(self._launch_interactive_payload(data))
+        except _RequestError as exc:
+            return self._send_error(exc.status, str(exc))
         except Exception as exc:  # noqa: BLE001
             LOG.exception("POST %s failed", path)
             return self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc))
@@ -754,13 +828,14 @@ class _Handler(BaseHTTPRequestHandler):
     # ---------- payloads --------------------------------------------------
     def _index_payload(self) -> dict[str, Any]:
         """Support request handling for the local chapter browser UI."""
+        snapshot = discover_snapshot()
         chapters = []
-        for entry in discover_chapters():
+        for entry in discover_chapters(snapshot=snapshot, include_interactive=True):
             scripts = entry.scripts
             kind_counts: dict[str, int] = {}
             for s in scripts:
                 kind_counts[s.kind] = kind_counts.get(s.kind, 0) + 1
-            figures = _list_figures(entry.number)
+            figures = _list_figures(entry.number, entry.scripts)
             chapters.append({
                 "number": entry.number,
                 "title": entry.title,
@@ -768,15 +843,15 @@ class _Handler(BaseHTTPRequestHandler):
                 "scripts": [_script_meta(s) for s in scripts],
                 "kind_counts": kind_counts,
                 "figure_count": len(figures),
-                "subtitle": _chapter_subtitle(entry.number),
+                "subtitle": _chapter_subtitle(entry.number, entry.path),
             })
         extras = []
-        for entry in discover_extras():
+        for entry in discover_extras(snapshot=snapshot, include_interactive=True):
             scripts = entry.scripts
             kind_counts: dict[str, int] = {}
             for s in scripts:
                 kind_counts[s.kind] = kind_counts.get(s.kind, 0) + 1
-            figures = _list_extra_figures(entry.slug)
+            figures = _list_extra_figures(entry.slug, entry.scripts)
             extras.append({
                 "slug": entry.slug,
                 "title": entry.title,
@@ -791,12 +866,12 @@ class _Handler(BaseHTTPRequestHandler):
                 "sections": list(entry.sections),
             })
         demos = []
-        for entry in discover_demos():
+        for entry in discover_demos(snapshot=snapshot, include_interactive=True):
             scripts = entry.scripts
             kind_counts: dict[str, int] = {}
             for s in scripts:
                 kind_counts[s.kind] = kind_counts.get(s.kind, 0) + 1
-            figures = _list_demo_figures(entry.slug)
+            figures = _list_demo_figures(entry.slug, scripts)
             demos.append({
                 "slug": entry.slug,
                 "title": entry.title,
@@ -818,18 +893,20 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _chapter_payload(self, number: int) -> dict[str, Any]:
         """Return chapter-specific metadata used for discovery and display."""
-        if number not in CHAPTER_DIRS:
-            raise ValueError(f"Unknown chapter {number!r}")
-        scripts = discover_scripts(number, include_interactive=True)
-        chapter_dir = CHAPTER_DIRS[number]
+        snapshot = discover_snapshot()
+        entry = snapshot.chapters.get(number)
+        if entry is None:
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown chapter {number!r}")
+        scripts = entry.scripts
+        chapter_dir = entry.path
         readme_path = chapter_dir / "README.md"
         return {
             "number": number,
             "title": f"Chapter {number:02d}",
-            "subtitle": _chapter_subtitle(number),
+            "subtitle": _chapter_subtitle(number, chapter_dir),
             "relative": str(chapter_dir.relative_to(REPO_ROOT)),
             "scripts": [_script_meta(s) for s in scripts],
-            "figures": _list_figures(number),
+            "figures": _list_figures(number, scripts),
             "docs": _list_chapter_docs(number),
             "readme_html": _md_to_html(readme_path.read_text(encoding="utf-8",
                                                               errors="replace"))
@@ -840,10 +917,12 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _extra_payload(self, topic: str) -> dict[str, Any]:
         """Return extras-topic metadata used for discovery and display."""
-        if topic not in EXTRA_TOPIC_DIRS:
-            raise ValueError(f"Unknown extras topic {topic!r}")
-        scripts = discover_extra_scripts(topic, include_interactive=True)
-        topic_dir = EXTRA_TOPIC_DIRS[topic]
+        snapshot = discover_snapshot()
+        entry = snapshot.extras.get(topic)
+        if entry is None:
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown extras topic {topic!r}")
+        scripts = entry.scripts
+        topic_dir = entry.path
         readme_path = topic_dir / "README.md"
         registry = _extra_registry_payload(topic)
         return {
@@ -852,7 +931,7 @@ class _Handler(BaseHTTPRequestHandler):
             "subtitle": registry["family"],
             "relative": str(topic_dir.relative_to(REPO_ROOT)),
             "scripts": [_script_meta(s) for s in scripts],
-            "figures": _list_extra_figures(topic),
+            "figures": _list_extra_figures(topic, scripts),
             "docs": [],
             **registry,
             "readme_html": _md_to_html(readme_path.read_text(encoding="utf-8",
@@ -864,10 +943,12 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _demo_payload(self, slug: str) -> dict[str, Any]:
         """Return demo-topic metadata used for discovery and display."""
-        if slug not in DEMO_TOPIC_DIRS:
-            raise ValueError(f"Unknown demo topic {slug!r}")
-        scripts = discover_demo_scripts(slug, include_interactive=True)
-        topic_dir = DEMO_TOPIC_DIRS[slug]
+        snapshot = discover_snapshot()
+        entry = snapshot.demos.get(slug)
+        if entry is None:
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown demo topic {slug!r}")
+        scripts = entry.scripts
+        topic_dir = entry.path
         readme_path = topic_dir / "README.md"
         registry = _demo_registry_payload(slug)
         return {
@@ -876,7 +957,7 @@ class _Handler(BaseHTTPRequestHandler):
             "subtitle": "Application demo",
             "relative": str(topic_dir.relative_to(REPO_ROOT)),
             "scripts": [_script_meta(s) for s in scripts],
-            "figures": _list_demo_figures(slug),
+            "figures": _list_demo_figures(slug, scripts),
             "docs": [],
             **registry,
             "readme_html": _md_to_html(readme_path.read_text(encoding="utf-8",
@@ -891,7 +972,7 @@ class _Handler(BaseHTTPRequestHandler):
         rel = doc_id.replace("__", "/")
         path = _safe_subpath(DOCS_DIR, rel)
         if path is None or path.suffix.lower() != ".md":
-            raise ValueError(f"Unknown doc {rel!r}")
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown doc {rel!r}")
         text = path.read_text(encoding="utf-8", errors="replace")
         return {
             "title": _doc_title(path),
@@ -899,55 +980,40 @@ class _Handler(BaseHTTPRequestHandler):
             "html": _md_to_html(text),
         }
 
+    def _requested_script(self, data: dict[str, Any]) -> ScriptEntry:
+        """Resolve exactly one typed owner and script from one fresh snapshot."""
+        selectors = [key for key in ("chapter", "topic", "demo") if key in data]
+        name = data.get("script")
+        if (
+            len(selectors) != 1 or set(data) - {"chapter", "topic", "demo", "script"}
+            or not isinstance(name, str) or not name
+            or Path(name).name != name or "\\" in name
+        ):
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "Provide one owner and a script filename")
+        selector = selectors[0]
+        value = data[selector]
+        if selector == "chapter":
+            if type(value) is not int or value < 1:
+                raise _RequestError(HTTPStatus.BAD_REQUEST, "chapter must be a positive integer")
+        elif not isinstance(value, str) or re.fullmatch(r"[a-z0-9_]+", value) is None:
+            raise _RequestError(HTTPStatus.BAD_REQUEST, f"Invalid {selector} slug")
+        snapshot = discover_snapshot()
+        owners = {"chapter": snapshot.chapters, "topic": snapshot.extras, "demo": snapshot.demos}
+        entry = owners[selector].get(value)
+        if entry is None:
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown {selector} {value!r}")
+        match = next((script for script in entry.scripts if script.name == name), None)
+        if match is None or not match.path.resolve().is_relative_to(REPO_ROOT.resolve()):
+            raise _RequestError(HTTPStatus.NOT_FOUND, f"Unknown contained script {name!r}")
+        return match
+
     def _run_payload(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Support request handling for the local chapter browser UI."""
-        name = str(data.get("script", "")).strip()
-        demo = str(data.get("demo", "")).strip()
-        if demo:
-            if demo not in DEMO_TOPIC_DIRS:
-                raise ValueError(f"Unknown demo topic {demo!r}")
-            scripts = discover_demo_scripts(demo, include_interactive=True)
-            match = next((s for s in scripts if s.name == name), None)
-            if match is None:
-                raise ValueError(f"Unknown script {name!r}")
-            if match.kind == "interactive":
-                raise ValueError("Interactive scripts must be launched via "
-                                 "/api/launch-interactive, not /api/run")
-            completed = run_script(match, save=True, capture_output=True,
-                                   timeout=300, quiet=True)
-            return {
-                "returncode": completed.returncode,
-                "stdout_tail": (completed.stdout or "").splitlines()[-25:],
-                "stderr_tail": (completed.stderr or "").splitlines()[-25:],
-            }
-        topic = str(data.get("topic", "")).strip()
-        if topic:
-            if topic not in EXTRA_TOPIC_DIRS:
-                raise ValueError(f"Unknown extras topic {topic!r}")
-            scripts = discover_extra_scripts(topic, include_interactive=True)
-            match = next((s for s in scripts if s.name == name), None)
-            if match is None:
-                raise ValueError(f"Unknown script {name!r}")
-            if match.kind == "interactive":
-                raise ValueError("Interactive scripts must be launched via "
-                                 "/api/launch-interactive, not /api/run")
-            completed = run_script(match, save=True, capture_output=True,
-                                   timeout=300, quiet=True)
-            return {
-                "returncode": completed.returncode,
-                "stdout_tail": (completed.stdout or "").splitlines()[-25:],
-                "stderr_tail": (completed.stderr or "").splitlines()[-25:],
-            }
-        chapter = int(data.get("chapter", 0))
-        if chapter not in CHAPTER_DIRS:
-            raise ValueError(f"Unknown chapter {chapter!r}")
-        scripts = discover_scripts(chapter, include_interactive=True)
-        match = next((s for s in scripts if s.name == name), None)
-        if match is None:
-            raise ValueError(f"Unknown script {name!r}")
+        """Run one admitted non-interactive script; preserve its process result."""
+        match = self._requested_script(data)
         if match.kind == "interactive":
-            raise ValueError("Interactive scripts must be launched via "
-                             "/api/launch-interactive, not /api/run")
+            raise _RequestError(
+                HTTPStatus.BAD_REQUEST, "Interactive scripts require /api/launch-interactive",
+            )
         completed = run_script(match, save=True, capture_output=True,
                                timeout=300, quiet=True)
         return {
@@ -958,34 +1024,9 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _launch_interactive_payload(self, data: dict[str, Any]) -> dict[str, Any]:
         """Support request handling for the local chapter browser UI."""
-        name = str(data.get("script", "")).strip()
-        # Search every chapter, since interactive scripts can sit anywhere.
-        match: ScriptEntry | None = None
-        for chapter in CHAPTER_DIRS:
-            for s in discover_scripts(chapter, include_interactive=True):
-                if s.name == name and s.kind == "interactive":
-                    match = s
-                    break
-            if match is not None:
-                break
-        if match is None:
-            for topic in EXTRA_TOPIC_DIRS:
-                for s in discover_extra_scripts(topic, include_interactive=True):
-                    if s.name == name and s.kind == "interactive":
-                        match = s
-                        break
-                if match is not None:
-                    break
-        if match is None:
-            for slug in DEMO_TOPIC_DIRS:
-                for s in discover_demo_scripts(slug, include_interactive=True):
-                    if s.name == name and s.kind == "interactive":
-                        match = s
-                        break
-                if match is not None:
-                    break
-        if match is None:
-            raise ValueError(f"Unknown interactive script {name!r}")
+        match = self._requested_script(data)
+        if match.kind != "interactive":
+            raise _RequestError(HTTPStatus.BAD_REQUEST, "The selected script is not interactive")
         env = _build_env()
         env.pop("MPLBACKEND", None)  # let it pick the system display
         proc = subprocess.Popen(  # noqa: S603 — sandboxed to discovered scripts
@@ -1051,6 +1092,11 @@ class _Server(ThreadingHTTPServer):
     daemon_threads = True
     app_version: str = "0.1.0"
     serve_thread: threading.Thread | None = None
+
+    def __init__(self, server_address, handler, bind_and_activate=True):
+        """Capture the explicitly selected host before stdlib DNS normalization."""
+        self.requested_host = server_address[0].lower()
+        super().__init__(server_address, handler, bind_and_activate)
 
 
 def _resolve_version() -> str:

@@ -54,6 +54,11 @@ other `docs/` page is unreachable. A relative-link walk over every tracked
 folder with three or more tracked files already carries a `README.md`/`AGENTS.md`
 pair, so no folder guide was needed.
 
+Source correction: the pass-3 `../output/figures/example.png` placeholder
+reference is superseded. `manuscript/SYNTAX.md` now demonstrates
+`../output/figures/chapter_01/03_bayes_three_panel.png`. No placeholder artifact
+is required. This correction does not claim a new link-walk run.
+
 Environment prerequisite: the bounded offline documentation gate
 `PYTHONPATH=src MPLBACKEND=Agg python -m pytest -q -x tests/utils
 tests/test_documentation_contracts.py` (53 tests, previously passing) could not
@@ -109,40 +114,24 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 
 ## Open / deferred
 
-- **GNN–FEP cutover to the shared reader is not applied here.**
-  `specs/gnn-pin.json` names `v5.0.3` at
-  `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, a revision that predates
-  `gnn/importers.py`, so this repository's `active_inference.gnn_spec.load_pin`
-  still reads and verifies the pin itself instead of calling
-  `python -m gnn.importers check --repo .`. **Blocker:** the pin bump to `v5.1.0`
-  (`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`) invalidates every recorded parser
-  digest, so the bump, the digest re-record, `.github/GNN.md`, and `./gate.sh gnn`
-  have to change together against the new runtime. **Owner:** the `fundamentals`
-  maintainers. The upstream tag exists, so nothing outside this repository blocks
-  it; an unavailable runtime must keep failing the arm rather than skipping it.
-- **The education contract cannot be emitted for this repository.** `courses`
-  names `fundamentals` a member whose pointer is `education-contract.json` and
-  whose schema is `specs/education/schema.json` (`courses`
-  `specs/education/contract.json`, member `members[2]`, read at `f1e5af62`);
-  neither file exists here. `$defs.unit.properties.objectives` is `minItems: 1`
-  and `objectives` is required, so a unit with no authored objective cannot be
-  written at all. **Missing artefact:** authored learning objectives for
-  chapters 2–14 in their chapter sources — only
-  `chapters/chapter_01/README.md` carries a `## Learning objective` heading — plus
-  further authored glossary definitions in `manuscript/98_symbols_glossary.md`,
-  which currently defines one term (`## Generative model`). **Owner:** the chapter
-  authors and `fundamentals` maintainers; the lead `courses` contract cannot
-  supply them, because its content covers the Institute's courses, not this
-  book's chapters. No bundle can be emitted without them, and recasting a chapter
-  description as an objective would invent the statement the contract has to
-  quote. The vendored contract and the full triage live in open PR #33, which
-  stays open rather than record a partial adoption.
-- Extras-family M3 (boilerplate consolidation): the 57 full-template topic
-  READMEs share identical Scripts/Outputs sections that drifted (m1/m4 fixed
-  here). A durable fix would generate those sections from the
-  `active_inference.extra_topics` registry (a small doc-gen step in
-  `scripts/`); deferred because it is a code change, not a docs edit, and the
-  two concrete drift symptoms are now fixed and validator-checked.
+- **GNN–FEP shared-reader migration remains open.** Preserve the deliberate
+  v5.0.3 pin and its parser digests until maintainers select a producer-qualified
+  replacement. The reader migration, reviewed pin/digests, `.github/GNN.md`,
+  gate behavior, and conformance evidence must move together. A newer tag's
+  existence alone is not admission. Unavailable or unverified runtime evidence
+  must continue to fail qualification.
+- **Education publication remains content-blocked.** Chapter authors must
+  supply authored learning objectives for chapters 2–14 and the corresponding
+  unit/source mapping before an education bundle can quote them. Chapter 1's
+  existing objective is retained. Do not synthesize objectives from chapter
+  descriptions. Further glossary authorship is a content decision, not an
+  invented schema minimum. Maintainers own integration against the selected
+  courses contract/schema after those sources are admitted.
+- Extras-family M3 uses `scripts/generate_extra_readme_sections.py` for all
+  58 owned Scripts/Outputs pairs, not 57. The 13 bespoke READMEs remain
+  excluded. Use `--write` only under documentation custody, then require a
+  clean `--check`. Generated output declarations do not certify that teaching
+  scripts or scientific artifacts have been executed.
 - ~~The manuscript directory remains an explicitly marked scaffold.~~ Resolved
   2026-11-12: the manuscript has a project-local render path, declared
   variables, and a validated figure registry. The prose itself is still a
@@ -151,3 +140,17 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
   because equivalent citation, contribution, and license guidance already
   exists in `README.md`, and no repository-specific security policy was
   present to document accurately.
+
+## Engineering contract corrections
+
+- Predictive-coding convergence requires energy and recognition-gradient
+  convergence; bounded-support VFE preserves infinite divergence where required.
+- Message-passing traces are tuples of normalized messages, including
+  heterogeneous cardinalities; the square chapter-12 caller stacks explicitly.
+- GNN validation binds one selected document observation without weakening
+  runtime provenance. Manuscript rendering requires the cross-reference resolver.
+- HTTP execution admission, demo navigation, and operation-local immutable
+  discovery share owner-qualified script identities.
+- Focused controls cover tensor-axis/operator mistakes, invalid raw-data
+  sidecars, and cross-orchestrator imports. Qualification is separate from
+  scientific promotion, broad coverage claims, and hosted acceptance.

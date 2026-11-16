@@ -737,6 +737,7 @@ class _Handler(BaseHTTPRequestHandler):
         return data
 
     def _request_path(self) -> str:
+        """Extract the route path, rejecting malformed request targets."""
         try:
             return urlparse(self.path).path
         except ValueError:

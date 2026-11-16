@@ -10,6 +10,7 @@ in `chapters/` and validation utilities for chapter/extras artifacts.
 |---|---|
 | `run_all_figures.py` | Render every chapter or extras script that accepts `--save` to `output/figures/`. Supports `--chapters`, `--extras`, `--no-chapters`, `--clean`, `--keep-going`, `--no-animations`. |
 | `export_notebooks.py` | Export chapter, extras, and demo orchestrators to `output/notebooks/`. Supports `--chapters`, `--extras`, `--demos`, `--no-*`, `--clean`, `--no-animations`. |
+| `generate_extra_readme_sections.py` | Generate extras README mode and source-API sections from the topic registry; `--check` detects drift without writing. |
 | `validate_notebook_exports.py` | Validate exported `.ipynb` files against `menu.runner` discovery inventory. |
 | `validate_book_topic_coverage.py` | Validate `docs/reference/book_topic_matrix.md` against the live extras registry, topic folders, READMEs, declared scripts, and, with `--require-rendered`, expected extras PNG/GIF plus NPZ+JSON artifacts. |
 | `validate_orchestrator_contracts.py` | Validate chapter/extras filename discovery, allowed imports, and non-interactive `--save` support; warn on duplicate stems and line-count drift. |

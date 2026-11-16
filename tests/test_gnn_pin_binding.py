@@ -22,6 +22,13 @@ COMMIT = "a" * 40
 OTHER = "b" * 40
 
 
+@pytest.fixture(autouse=True)
+def _isolated_gnn_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep provenance failure controls independent of the caller's GNN runtime."""
+    for name in ("GNN_ROOT", "GNN_PYTHON", "GNN_RUNTIME_PYTHON", "GNN_TAG_CHECKOUT"):
+        monkeypatch.delenv(name, raising=False)
+
+
 def _load() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "validate_gnn_spec_under_test", ROOT / "scripts" / "validate_gnn_spec.py"

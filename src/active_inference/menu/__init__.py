@@ -15,13 +15,13 @@ small public surface so callers can build their own front ends.
 """
 
 from .runner import (
-    CHAPTER_DIRS,
-    EXTRA_TOPIC_DIRS,
     REPO_ROOT,
     ChapterEntry,
+    DiscoverySnapshot,
     ExtraTopicEntry,
     ScriptEntry,
     discover_chapters,
+    discover_snapshot,
     discover_extra_scripts,
     discover_extras,
     discover_scripts,
@@ -35,13 +35,13 @@ from .tui import main, prompt_menu, render_menu
 
 __all__ = [
     "main",
-    "CHAPTER_DIRS",
-    "EXTRA_TOPIC_DIRS",
     "REPO_ROOT",
     "ChapterEntry",
+    "DiscoverySnapshot",
     "ExtraTopicEntry",
     "ScriptEntry",
     "discover_chapters",
+    "discover_snapshot",
     "discover_extra_scripts",
     "discover_extras",
     "discover_scripts",

@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,3 +60,29 @@ def test_validator_rejects_sibling_imports_and_missing_library_route(tmp_path: P
     joined = "\n".join(errors)
     assert "sibling script import" in joined
     assert "active_inference API" in joined
+
+
+@pytest.mark.parametrize("stale_import", [
+    "from .legacy_helper import prepare",
+    "from legacy_helper import prepare",
+    "from chapters.chapter_01.example_1_1 import prepare",
+    "from extras.entropy.visualize_entropy import prepare",
+    "from demo.toy.visualize_toy import prepare",
+])
+def test_current_library_route_does_not_hide_stale_orchestrator_dependency(
+    tmp_path: Path, stale_import: str,
+) -> None:
+    validator = _load_validator()
+    script = tmp_path / "visualize_owned.py"
+    current = (
+        '"""Owned provenance fixture; never executed."""\n'
+        "from active_inference.extra_topics import main_visualize\n"
+        "if __name__ == '__main__':\n"
+        "    main_visualize('entropy')\n"
+    )
+    script.write_text(current, encoding="utf-8")
+    assert validator._validate_file(script, sibling_modules={"legacy_helper"}) == []
+    script.write_text(stale_import + "\n" + current, encoding="utf-8")
+    errors = validator._validate_file(script, sibling_modules={"legacy_helper"})
+    assert errors
+    assert all(str(script) in error for error in errors)

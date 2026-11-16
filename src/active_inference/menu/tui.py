@@ -27,15 +27,14 @@ from pathlib import Path
 from typing import Sequence
 
 from .runner import (
-    CHAPTER_DIRS,
-    DEMO_TOPIC_DIRS,
-    EXTRA_TOPIC_DIRS,
     REPO_ROOT,
     ChapterEntry,
+    DiscoverySnapshot,
     DemoTopicEntry,
     ExtraTopicEntry,
     ScriptEntry,
     discover_chapters,
+    discover_snapshot,
     discover_demos,
     discover_extras,
     run_all_chapters,
@@ -158,27 +157,19 @@ def _summarize(results: dict[int, list[tuple[ScriptEntry, int]]]) -> int:
     return 1
 
 
-def _resolve_script_path(raw: str) -> Path | None:
+def _resolve_script_path(raw: str, *, snapshot: DiscoverySnapshot | None = None) -> Path | None:
     """Map a user-supplied path or chapter/example fragment to a real file."""
     candidate = Path(raw).expanduser()
     if not candidate.is_absolute():
         candidate = (REPO_ROOT / candidate).resolve()
     if candidate.is_file():
         return candidate
-    # Fallback: fuzzy match by filename in any chapter directory.
-    matches: list[Path] = []
-    for chapter_dir in CHAPTER_DIRS.values():
-        for path in chapter_dir.glob("*.py"):
-            if raw in path.name:
-                matches.append(path)
-    for extra_dir in EXTRA_TOPIC_DIRS.values():
-        for path in extra_dir.glob("*.py"):
-            if raw in path.name:
-                matches.append(path)
-    for demo_dir in DEMO_TOPIC_DIRS.values():
-        for path in demo_dir.glob("*.py"):
-            if raw in path.name:
-                matches.append(path)
+    snapshot = discover_snapshot() if snapshot is None else snapshot
+    matches = [
+        script.path
+        for entry in (*snapshot.chapters.values(), *snapshot.extras.values(), *snapshot.demos.values())
+        for script in entry.scripts if raw in script.name
+    ]
     if len(matches) == 1:
         return matches[0]
     if matches:
@@ -195,9 +186,10 @@ def prompt_menu(
     save: bool = True,
 ) -> int:
     """Interactive loop. Returns a process exit code."""
-    chapters = discover_chapters()
-    extras = discover_extras()
-    demos = discover_demos()
+    snapshot = discover_snapshot()
+    chapters = discover_chapters(snapshot=snapshot)
+    extras = discover_extras(snapshot=snapshot)
+    demos = discover_demos(snapshot=snapshot)
     print(render_menu(chapters, extras, demos))
     exit_code = 0
     while True:
@@ -209,6 +201,10 @@ def prompt_menu(
 
         if raw in {"q", "quit", "exit"}:
             return exit_code
+        snapshot = discover_snapshot()
+        chapters = discover_chapters(snapshot=snapshot)
+        extras = discover_extras(snapshot=snapshot)
+        demos = discover_demos(snapshot=snapshot)
         if raw in {"h", "?", "help", "menu"}:
             print(render_menu(chapters, extras, demos))
             continue
@@ -225,6 +221,7 @@ def prompt_menu(
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -233,6 +230,7 @@ def prompt_menu(
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -241,6 +239,7 @@ def prompt_menu(
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -248,15 +247,16 @@ def prompt_menu(
             topic = input("  extras topic slug: ").strip()
             if not topic:
                 continue
-            if topic not in EXTRA_TOPIC_DIRS:
+            if topic not in snapshot.extras:
                 print(f"  Unknown extras topic {topic!r}. Available: "
-                      f"{sorted(EXTRA_TOPIC_DIRS)}")
+                      f"{sorted(snapshot.extras)}")
                 continue
             results = {topic: run_extra_topic(
                 topic,
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )}
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -264,43 +264,46 @@ def prompt_menu(
             slug = input("  demo topic slug: ").strip()
             if not slug:
                 continue
-            if slug not in DEMO_TOPIC_DIRS:
+            if slug not in snapshot.demos:
                 print(f"  Unknown demo topic {slug!r}. Available: "
-                      f"{sorted(DEMO_TOPIC_DIRS)}")
+                      f"{sorted(snapshot.demos)}")
                 continue
             results = {slug: run_demo(
                 slug,
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )}
             exit_code = max(exit_code, _summarize(results))
             continue
         if raw.startswith("demo:"):
             slug = raw.split(":", 1)[1]
-            if slug not in DEMO_TOPIC_DIRS:
+            if slug not in snapshot.demos:
                 print(f"  Unknown demo topic {slug!r}. Available: "
-                      f"{sorted(DEMO_TOPIC_DIRS)}")
+                      f"{sorted(snapshot.demos)}")
                 continue
             results = {slug: run_demo(
                 slug,
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )}
             exit_code = max(exit_code, _summarize(results))
             continue
         if raw.startswith("extra:"):
             topic = raw.split(":", 1)[1]
-            if topic not in EXTRA_TOPIC_DIRS:
+            if topic not in snapshot.extras:
                 print(f"  Unknown extras topic {topic!r}. Available: "
-                      f"{sorted(EXTRA_TOPIC_DIRS)}")
+                      f"{sorted(snapshot.extras)}")
                 continue
             results = {topic: run_extra_topic(
                 topic,
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )}
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -320,7 +323,7 @@ def prompt_menu(
             path_input = input("  script path or filename fragment: ").strip()
             if not path_input:
                 continue
-            resolved = _resolve_script_path(path_input)
+            resolved = _resolve_script_path(path_input, snapshot=snapshot)
             if resolved is None:
                 print(f"  No script found matching {path_input!r}")
                 continue
@@ -329,15 +332,16 @@ def prompt_menu(
             continue
         if raw.isdigit():
             number = int(raw)
-            if number not in CHAPTER_DIRS:
+            if number not in snapshot.chapters:
                 print(f"  Unknown chapter {number!r}. Available: "
-                      f"{sorted(CHAPTER_DIRS)}")
+                      f"{sorted(snapshot.chapters)}")
                 continue
             results = {number: run_chapter(
                 number,
                 save=save,
                 keep_going=keep_going,
                 include_animations=include_animations,
+                snapshot=snapshot,
             )}
             exit_code = max(exit_code, _summarize(results))
             continue
@@ -384,11 +388,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     save = not args.no_save
     include_animations = not args.no_animations
     include_visualizations = not args.no_visualizations
+    snapshot = discover_snapshot()
 
     if args.list:
-        chapters = discover_chapters()
-        extras = discover_extras()
-        demos = discover_demos()
+        chapters = discover_chapters(snapshot=snapshot)
+        extras = discover_extras(snapshot=snapshot)
+        demos = discover_demos(snapshot=snapshot)
         print(render_menu(chapters, extras, demos))
         for entry in chapters:
             _print_scripts(entry)
@@ -404,6 +409,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )
         return _summarize(results)
 
@@ -413,6 +419,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )
         return _summarize(results)
 
@@ -422,13 +429,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )
         return _summarize(results)
 
     if args.chapter is not None:
-        if args.chapter not in CHAPTER_DIRS:
+        if args.chapter not in snapshot.chapters:
             print(f"Unknown chapter {args.chapter!r}. Available: "
-                  f"{sorted(CHAPTER_DIRS)}", file=sys.stderr)
+                  f"{sorted(snapshot.chapters)}", file=sys.stderr)
             return 2
         results = {args.chapter: run_chapter(
             args.chapter,
@@ -436,13 +444,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )}
         return _summarize(results)
 
     if args.extra is not None:
-        if args.extra not in EXTRA_TOPIC_DIRS:
+        if args.extra not in snapshot.extras:
             print(f"Unknown extras topic {args.extra!r}. Available: "
-                  f"{sorted(EXTRA_TOPIC_DIRS)}", file=sys.stderr)
+                  f"{sorted(snapshot.extras)}", file=sys.stderr)
             return 2
         results = {args.extra: run_extra_topic(
             args.extra,
@@ -450,13 +459,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )}
         return _summarize(results)
 
     if args.demo is not None:
-        if args.demo not in DEMO_TOPIC_DIRS:
+        if args.demo not in snapshot.demos:
             print(f"Unknown demo topic {args.demo!r}. Available: "
-                  f"{sorted(DEMO_TOPIC_DIRS)}", file=sys.stderr)
+                  f"{sorted(snapshot.demos)}", file=sys.stderr)
             return 2
         results = {args.demo: run_demo(
             args.demo,
@@ -464,11 +474,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             keep_going=args.keep_going,
             include_animations=include_animations,
             include_visualizations=include_visualizations,
+            snapshot=snapshot,
         )}
         return _summarize(results)
 
     if args.script is not None:
-        resolved = _resolve_script_path(args.script)
+        resolved = _resolve_script_path(args.script, snapshot=snapshot)
         if resolved is None:
             print(f"No script found matching {args.script!r}", file=sys.stderr)
             return 2

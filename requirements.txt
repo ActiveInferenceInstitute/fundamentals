@@ -5,7 +5,7 @@
 #     uv pip install -e .        # editable install of the runtime deps only
 #     pip install -e ".[dev]"    # pip fallback
 #
-numpy>=1.23
+numpy>=2.0
 scipy>=1.10
 matplotlib>=3.6
-pillow>=10.0
+pillow>=13.0.0

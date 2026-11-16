@@ -6,6 +6,15 @@ Pandoc citations, and `pandoc-crossref` labels. It is rendered by
 Pandoc runs. The `manuscript-check` arm validates without Pandoc; the
 `manuscript` arm validates and renders.
 
+Rendering requires both `pandoc` and `pandoc-crossref`; enabled PDF output
+also requires `xelatex`. Missing tools return exit code 3 before rendering
+or replacing an existing render receipt. Every rendering command includes
+the cross-reference filter.
+
+`--check` validates manuscript sources without invoking these tools. A
+successful check is not evidence that section/figure references rendered
+correctly in HTML or PDF.
+
 ## Section Labels
 
 | File | H1 | Label |

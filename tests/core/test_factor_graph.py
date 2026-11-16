@@ -93,8 +93,8 @@ def test_hybrid_model_bridge_outer_products_discrete_and_continuous_state() -> N
 def test_marginal_and_active_inference_messages_are_normalized() -> None:
     """Marginal, active-inference, and attention messages stay finite."""
     transition = np.array([[0.8, 0.2], [0.2, 0.8]])
-    trace = marginal_message_passing([transition, transition], [0.9, 0.1])
-    assert trace.shape == (3, 2)
+    trace = np.stack(marginal_message_passing([transition, transition], [0.9, 0.1]))
+    np.testing.assert_allclose(trace, [[0.9, 0.1], [0.74, 0.26], [0.644, 0.356]])
     np.testing.assert_allclose(trace.sum(axis=1), np.ones(3))
     likelihood = np.array([[0.9, 0.2], [0.1, 0.8]])
     messages = active_inference_factor_messages(likelihood, transition, [0.6, 0.4])
@@ -103,3 +103,26 @@ def test_marginal_and_active_inference_messages_are_normalized() -> None:
         np.testing.assert_allclose(value.sum(), 1.0)
     weighted = learning_attention_message([1.0, -2.0], np.log(2.0))
     np.testing.assert_allclose(weighted, [2.0, -4.0])
+
+
+class TestHeterogeneousMarginalTrace:
+    def test_rectangular_chain_preserves_each_boundary_dimension(self):
+        first = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+        second = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 1.0]])
+        incoming = np.array([3.0, 1.0])
+        trace = marginal_message_passing([first, second], incoming)
+        assert isinstance(trace, tuple)
+        assert tuple(message.shape for message in trace) == ((2,), (3,), (2,))
+        np.testing.assert_allclose(trace[0], [0.75, 0.25])
+        np.testing.assert_allclose(trace[1], [0.375, 0.125, 0.5])
+        np.testing.assert_allclose(trace[2], [0.375, 0.625])
+        np.testing.assert_array_equal(incoming, [3.0, 1.0])
+
+    def test_empty_chain_returns_only_normalized_incoming(self):
+        trace = marginal_message_passing([], [2.0, 3.0])
+        assert len(trace) == 1
+        np.testing.assert_allclose(trace[0], [0.4, 0.6])
+
+    def test_incompatible_next_factor_is_rejected(self):
+        with pytest.raises(ValueError, match="S_next, S_current"):
+            marginal_message_passing([np.ones((3, 2)), np.eye(2)], [0.5, 0.5])

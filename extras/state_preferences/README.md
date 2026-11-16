@@ -10,16 +10,27 @@ Preferences over states and time-dependent preference schedules.
 
 ## Scripts
 
-- `visualize_state_preferences.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_state_preferences.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_state_preferences.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_state_preferences.py` - Static visualization using shared library APIs.
+- `simulate_state_preferences.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_state_preferences.py` - Host GUI sliders; no saved media or data sidecars.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/state_preferences/` and raw-data sidecars under `output/data/extras/state_preferences/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/state_preferences/` and `output/data/extras/state_preferences/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_state_preferences.py --save` | `visualize_state_preferences.png` | `visualize_state_preferences.npz`, `visualize_state_preferences.json` |
+| `simulate_state_preferences.py --save` | `simulate_state_preferences.png` | `simulate_state_preferences.npz`, `simulate_state_preferences.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/state_preferences/visualize_state_preferences.py --save
 uv run python extras/state_preferences/simulate_state_preferences.py --save
 uv run python extras/state_preferences/interactive_state_preferences.py
 ```
+

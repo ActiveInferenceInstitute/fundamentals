@@ -10,16 +10,27 @@ Nested policies and slower contextual layers.
 
 ## Scripts
 
-- `visualize_hierarchical_depth.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_hierarchical_depth.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_hierarchical_depth.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_hierarchical_depth.py` - Static visualization using shared library APIs.
+- `simulate_hierarchical_depth.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_hierarchical_depth.py` - Host GUI sliders; no saved media or data sidecars.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/hierarchical_depth/` and raw-data sidecars under `output/data/extras/hierarchical_depth/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/hierarchical_depth/` and `output/data/extras/hierarchical_depth/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_hierarchical_depth.py --save` | `visualize_hierarchical_depth.png` | `visualize_hierarchical_depth.npz`, `visualize_hierarchical_depth.json` |
+| `simulate_hierarchical_depth.py --save` | `simulate_hierarchical_depth.png` | `simulate_hierarchical_depth.npz`, `simulate_hierarchical_depth.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/hierarchical_depth/visualize_hierarchical_depth.py --save
 uv run python extras/hierarchical_depth/simulate_hierarchical_depth.py --save
 uv run python extras/hierarchical_depth/interactive_hierarchical_depth.py
 ```
+

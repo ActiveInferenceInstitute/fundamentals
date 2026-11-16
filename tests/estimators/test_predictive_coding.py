@@ -463,3 +463,33 @@ class TestLinearOracleSweep:
         # make "agreement" vacuous): the oracle means must actually vary.
         means = [_closed_form_posterior_mean(*cfg) for cfg in self.GRID]
         assert np.ptp(means) > 1.0   # spread of >1 unit across the grid
+
+
+class TestStationaryConvergence:
+    @pytest.mark.parametrize("vector", [False, True])
+    @pytest.mark.parametrize("kappa", [0.1, 1e-20, 0.02])
+    def test_loss_plateau_requires_a_stationary_belief(self, vector, kappa):
+        if vector:
+            result = multivariate_predictive_coding(
+                lambda x: 2.0 * x + 3.0,
+                lambda x: np.array([[2.0]]),
+                np.array([7.0]), np.array([4.0]),
+                precision_y=4.0, precision_x=4.0,
+                kappa=kappa, n_iter=200,
+            )
+            final = result.mu_star[0]
+        else:
+            result = predictive_coding_inference(
+                linear_pc(), 7.0, kappa=kappa, n_iter=200,
+            )
+            final = result.mu_star
+        assert np.isfinite(result.free_energies).all()
+        residual = abs(20.0 * final - 48.0)
+        if kappa == 0.02:
+            assert result.converged
+            assert final == pytest.approx(2.4, abs=1e-9)
+            assert residual < 1e-9
+        else:
+            assert not result.converged
+            assert result.n_iter_run == 200
+            assert residual > 1.0

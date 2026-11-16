@@ -14,7 +14,7 @@ def build_arrays() -> dict[str, np.ndarray]:
     """Build arrays for §12.4 and §12.4.1."""
     factor = np.array([[0.72, 0.28], [0.18, 0.82]])
     incoming = np.array([0.55, 0.45])
-    marginal = marginal_message_passing([factor, factor], incoming)
+    marginal = np.stack(marginal_message_passing([factor, factor], incoming))
     vmp = variational_message_update(np.log(factor + 1e-12), [incoming], target_axis=0)
     return {"step": np.arange(marginal.shape[0], dtype=float), "marginal": marginal, "vmp": vmp, "factor": factor}
 

@@ -457,6 +457,7 @@ def _variable_dimensions(parser: dict[str, Any]) -> dict[str, list[int]]:
 def conformance_failures(
     payload: dict[str, Any],
     *,
+    spec_text: str,
     pin: dict[str, Any],
     source: Path | None,
     package_dir: Path | None = None,
@@ -467,9 +468,9 @@ def conformance_failures(
     failures: list[str] = []
     parser = payload["parser"]
     expected_version = pin["tag"].lstrip("v")
-    summary = spec_summary()
-    arrays = declared_arrays()
-    variables = parse_variables()
+    summary = spec_summary(spec_text)
+    arrays = declared_arrays(spec_text)
+    variables = parse_variables(spec_text)
 
     if payload["gnn_version"] != expected_version:
         failures.append(
@@ -496,7 +497,7 @@ def conformance_failures(
         failures.append(f"parser warning: {message}")
 
     parser_sections = set(parser["sections"])
-    declared_sections = list(parse_sections())
+    declared_sections = list(parse_sections(spec_text))
     if parser_sections != set(declared_sections):
         failures.append(
             f"the pinned parser sees sections {sorted(parser_sections)}, the document text "
@@ -625,13 +626,21 @@ def main(argv: list[str] | None = None) -> int:
         # A required tag check must fail when the selected source cannot resolve it.
         print(f"gnn validation not run: --verify-tag-remote: {tag['detail']}", file=sys.stderr)
         return 2
+    try:
+        spec_bytes = args.spec.read_bytes()
+        spec_text = spec_bytes.decode("utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"gnn specification unreadable: {args.spec}: {exc}", file=sys.stderr)
+        return 1
     with tempfile.TemporaryDirectory(prefix="fundamentals-gnn-") as directory:
         output = Path(directory) / "probe.json"
+        selected_spec = Path(directory) / "selected.gnn.md"
+        selected_spec.write_bytes(spec_bytes)
         try:
             if args.gnn_root is not None:
                 source, origin, revision = materialize_pin(args.gnn_root, pin)
                 payload = run_probe(
-                    args.python or sys.executable, args.spec, output, source=source
+                    args.python or sys.executable, selected_spec, output, source=source
                 )
                 package_dir = None
             else:
@@ -641,14 +650,15 @@ def main(argv: list[str] | None = None) -> int:
                 package_dir, _module = _locate_package(args.gnn_runtime, origin=args.gnn_runtime)
                 _verify_digests(package_dir, pin, origin=args.gnn_runtime)
                 revision = _installed_revision(args.gnn_runtime, origin=args.gnn_runtime)
-                payload = run_probe(args.gnn_runtime, args.spec, output, source=None)
+                payload = run_probe(args.gnn_runtime, selected_spec, output, source=None)
                 origin = f"installed runtime {args.gnn_runtime} ({package_dir})"
         except Unavailable as exc:
             print(f"gnn validation not run: {exc}", file=sys.stderr)
             return 2
 
         failures = conformance_failures(
-            payload, pin=pin, source=source, package_dir=package_dir, tag=tag
+            payload, spec_text=spec_text, pin=pin, source=source,
+            package_dir=package_dir, tag=tag,
         )
         failures.extend(revision_failures(revision, pin))
 
@@ -656,6 +666,7 @@ def main(argv: list[str] | None = None) -> int:
     receipt = {
         "ok": not failures and not provenance,
         "spec": str(args.spec),
+        "spec_sha256": hashlib.sha256(spec_bytes).hexdigest(),
         "pin": pin,
         "pin_source": origin,
         "gnn_version": payload["gnn_version"],

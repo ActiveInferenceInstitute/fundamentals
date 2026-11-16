@@ -10,12 +10,19 @@ How internal representations stand in for hidden causes.
 
 ## Scripts
 
-- `visualize_model_representation.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_model_representation.py` - Static visualization using shared library APIs.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/model_representation/` and raw-data sidecars under `output/data/extras/model_representation/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/model_representation/` and `output/data/extras/model_representation/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_model_representation.py --save` | `visualize_model_representation.png` | `visualize_model_representation.npz`, `visualize_model_representation.json` |
 
 ```bash
 uv run python extras/model_representation/visualize_model_representation.py --save
 ```
+

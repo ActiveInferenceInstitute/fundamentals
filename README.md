@@ -125,10 +125,11 @@ environment and then calls one arm, so the command you run locally is the
 command CI runs.
 
 ```bash
-./gate.sh --list            # lint, fast, full, docs, validators, manuscript-check, manuscript, gnn
+./gate.sh --list            # print every available arm
 ./gate.sh lint              # ruff over the tree
 ./gate.sh fast              # the CI test job: unit, contract, and documentation suites
 ./gate.sh docs              # documentation and Markdown-link contracts only
+./gate.sh contract          # Education pointer, schema, and bundle coherence
 ./gate.sh validators        # artifact, coverage, and source-spine validators
 ./gate.sh manuscript-check  # manuscript variables, figures, citations, labels (no Pandoc)
 ./gate.sh manuscript        # render the manuscript HTML and PDF

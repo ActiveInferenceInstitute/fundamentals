@@ -1,0 +1,186 @@
+{
+  "schema": "education-contract/v1",
+  "provenance": {
+    "repository": "ActiveInferenceInstitute/fundamentals",
+    "revision": "426600e7c87111fd23c444fa3f12279baa8b7111"
+  },
+  "units": [
+    {
+      "unit_id": "fundamentals.chapter_01",
+      "title": "Chapter 1 — The Hypothesis-Testing Brain",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Explain how Bayes' theorem combines a prior and a likelihood to infer hidden states from observations."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_01/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_02",
+      "title": "Chapter 2 — Hidden State Estimation",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Formulate a linear-Gaussian generative model and compare exact grid Bayesian inference, precision-weighted posteriors, and MLE or MAP point estimates."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_02/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_03",
+      "title": "Chapter 3 — Combining Learning and Inference",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Distinguish parameter learning from hidden-state inference across Bayesian linear regression, multivariate linear-Gaussian systems, and expectation-maximization in factor analysis."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_03/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_04",
+      "title": "Chapter 4 — Variational Bayesian Inference",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Derive variational free energy as an upper bound on surprisal and minimize it with mean-field CAVI and fixed-form variational inference to approximate a posterior."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_04/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_05",
+      "title": "Chapter 5 — Predictive Coding",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Derive predictive-coding recognition dynamics as gradient descent on free energy using precision-weighted prediction errors in single-layer and hierarchical models."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_05/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_06",
+      "title": "Chapter 6 — Generalized Filtering for Perception",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Track dynamic hidden states online with generalized filtering and explain how generalized coordinates of motion and precision coupling reduce tracking lag."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_06/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_07",
+      "title": "Chapter 7 — Active Generalized Filtering",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Couple perception and action under a single variational free-energy objective so continuous control steers hidden states toward a preferred set-point."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_07/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_08",
+      "title": "Chapter 8 — Learning, attention, and hierarchical models",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Combine fast hidden-state perception with slow parameter learning, log-precision attention updates, and two-layer hierarchical message passing under one free-energy objective."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_08/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_09",
+      "title": "Chapter 9 — Active Inference in POMDPs",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Construct a discrete POMDP generative model with A, B, C, and D arrays to infer hidden states and select policies by minimizing expected free energy."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_09/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_10",
+      "title": "Chapter 10 — Learning and extensions in POMDPs",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Update POMDP parameters through Dirichlet concentration counts and extend discrete active inference with policy precision, habits, factorial state factors, and hierarchical depth."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_10/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_11",
+      "title": "Chapter 11 — Part III planning extensions",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Compare alternate free-energy planning objectives and apply sophisticated lookahead, time-dependent preferences, parameter forgetting, and structure learning in discrete planning."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_11/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_12",
+      "title": "Chapter 12 — Factor graphs and message passing",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Formulate discrete active inference as local factor-graph message passing across sum-product smoothing, variational message passing, and hybrid continuous-discrete bridges."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_12/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_13",
+      "title": "Chapter 13 — Applications",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Apply active-inference belief updating and preference-driven control to robotics navigation, fault-tolerant actuation, and social intention inference."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_13/README.md"
+    },
+    {
+      "unit_id": "fundamentals.chapter_14",
+      "title": "Chapter 14 — Bayesian mechanics and Markov blankets",
+      "objectives": [
+        {
+          "objective_id": "obj-1",
+          "statement": "Relate ergodic occupancy density, entropy and free-energy bounds, viability thresholds, and Markov-blanket partitions to Bayesian mechanics."
+        }
+      ],
+      "prerequisites": [],
+      "source_path": "chapters/chapter_14/README.md"
+    }
+  ],
+  "prerequisite_edges": [],
+  "glossary": [
+    {
+      "term_id": "generative-model",
+      "term": "Generative model",
+      "definition": "A generative model is the agent's internal representation of the environment, expressed as the joint distribution `p(x, y) = p(y | x) p(x)` over hidden states `x` and observations `y`.",
+      "source": "manuscript/98_symbols_glossary.md"
+    }
+  ]
+}

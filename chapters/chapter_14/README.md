@@ -4,6 +4,14 @@ Chapter 14 connects active inference to ergodic density, entropy bounds,
 Markov blankets, and Bayesian mechanics. The concept map is
 [`docs/chapters/chapter_14.md`](../../docs/chapters/chapter_14.md).
 
+## Learning objective
+
+- Relate ergodic occupancy density, entropy and free-energy bounds, viability
+  thresholds, and Markov-blanket partitions to Bayesian mechanics.
+
+Practice this objective with `example_14_1_ergodic_density.py` and
+`example_14_4_bayesian_mechanics.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

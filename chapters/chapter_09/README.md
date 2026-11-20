@@ -11,6 +11,14 @@ a few matrices (`A`, `B`, `C`, `D`). The concept map is
 > (**expected free energy**, policy/action selection, Grid World planning, and the
 > exploration/exploitation trade-off).
 
+## Learning objective
+
+- Construct a discrete POMDP generative model with A, B, C, and D arrays to
+  infer hidden states and select policies by minimizing expected free energy.
+
+Practice this objective with `example_9_1_state_inference.py` and
+`example_9_4_gridworld.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

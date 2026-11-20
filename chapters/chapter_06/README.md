@@ -10,6 +10,14 @@ its belief `μ_x` by one Euler step down the variational free energy (Algorithm
 > multivariate filter), §6.3–6.5 (generalized coordinates of motion + the generalized
 > filter), and §6.6 (correlated embedding orders and Example 6.7).
 
+## Learning objective
+
+- Track dynamic hidden states online with generalized filtering and explain how
+  generalized coordinates of motion and precision coupling reduce tracking lag.
+
+Practice this objective with `example_6_1_generalized_filter.py` and
+`example_6_6_generalized_coordinates.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

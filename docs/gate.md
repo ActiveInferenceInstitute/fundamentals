@@ -47,7 +47,7 @@ an existing interpreter instead of provisioning.
 
 ## Education contract
 
-The [Education workflow contract](https://github.com/ActiveInferenceInstitute/courses/blob/f1e5af62dc2581b9d4c09746c8b7c4fa09dc5e1b/docs/workflows/education.md)
+The [Education workflow contract](https://github.com/ActiveInferenceInstitute/courses/blob/486b4dae7d0af33d5ec95b50faed7643173fc1f6/docs/workflows/education.md)
 requires a chapter bundle and glossary transcription.
 [`education-contract.json`](../education-contract.json) points to
 [`specs/education/fundamentals.json`](../specs/education/fundamentals.json).
@@ -67,8 +67,8 @@ authored hard prerequisites.
 
 The schema and `vendor/education_contract/{schema,rules,registry}.py`
 are byte-identical copies from `ActiveInferenceInstitute/courses` commit
-`f1e5af62dc2581b9d4c09746c8b7c4fa09dc5e1b`. The local adapter passes an explicit
-schema path to the vendored `check_member`; it does not reimplement the rules.
+`486b4dae7d0af33d5ec95b50faed7643173fc1f6`. The adapter passes the actual checkout and schema paths to the vendored
+`check_member`, so the gate also works from a named linked worktree.
 The local arm checks the pointer digest, schema, and declared bundles. Only a
 comparison with the lead can establish that the vendored schema is still current.
 These unchanged modules are by the Active Inference Institute, licensed under

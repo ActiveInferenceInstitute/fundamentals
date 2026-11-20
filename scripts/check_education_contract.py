@@ -17,9 +17,10 @@ from education_contract.registry import ADOPTED, MemberSpec, check_member  # noq
 def main() -> int:
     """Report this member's adoption state and fail on every contract violation."""
     state = check_member(
-        ROOT.parent,
-        MemberSpec(ROOT.name, "ActiveInferenceInstitute/fundamentals"),
+        None,
+        MemberSpec("fundamentals", "ActiveInferenceInstitute/fundamentals"),
         canonical_schema=ROOT / "specs" / "education" / "schema.json",
+        repo_root=ROOT,
     )
     print(f"fundamentals: {state.state} -- {state.detail}")
     for issue in state.issues:

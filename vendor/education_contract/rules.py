@@ -168,39 +168,44 @@ def run_rules(document: dict[str, Any]) -> list[Issue]:
     return issues
 
 
-def run_cross_rules(documents: dict[str, dict[str, Any]]) -> list[Issue]:
-    """Return violations that only appear when documents are read together.
+def run_cross_rules(
+    documents: dict[str, dict[str, Any] | list[dict[str, Any]]],
+) -> list[Issue]:
+    """Check all structurally admitted bundles, retaining their repository owner.
 
-    ``documents`` maps a repository identity to its parsed bundle. Two repositories
-    may not claim the same unit id, and a shared ``term_id`` must mean the same
-    thing -- that is the whole reason the group shares a term schema.
+    A single bundle per repository remains accepted for existing callers.
+    Group callers pass every bundle, not a last-bundle-wins mapping.
+    Retain every owner's distinct definitions so later bundles cannot hide drift.
     """
     issues: list[Issue] = []
     units_by_id: dict[str, str] = {}
-    definitions: dict[str, tuple[str, str]] = {}
-    for repository, document in sorted(documents.items()):
-        for unit in _as_dicts(document.get("units")):
-            unit_id = str(unit.get("unit_id", ""))
-            owner = units_by_id.setdefault(unit_id, repository)
-            if owner != repository:
-                issues.append(
-                    Issue(
-                        "EC120",
-                        "$.units",
-                        f"unit_id {unit_id!r} is claimed by both {owner!r} and {repository!r}",
+    definitions: dict[str, dict[str, set[str]]] = {}
+    for repository, bundles in sorted(documents.items()):
+        for document in bundles if isinstance(bundles, list) else [bundles]:
+            for unit in _as_dicts(document.get("units")):
+                unit_id = str(unit.get("unit_id", ""))
+                owner = units_by_id.setdefault(unit_id, repository)
+                if owner != repository:
+                    issues.append(
+                        Issue(
+                            "EC120",
+                            "$.units",
+                            f"unit_id {unit_id!r} is claimed by both {owner!r} and {repository!r}",
+                        )
                     )
-                )
-        for term in _as_dicts(document.get("glossary")):
-            term_id = str(term.get("term_id", ""))
-            definition = str(term.get("definition", "")).strip()
-            previous = definitions.setdefault(term_id, (definition, repository))
-            if previous[0] != definition and previous[1] != repository:
-                issues.append(
-                    Issue(
-                        "EC121",
-                        "$.glossary",
-                        f"term_id {term_id!r} means different things in "
-                        f"{previous[1]!r} and {repository!r}",
-                    )
-                )
+            for term in _as_dicts(document.get("glossary")):
+                term_id = str(term.get("term_id", ""))
+                definition = str(term.get("definition", "")).strip()
+                owners = definitions.setdefault(term_id, {})
+                for owner, previous in owners.items():
+                    if owner != repository and any(value != definition for value in previous):
+                        issues.append(
+                            Issue(
+                                "EC121",
+                                "$.glossary",
+                                f"term_id {term_id!r} means different things in "
+                                f"{owner!r} and {repository!r}",
+                            )
+                        )
+                owners.setdefault(repository, set()).add(definition)
     return issues

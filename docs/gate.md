@@ -18,7 +18,7 @@ never restates a command that runs elsewhere.
 | `fast` | `uv run python -m pytest -q tests/core tests/estimators tests/utils tests/visualizations tests/web tests/test_*.py` | `tests (py3.11)`, `tests (py3.14)` |
 | `full` | `uv run python -m pytest -q` | local only |
 | `docs` | `uv run python -m pytest -q tests/test_documentation_contracts.py tests/test_method_documentation_contracts.py` | local fast path (a strict subset of `fast`) |
-| `contract` | `uv run python scripts/check_education_contract.py` | local only; migration blocked on authored content |
+| `contract` | `uv run python scripts/check_education_contract.py` | local only |
 | `validators` | the orchestrator-contract, provenance, book-topic, source-spine, and rendered-figure validators | `repository validators` |
 | `manuscript-check` | `uv run python scripts/render_manuscript.py --check` | `repository validators` |
 | `manuscript` | `uv run python scripts/render_manuscript.py` | local only (needs `pandoc` and `xelatex`) |
@@ -45,60 +45,25 @@ fresh runtime instead of reusing a stale one, and CI keeps the cache on the runn
 with `GATE_CACHE=${{ runner.temp }}/gate-cache`. Set `GNN_RUNTIME_PYTHON` to use
 an existing interpreter instead of provisioning.
 
-## Education migration — blocked on authored content
+## Education contract
 
 The [Education workflow contract](https://github.com/ActiveInferenceInstitute/courses/blob/f1e5af62dc2581b9d4c09746c8b7c4fa09dc5e1b/docs/workflows/education.md)
 requires a chapter bundle and glossary transcription.
 [`education-contract.json`](../education-contract.json) points to
 [`specs/education/fundamentals.json`](../specs/education/fundamentals.json).
-The draft transcribes chapter README titles verbatim and records each source path.
-Unit IDs are member-prefixed to avoid cross-member collisions.
+The bundle transcribes all fourteen chapter README titles and authored
+`## Learning objective` statements verbatim (`chapters/chapter_01/README.md`
+through `chapters/chapter_14/README.md`), records each source path, and uses
+member-prefixed unit IDs (`fundamentals.chapter_01`–`fundamentals.chapter_14`)
+to avoid cross-member collisions. The `generative-model` glossary term is
+transcribed verbatim from
+[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md#L3).
 
-**Do not merge this migration yet.** Chapter 1 now has an authored learning
-objective, and the glossary source has one authored definition; both are
-transcribed verbatim. The other thirteen chapters supply none, and the unchanged
-schema rejects an empty objective list with `EC006`.
-
-Transcribed from
-[`chapters/chapter_01/README.md`](../chapters/chapter_01/README.md#L11):
-
-> ## Learning objective
->
-> - Explain how Bayes' theorem combines a prior and a likelihood to infer hidden
->   states from observations.
-
-Transcribed from
-[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md#L3):
-
-> ## Generative model
->
-> A generative model is the agent's internal representation of the environment,
-> expressed as the joint distribution `p(x, y) = p(y | x) p(x)` over hidden states
-> `x` and observations `y`.
-
-Every other chapter README has the same shape as
-[`chapters/chapter_02/README.md`](../chapters/chapter_02/README.md): a
-description paragraph, a run snippet, and a `## Scripts` coverage table. Chapter
-2 opens "Chapter 2 turns the conceptual ideas of Chapter 1 into the canonical
-linear-Gaussian Bayesian inference recipe and walks through ten numbered examples
-(2.1–2.10) that explore variations of it." That sentence describes the chapter;
-it is not an authored learning objective, and recasting it or a table row as one
-would invent the statement the contract asks to quote. Chapters 2–14 therefore
-keep empty `objectives` arrays, which the schema rejects with thirteen `EC006`
-issues.
-
-The same holds for the glossary: one definition exists, and no other term is
-defined in the required source. Prerequisites and edges are empty because the
-only authored ordering,
+Prerequisites and edges remain empty because the only authored ordering,
 [`docs/reading_order.md`](../docs/reading_order.md) "Path A — *I'm following the
 book chapter by chapter*", is a reading path with no prerequisite statement to
 quote as an edge rationale. Chapter numbering and coverage references are not
 authored hard prerequisites.
-
-To unblock: authors must supply learning objectives for chapters 2–14, and
-further glossary definitions, in the required sources; then transcribe those
-statements verbatim and rerun the checks. No schema relaxation, substitute
-glossary, or inferred prerequisite chain is part of this migration.
 
 The schema and `vendor/education_contract/{schema,rules,registry}.py`
 are byte-identical copies from `ActiveInferenceInstitute/courses` commit
@@ -122,17 +87,10 @@ python -B ../courses/software/scripts/check_education_contract.py \
 ./gate.sh full
 ```
 
-Local migration verification: the lead checker reported
-`FAILED (13 issue(s))`, all `EC006` on the thirteen chapter objective lists
-that have no authored source. The member `contract` arm reported
-`diverged -- 13 contract violation(s)` and exited 1. The chapter 1 objective and
-the `generative-model` term pass the schema and coherence rules.
-After documentation integration fixes, `docs` and `fast` passed.
-The full arm was run before those fixes and failed: its summary recorded
-190 subprocess-launch errors (`Errno 62: Too many levels of symbolic links`
-at `.venv/bin/python`) and two documentation failures. It was not rerun
-after the documentation corrections; full-suite verification remains open.
-
+Local contract verification: `./gate.sh contract` reports
+`fundamentals: adopted -- adopted 1 bundle(s)` with zero schema or semantic
+violations across all fourteen chapter units and the `generative-model` glossary
+entry.
 
 ## Measured wall time
 

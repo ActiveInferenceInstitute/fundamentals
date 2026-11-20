@@ -9,7 +9,19 @@ verified sources for that pin:
   the live working tree is never imported;
 * an installed pinned runtime (``--gnn-runtime`` or ``GNN_RUNTIME_PYTHON``): an
   interpreter whose ``gnn`` package is installed at the pinned revision; the
-  distribution version and the installed parser file digests are verified.
+  installed parser file digests are verified *before* the document is parsed,
+  and the distribution revision recorded by the installer is compared with the
+  pin.
+
+Both sources also bind the pin's ``tag`` to its ``commit`` where an object store
+is available: a GNN checkout resolves the tag locally (``--gnn-root``),
+``--verify-tag-remote`` resolves it upstream with ``git ls-remote``. A binding
+that could not be verified — no object store, no remote answer, a tag that
+resolves elsewhere, or an install with no recorded VCS commit — is reported in
+the receipt and ends the run as *unverified* (``ok: false``, exit 2), never a
+pass. The same holds for a ``--gnn-root`` directory without git metadata: its
+parser files must match the pin's digests, but it is attested as a
+digest-verified tree, not as the pinned Git revision.
 
 Either way the document is parsed by ``scripts/gnn_parser_probe.py`` in a
 subprocess and checked for conformance: the pinned parser's view of the
@@ -20,8 +32,9 @@ The binding of the declaration to the implementation lives in
 ``tests/test_gnn_spec.py``; this script proves the document is well-formed GNN
 and that two independent readers agree on it.
 
-Exit codes: ``0`` pass, ``1`` conformance failure, ``2`` pinned runtime or
-checkout unavailable (the run is then explicitly *not run*, never a pass).
+Exit codes: ``0`` pass with the tag and revision verified, ``1`` conformance
+failure, ``2`` pinned runtime or checkout unavailable or the tag/revision
+binding unverified (the run is then explicitly *not a pass*).
 
 Usage:
 
@@ -30,8 +43,9 @@ Usage:
     GNN_PYTHON=/path/to/parser-runtime/bin/python \\
     uv run python scripts/validate_gnn_spec.py --json
 
-    # Pinned installed runtime (used by CI)
-    uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/venv/bin/python
+    # Pinned installed runtime (used by CI); --verify-tag-remote binds the tag
+    uv run python scripts/validate_gnn_spec.py \\
+        --gnn-runtime /path/to/venv/bin/python --verify-tag-remote
 """
 
 from __future__ import annotations
@@ -103,14 +117,266 @@ def _verify_digests(package_dir: Path, pin: dict[str, Any], *, origin: str) -> d
     return observed
 
 
-def materialize_pin(gnn_root: Path, pin: dict[str, Any]) -> tuple[Path, str]:
-    """Return a directory holding the pinned source tree and how it was obtained."""
+#: A named conformance failure: the pin's ``tag`` and ``commit`` name one
+#: revision, so a tag that resolves elsewhere is reported by name.
+TAG_COMMIT_MISMATCH = "tag-commit-mismatch"
+
+#: A named provenance result: the parsed source was not proven to be the pin's
+#: revision. Recorded in the receipt and never surfaced as ``ok: true``.
+PROVENANCE_UNVERIFIED = "provenance-unverified"
+
+# Locating the installed package and reading its installer metadata never parses
+# a document, so the digest and revision checks can run before the probe.
+LOCATE_EXPRESSION = (
+    "import importlib.util, json; "
+    "spec = importlib.util.find_spec('gnn'); "
+    "print(json.dumps({'module': spec.origin if spec else None, "
+    "'locations': [str(path) for path in (spec.submodule_search_locations or [])] "
+    "if spec else []}))"
+)
+REVISION_EXPRESSION = """
+import importlib.metadata as md
+import json
+
+records = []
+for name in md.packages_distributions().get("gnn", []):
+    record = {"name": name, "version": None, "commit": None, "url": None}
+    try:
+        distribution = md.distribution(name)
+    except md.PackageNotFoundError:
+        continue
+    record["version"] = distribution.version
+    raw = distribution.read_text("direct_url.json")
+    if raw:
+        try:
+            direct = json.loads(raw)
+        except ValueError:
+            direct = {}
+        vcs = direct.get("vcs_info") or {}
+        record["commit"] = vcs.get("commit_id")
+        record["url"] = direct.get("url")
+    records.append(record)
+print(json.dumps(records))
+"""
+
+
+def _locate_package(python: str, *, origin: str) -> tuple[Path, str]:
+    """Return the ``gnn`` package directory and module file an interpreter imports.
+
+    This asks the interpreter's import system where the package is; it never
+    imports the parser or parses a document, so digest verification can run
+    before any input is parsed.
+    """
+
+    completed = subprocess.run(
+        [python, "-c", LOCATE_EXPRESSION],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip().splitlines()
+        tail = " | ".join(detail[-3:]) if detail else "no output"
+        raise Unavailable(f"cannot locate the pinned gnn package in {origin}: {tail}")
+    try:
+        located = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise Unavailable(f"cannot locate the pinned gnn package in {origin}: {exc}") from exc
+    module = located.get("module")
+    if not module:
+        raise Unavailable(
+            f"the pinned gnn package is not installed in {origin}; install it from the "
+            "pinned revision or pass --gnn-root"
+        )
+    locations = located.get("locations") or []
+    package_dir = Path(locations[0]).resolve() if locations else Path(module).resolve().parent
+    return package_dir, str(module)
+
+
+def _installed_revision(python: str, *, origin: str) -> dict[str, Any]:
+    """Return the VCS revision the installer recorded for the ``gnn`` distribution.
+
+    ``direct_url.json`` records ``vcs_info.commit_id`` only when the runtime was
+    installed from a git URL. An editable or index install has no commit to
+    compare, so the result is reported as unresolvable rather than assumed.
+    """
+
+    completed = subprocess.run(
+        [python, "-c", REVISION_EXPRESSION],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip().splitlines()
+        tail = " | ".join(detail[-3:]) if detail else "no output"
+        raise Unavailable(f"cannot read the installed gnn metadata in {origin}: {tail}")
+    try:
+        records = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise Unavailable(f"cannot read the installed gnn metadata in {origin}: {exc}") from exc
+    commits = sorted({record["commit"] for record in records if record.get("commit")})
+    versions = sorted({str(record["version"]) for record in records if record.get("version")})
+    if not commits:
+        return {
+            "status": "unresolvable-offline",
+            "commit": None,
+            "version": versions[0] if len(versions) == 1 else None,
+            "distributions": [record["name"] for record in records],
+            "detail": "the installer recorded no VCS commit (not installed from a git URL)",
+        }
+    if len(commits) > 1:
+        return {
+            "status": "conflicting",
+            "commit": None,
+            "version": versions[0] if len(versions) == 1 else None,
+            "distributions": [record["name"] for record in records],
+            "detail": f"the installer recorded several commits {commits}",
+        }
+    return {
+        "status": "verified",
+        "commit": commits[0],
+        "version": versions[0] if len(versions) == 1 else None,
+        "distributions": [record["name"] for record in records],
+        "detail": "direct_url.json vcs_info.commit_id",
+    }
+
+
+def tag_binding(
+    gnn_root: Path | None, pin: dict[str, Any], *, remote: bool = False
+) -> dict[str, Any]:
+    """Bind the pin's ``tag`` to its ``commit`` in an available object store.
+
+    A GNN checkout resolves the tag locally; ``remote`` resolves it upstream with
+    ``git ls-remote``. When neither is available the result says so explicitly
+    instead of assuming the binding holds.
+    """
+
+    tag = pin["tag"]
+    record: dict[str, Any] = {
+        "status": "unresolvable-offline",
+        "tag": tag,
+        "commit": pin["commit"],
+        "resolved": None,
+        "detail": "no GNN object store or remote was supplied",
+    }
+    if gnn_root is not None and (gnn_root / ".git").exists():
+        resolved = subprocess.run(
+            ["git", "-C", str(gnn_root), "rev-parse", "--verify", "-q", f"refs/tags/{tag}^{{commit}}"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if resolved.returncode == 0 and resolved.stdout.strip():
+            record["resolved"] = resolved.stdout.strip()
+            record["status"] = "verified"
+            record["detail"] = f"local object store {gnn_root}"
+        else:
+            record["detail"] = f"tag {tag} is not present in {gnn_root}"
+        return record
+    if remote:
+        # ``--tags`` lists an annotated tag and its peeled ``^{}`` object only
+        # when the pattern matches both, so match the whole tag family and then
+        # select the peeled commit.
+        resolved = subprocess.run(
+            ["git", "ls-remote", "--tags", pin["repository"], f"refs/tags/{tag}*"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if resolved.returncode != 0:
+            record["detail"] = f"git ls-remote failed: {resolved.stderr.strip()}"
+            return record
+        peeled = f"refs/tags/{tag}^{{}}"
+        pairs = [line.split() for line in resolved.stdout.splitlines() if line.strip()]
+        for wanted in (peeled, f"refs/tags/{tag}"):
+            for sha, name in pairs:
+                if name == wanted:
+                    record["resolved"] = sha
+                    record["status"] = "verified"
+                    record["detail"] = "git ls-remote"
+                    return record
+        record["detail"] = f"tag {tag} is not listed by {pin['repository']}"
+        return record
+    return record
+
+
+def tag_failures(tag: dict[str, Any] | None, pin: dict[str, Any]) -> list[str]:
+    """Return the named failure when the pin's tag resolves to a different commit."""
+
+    if tag is not None and tag.get("status") == "verified" and tag.get("resolved") != pin["commit"]:
+        return [
+            f"{TAG_COMMIT_MISMATCH}: tag {pin['tag']} resolves to {tag.get('resolved')} "
+            f"but the pin records {pin['commit']}"
+        ]
+    return []
+
+
+def revision_failures(revision: dict[str, Any], pin: dict[str, Any]) -> list[str]:
+    """Return failures when the installed runtime's recorded commit is not the pin."""
+
+    if revision.get("status") == "verified" and revision.get("commit") != pin["commit"]:
+        return [
+            f"{TAG_COMMIT_MISMATCH}: the installed runtime records commit "
+            f"{revision.get('commit')} but the pin records {pin['commit']}"
+        ]
+    if revision.get("status") == "conflicting":
+        return [
+            f"{TAG_COMMIT_MISMATCH}: the installed runtime metadata is ambiguous: "
+            f"{revision.get('detail')}"
+        ]
+    return []
+
+
+def provenance_failures(
+    tag: dict[str, Any] | None, revision: dict[str, Any] | None
+) -> list[str]:
+    """Return one named failure for each part of the pin binding left unverified.
+
+    Only ``status == "verified"`` is evidence for the pin. Anything else — no
+    object store, no remote answer, no installer-recorded commit, or a source
+    tree with no git metadata — leaves the run unverified, so it cannot end with
+    ``ok: true`` even when the document itself conforms.
+    """
+
+    failures: list[str] = []
+    for label, record in (("tag binding", tag), ("revision", revision)):
+        record = record or {}
+        if record.get("status") != "verified":
+            detail = record.get("detail") or "no detail recorded"
+            failures.append(
+                f"{PROVENANCE_UNVERIFIED}: {label} is "
+                f"{record.get('status', 'absent')}: {detail}"
+            )
+    return failures
+
+
+def materialize_pin(
+    gnn_root: Path, pin: dict[str, Any]
+) -> tuple[Path, str, dict[str, Any]]:
+    """Return the pinned source tree, how it was obtained, and its revision record.
+
+    A directory with git metadata is materialized from the pinned commit, so its
+    revision is verified. A directory without git metadata is only digest-verified:
+    its parser files must match the pin, but nothing proves which revision it is,
+    so the revision record says so instead of claiming a git archive.
+    """
 
     if not gnn_root.is_dir():
         raise Unavailable(f"GNN checkout is not a directory: {gnn_root}")
     if not (gnn_root / ".git").exists():
         _verify_digests(gnn_root / "src" / "gnn", pin, origin=str(gnn_root))
-        return gnn_root, f"digest-verified source tree {gnn_root} (no git metadata)"
+        return (
+            gnn_root,
+            f"digest-verified source tree {gnn_root} (no git metadata)",
+            {
+                "status": "unverified",
+                "commit": None,
+                "version": None,
+                "detail": "the source tree has no git metadata; its parser files match "
+                "the pin's digests but no revision was resolved",
+            },
+        )
 
     commit = pin["commit"]
     resolved = subprocess.run(
@@ -143,7 +409,16 @@ def materialize_pin(gnn_root: Path, pin: dict[str, Any]) -> tuple[Path, str]:
             handle.extractall(target)
     archive.unlink()
     _verify_digests(target / "src" / "gnn", pin, origin=f"archive of {commit}")
-    return target, f"git archive of {commit}"
+    return (
+        target,
+        f"git archive of {commit}",
+        {
+            "status": "verified",
+            "commit": commit,
+            "version": None,
+            "detail": f"git archive of {commit}",
+        },
+    )
 
 
 def run_probe(python: str, spec: Path, output: Path, *, source: Path | None) -> dict[str, Any]:
@@ -182,26 +457,38 @@ def _variable_dimensions(parser: dict[str, Any]) -> dict[str, list[int]]:
 def conformance_failures(
     payload: dict[str, Any],
     *,
+    spec_text: str,
     pin: dict[str, Any],
     source: Path | None,
+    package_dir: Path | None = None,
+    tag: dict[str, Any] | None = None,
 ) -> list[str]:
     """Return every conformance failure between the document and its readers."""
 
     failures: list[str] = []
     parser = payload["parser"]
     expected_version = pin["tag"].lstrip("v")
-    summary = spec_summary()
-    arrays = declared_arrays()
-    variables = parse_variables()
+    summary = spec_summary(spec_text)
+    arrays = declared_arrays(spec_text)
+    variables = parse_variables(spec_text)
 
     if payload["gnn_version"] != expected_version:
         failures.append(
             f"parser version {payload['gnn_version']} differs from the pinned {expected_version}"
         )
+    # C1: the pin's tag and commit are two spellings of one revision; a tag that
+    # resolves elsewhere in the object store is a named failure.
+    failures.extend(tag_failures(tag, pin))
     if source is not None:
         module = Path(str(payload["gnn_module"])).resolve()
         if not module.is_relative_to((source / "src").resolve()):
             failures.append(f"parser was imported from {module}, outside the pinned tree {source}")
+    elif package_dir is not None:
+        module = Path(str(payload["gnn_module"])).resolve()
+        if not module.is_relative_to(package_dir):
+            failures.append(
+                f"parser was imported from {module}, outside the verified package {package_dir}"
+            )
     if not parser["success"]:
         failures.append("pinned parser reported failure")
     for message in parser["errors"]:
@@ -210,7 +497,7 @@ def conformance_failures(
         failures.append(f"parser warning: {message}")
 
     parser_sections = set(parser["sections"])
-    declared_sections = list(parse_sections())
+    declared_sections = list(parse_sections(spec_text))
     if parser_sections != set(declared_sections):
         failures.append(
             f"the pinned parser sees sections {sorted(parser_sections)}, the document text "
@@ -302,6 +589,17 @@ def main(argv: list[str] | None = None) -> int:
         default=os.environ.get("GNN_PYTHON"),
         help="parser interpreter used with --gnn-root (default: $GNN_PYTHON or this interpreter)",
     )
+    parser.add_argument(
+        "--gnn-tag-checkout",
+        type=Path,
+        default=os.environ.get("GNN_TAG_CHECKOUT"),
+        help="local Git tag store for the installed parser (default: $GNN_TAG_CHECKOUT)",
+    )
+    parser.add_argument(
+        "--verify-tag-remote",
+        action="store_true",
+        help="require a verified tag and use git ls-remote when no checkout is supplied",
+    )
     parser.add_argument("--spec", type=Path, default=GNN_SPEC_PATH)
     parser.add_argument("--pin", type=Path, default=GNN_PIN_PATH)
     parser.add_argument("--receipt", type=Path, default=DEFAULT_RECEIPT)
@@ -317,33 +615,67 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    if args.gnn_tag_checkout is not None and (args.gnn_root is not None or not args.gnn_runtime):
+        parser.error("--gnn-tag-checkout requires the installed GNN runtime without --gnn-root")
+    tag = tag_binding(
+        args.gnn_tag_checkout or args.gnn_root,
+        pin,
+        remote=args.verify_tag_remote and args.gnn_tag_checkout is None,
+    )
+    if args.verify_tag_remote and tag["status"] != "verified":
+        # A required tag check must fail when the selected source cannot resolve it.
+        print(f"gnn validation not run: --verify-tag-remote: {tag['detail']}", file=sys.stderr)
+        return 2
+    try:
+        spec_bytes = args.spec.read_bytes()
+        spec_text = spec_bytes.decode("utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"gnn specification unreadable: {args.spec}: {exc}", file=sys.stderr)
+        return 1
     with tempfile.TemporaryDirectory(prefix="fundamentals-gnn-") as directory:
         output = Path(directory) / "probe.json"
+        selected_spec = Path(directory) / "selected.gnn.md"
+        selected_spec.write_bytes(spec_bytes)
         try:
             if args.gnn_root is not None:
-                source, origin = materialize_pin(args.gnn_root, pin)
+                source, origin, revision = materialize_pin(args.gnn_root, pin)
                 payload = run_probe(
-                    args.python or sys.executable, args.spec, output, source=source
+                    args.python or sys.executable, selected_spec, output, source=source
                 )
+                package_dir = None
             else:
                 source = None
-                payload = run_probe(args.gnn_runtime, args.spec, output, source=None)
-                package_dir = Path(str(payload["gnn_module"])).resolve().parent
+                # The digest and revision checks come before the parser runs, so
+                # a tampered parser cannot be reached by parsing first.
+                package_dir, _module = _locate_package(args.gnn_runtime, origin=args.gnn_runtime)
                 _verify_digests(package_dir, pin, origin=args.gnn_runtime)
+                revision = _installed_revision(args.gnn_runtime, origin=args.gnn_runtime)
+                payload = run_probe(args.gnn_runtime, selected_spec, output, source=None)
                 origin = f"installed runtime {args.gnn_runtime} ({package_dir})"
         except Unavailable as exc:
             print(f"gnn validation not run: {exc}", file=sys.stderr)
             return 2
 
-        failures = conformance_failures(payload, pin=pin, source=source)
+        failures = conformance_failures(
+            payload, spec_text=spec_text, pin=pin, source=source,
+            package_dir=package_dir, tag=tag,
+        )
+        failures.extend(revision_failures(revision, pin))
 
+    provenance = provenance_failures(tag, revision)
     receipt = {
-        "ok": not failures,
+        "ok": not failures and not provenance,
         "spec": str(args.spec),
+        "spec_sha256": hashlib.sha256(spec_bytes).hexdigest(),
         "pin": pin,
         "pin_source": origin,
         "gnn_version": payload["gnn_version"],
         "gnn_module": payload["gnn_module"],
+        "language_version": pin["language_version"],
+        "parser_language_version": payload["parser"].get("version"),
+        "tag_binding": tag,
+        "revision": revision,
+        "provenance": {"verified": not provenance, "failures": provenance},
         "parser_success": payload["parser"]["success"],
         "semantic_valid": payload["semantic"].get("is_valid"),
         "orientation": [
@@ -361,9 +693,19 @@ def main(argv: list[str] | None = None) -> int:
         for message in failures:
             print(f"  {message}", file=sys.stderr)
         return 1
+    if provenance:
+        # The document conforms, but the source it was parsed by was not proven
+        # to be the pin's revision; that is not a pass.
+        print("gnn provenance not verified:", file=sys.stderr)
+        for message in provenance:
+            print(f"  {message}", file=sys.stderr)
+        print(f"gnn validation not verified; receipt {args.receipt}", file=sys.stderr)
+        return 2
     print(
         f"gnn validation passed: {args.spec} parsed by gnn {payload['gnn_version']} "
-        f"({origin}); receipt {args.receipt}"
+        f"({origin}); language version {payload['parser'].get('version')}; "
+        f"tag {tag['tag']} -> {tag['status']}; revision {revision['status']} "
+        f"({revision.get('detail')}); receipt {args.receipt}"
     )
     return 0
 

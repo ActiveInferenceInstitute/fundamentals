@@ -517,8 +517,7 @@ def _pandoc_command(
     bib_path = REPO_ROOT / str(bibliography.get("references_path", "manuscript/references.bib"))
     command += ["--bibliography", str(bib_path)]
 
-    if shutil.which("pandoc-crossref"):
-        command += ["--filter", "pandoc-crossref"]
+    command += ["--filter", "pandoc-crossref"]
     if header is not None:
         command += ["--include-in-header", str(header)]
 
@@ -572,10 +571,11 @@ def build(check: bool) -> dict[str, Any]:
         return receipt
 
     _tool("pandoc", "render the manuscript")
-    receipt["pandoc"] = _pandoc_version()
+    _tool("pandoc-crossref", "resolve manuscript section and figure references")
     if "pdf" in formats:
         _tool("xelatex", "render the manuscript PDF")
-    receipt["pandoc_crossref"] = bool(shutil.which("pandoc-crossref"))
+    receipt["pandoc"] = _pandoc_version()
+    receipt["pandoc_crossref"] = True
 
     build_dir = BUILD_DIR
     build_dir.mkdir(parents=True, exist_ok=True)

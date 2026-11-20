@@ -115,7 +115,8 @@ class TestSharedRecognitionDynamics:
         texts = " ".join(t.get_text() for t in fig.axes[0].texts)
         assert "μ*" in texts and "oracle" in texts
         assert f"{float(res.mus[-1]):.4f}" in texts          # exact μ* quoted
-        assert "4.55e-06" in texts or "4.6e-06" in texts     # |μ*−oracle|
+        oracle_error = abs(float(res.mus[-1]) - 2.4)
+        assert f"|μ*−o| = {oracle_error:.2e}" in texts
 
     def test_fixed_point_is_annotated_on_curve(self) -> None:
         # "Analytical annotations": μ* is marked as a point on the belief curve.

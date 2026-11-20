@@ -250,3 +250,38 @@ def test_ergodic_helpers_reject_invalid_bounds_and_entropy_inputs() -> None:
         ergodic_ou_trajectory(drift=0.0)
     with pytest.raises(ValueError, match="diffusion"):
         ergodic_ou_trajectory(diffusion=-0.1)
+
+
+class TestTensorAxisControls:
+    @pytest.mark.parametrize("axis", [0, 1, 2, -1])
+    def test_sum_product_distinguishes_equal_sized_axis_transposition(self, axis):
+        factor = np.array([[[1.0, 2.0], [7.0, 3.0]], [[5.0, 11.0], [13.0, 17.0]]])
+        beliefs = [np.array([0.8, 0.2]), np.array([0.3, 0.7]), np.array([0.6, 0.4])]
+        target = axis % 3
+        incoming = [belief for index, belief in enumerate(beliefs) if index != target]
+        # Explicit scalar contractions, independent of the implementation's broadcasting.
+        weights = np.array([[4.2, 12.44], [2.6, 7.24], [6.28, 5.2]])[target]
+        expected = weights / weights.sum()
+        actual = categorical_factor_message(factor, incoming, axis)
+        np.testing.assert_allclose(actual, expected)
+        wrong = categorical_factor_message(factor.swapaxes(0, 1), incoming, axis)
+        assert not np.allclose(wrong, expected)
+
+    @pytest.mark.parametrize("axis", [0, 1, 2, -1])
+    def test_vmp_uses_log_expectation_on_the_selected_axis(self, axis):
+        factor = np.array([[[1.0, 2.0], [7.0, 3.0]], [[5.0, 11.0], [13.0, 17.0]]])
+        beliefs = [np.array([0.8, 0.2]), np.array([0.3, 0.7]), np.array([0.6, 0.4])]
+        target = axis % 3
+        incoming = [belief for index, belief in enumerate(beliefs) if index != target]
+        geometric = np.array([
+            [2**0.12 * 7**0.42 * 3**0.28, 5**0.18 * 11**0.12 * 13**0.42 * 17**0.28],
+            [2**0.32 * 5**0.12 * 11**0.08, 7**0.48 * 3**0.32 * 13**0.12 * 17**0.08],
+            [7**0.56 * 5**0.06 * 13**0.14, 2**0.24 * 3**0.56 * 11**0.06 * 17**0.14],
+        ])[target]
+        expected = geometric / geometric.sum()
+        actual = variational_message_update(np.log(factor), incoming, axis)
+        np.testing.assert_allclose(actual, expected)
+        wrong_axis = variational_message_update(np.log(factor.swapaxes(0, 1)), incoming, axis)
+        wrong_operator = categorical_factor_message(factor, incoming, axis)
+        assert not np.allclose(wrong_axis, expected)
+        assert not np.allclose(wrong_operator, expected)

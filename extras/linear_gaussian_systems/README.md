@@ -10,14 +10,25 @@ State-space prediction and filtering under linear Gaussian assumptions.
 
 ## Scripts
 
-- `visualize_linear_gaussian_systems.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_linear_gaussian_systems.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_linear_gaussian_systems.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
-- `animation_linear_gaussian_systems.py` - animation orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_linear_gaussian_systems.py` - Static visualization using shared library APIs.
+- `simulate_linear_gaussian_systems.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_linear_gaussian_systems.py` - Host GUI sliders; no saved media or data sidecars.
+- `animation_linear_gaussian_systems.py` - Animated trajectory using shared library APIs.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/linear_gaussian_systems/` and raw-data sidecars under `output/data/extras/linear_gaussian_systems/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/linear_gaussian_systems/` and `output/data/extras/linear_gaussian_systems/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_linear_gaussian_systems.py --save` | `visualize_linear_gaussian_systems.png` | `visualize_linear_gaussian_systems.npz`, `visualize_linear_gaussian_systems.json` |
+| `simulate_linear_gaussian_systems.py --save` | `simulate_linear_gaussian_systems.png` | `simulate_linear_gaussian_systems.npz`, `simulate_linear_gaussian_systems.json` |
+| `animation_linear_gaussian_systems.py --save` | `animation_linear_gaussian_systems.gif` | `animation_linear_gaussian_systems.npz`, `animation_linear_gaussian_systems.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/linear_gaussian_systems/visualize_linear_gaussian_systems.py --save
@@ -25,3 +36,4 @@ uv run python extras/linear_gaussian_systems/simulate_linear_gaussian_systems.py
 uv run python extras/linear_gaussian_systems/interactive_linear_gaussian_systems.py
 uv run python extras/linear_gaussian_systems/animation_linear_gaussian_systems.py --save
 ```
+

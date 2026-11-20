@@ -1,20 +1,41 @@
 # Documentation review TODO
 
 Date: 2026-08-02
-Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3)
+Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3); re-checked 2026-11-12 (estate to-do refresh at `eb64397`); updated 2026-11-19 (Education contract adoption across Chapters 1–14)
 
-## Education member migration — open
+## Education adoption pass (2026-11-19)
 
-The migration draft adds the chapter bundle, unchanged Education schema, adoption
-pointer, and `./gate.sh contract` using the vendored lead checker. It must remain
-unmerged until the remaining chapter learning objectives are authored. Chapter 1
-has an authored objective (`chapters/chapter_01/README.md:11-14`) and
-`manuscript/98_symbols_glossary.md` now defines `generative-model`; both are
-transcribed verbatim. Chapters 2–14 still carry coverage descriptions rather than
-explicit objectives, so their `objectives` arrays stay empty and the checker
-reports thirteen `EC006` issues. The draft keeps missing data empty so the checker
-exposes it rather than inventing statements. See
-[the exact blockers and verification commands](docs/gate.md#education-migration--blocked-on-authored-content).
+All fourteen chapters (`chapters/chapter_01/README.md` through
+`chapters/chapter_14/README.md`) now carry authored `## Learning objective`
+sections transcribed verbatim into `specs/education/fundamentals.json`,
+alongside the `generative-model` glossary definition from
+`manuscript/98_symbols_glossary.md`. `./gate.sh contract` reports
+`fundamentals: adopted -- adopted 1 bundle(s)` with zero `EC006` violations.
+See [the Education contract section](docs/gate.md#education-contract).
+
+## Estate alignment pass (2026-11-12)
+
+`specs/gnn-pin.json` now carries the canonical `gnn-importer-pin/v1` schema
+(`b3f5ab5`, #29), and `.github/GNN.md` records the pin file, the `gnn-conformance`
+job key and display name, and the `./gate.sh gnn` arm (`4212d58`, #31). That arm
+provisions or accepts a runtime at the pinned revision, runs
+`scripts/validate_gnn_spec.py --gnn-runtime` — which verifies every recorded
+parser digest and requires the pinned parser and the dependency-free reader in
+`active_inference.gnn_spec` to agree — and then runs `tests/test_gnn_spec.py`.
+The pin itself still names `v5.0.3` at
+`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, and this repository still reads it
+with its own `load_pin`; the estate-wide cutover to the shared reader is open,
+below.
+
+Authored education source text now exists (`eb64397`, #34): a
+`## Learning objective` section in `chapters/chapter_01/README.md` and the first
+definition in `manuscript/98_symbols_glossary.md`. That is one objective and one
+glossary term against fourteen chapters; the education contract needs at least one
+objective per unit, so this is a start, not an adoption.
+
+`pymdp` is not a dependency of this repository: `pyproject.toml`,
+`requirements.txt`, and `uv.lock` contain no `pymdp` occurrence at all, so no
+`inferactively-pymdp` floor applies here.
 
 ## Manuscript and gate pass (2026-11-12)
 
@@ -42,6 +63,11 @@ other `docs/` page is unreachable. A relative-link walk over every tracked
 `grep` finds no `docs/FAQ.md` reference anywhere in the tree. Every top-level
 folder with three or more tracked files already carries a `README.md`/`AGENTS.md`
 pair, so no folder guide was needed.
+
+Source correction: the pass-3 `../output/figures/example.png` placeholder
+reference is superseded. `manuscript/SYNTAX.md` now demonstrates
+`../output/figures/chapter_01/03_bayes_three_panel.png`. No placeholder artifact
+is required. This correction does not claim a new link-walk run.
 
 Environment prerequisite: the bounded offline documentation gate
 `PYTHONPATH=src MPLBACKEND=Agg python -m pytest -q -x tests/utils
@@ -98,12 +124,24 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 
 ## Open / deferred
 
-- Extras-family M3 (boilerplate consolidation): the 57 full-template topic
-  READMEs share identical Scripts/Outputs sections that drifted (m1/m4 fixed
-  here). A durable fix would generate those sections from the
-  `active_inference.extra_topics` registry (a small doc-gen step in
-  `scripts/`); deferred because it is a code change, not a docs edit, and the
-  two concrete drift symptoms are now fixed and validator-checked.
+- **GNN–FEP shared-reader migration remains open.** Preserve the deliberate
+  v5.0.3 pin and its parser digests until maintainers select a producer-qualified
+  replacement. The reader migration, reviewed pin/digests, `.github/GNN.md`,
+  gate behavior, and conformance evidence must move together. A newer tag's
+  existence alone is not admission. Unavailable or unverified runtime evidence
+  must continue to fail qualification.
+- ~~Education publication remains content-blocked.~~ Resolved 2026-11-19:
+  authored `## Learning objective` sections now live in
+  `chapters/chapter_01/README.md` through `chapters/chapter_14/README.md`, are
+  transcribed verbatim into `specs/education/fundamentals.json`, and pass
+  `./gate.sh contract` (`adopted 1 bundle(s)`, zero `EC006` violations).
+  Further glossary authorship remains an editorial content decision, not a
+  schema minimum.
+- Extras-family M3 uses `scripts/generate_extra_readme_sections.py` for all
+  58 owned Scripts/Outputs pairs, not 57. The 13 bespoke READMEs remain
+  excluded. Use `--write` only under documentation custody, then require a
+  clean `--check`. Generated output declarations do not certify that teaching
+  scripts or scientific artifacts have been executed.
 - ~~The manuscript directory remains an explicitly marked scaffold.~~ Resolved
   2026-11-12: the manuscript has a project-local render path, declared
   variables, and a validated figure registry. The prose itself is still a
@@ -112,3 +150,17 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
   because equivalent citation, contribution, and license guidance already
   exists in `README.md`, and no repository-specific security policy was
   present to document accurately.
+
+## Engineering contract corrections
+
+- Predictive-coding convergence requires energy and recognition-gradient
+  convergence; bounded-support VFE preserves infinite divergence where required.
+- Message-passing traces are tuples of normalized messages, including
+  heterogeneous cardinalities; the square chapter-12 caller stacks explicitly.
+- GNN validation binds one selected document observation without weakening
+  runtime provenance. Manuscript rendering requires the cross-reference resolver.
+- HTTP execution admission, demo navigation, and operation-local immutable
+  discovery share owner-qualified script identities.
+- Focused controls cover tensor-axis/operator mistakes, invalid raw-data
+  sidecars, and cross-orchestrator imports. Qualification is separate from
+  scientific promotion, broad coverage claims, and hosted acceptance.

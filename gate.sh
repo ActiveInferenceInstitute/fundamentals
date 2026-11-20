@@ -25,6 +25,7 @@
 #                           (default: ${XDG_CACHE_HOME:-$HOME/.cache}/fundamentals-gate)
 #   GNN_RUNTIME_PYTHON      interpreter with the pinned GNN distribution installed;
 #                           when unset the gate provisions the pin into GATE_CACHE
+#   GNN_TAG_CHECKOUT       Git checkout with the verified upstream tag for offline use
 #
 # Every arm prints `gate: <arm> ok (S.mmms)`; those numbers are the ones recorded
 # in docs/gate.md. An arm that needs more than about ten minutes is not measured
@@ -121,7 +122,7 @@ provision_gnn_runtime() {
 arm_gnn() {
     local runtime
     runtime="$(provision_gnn_runtime)"
-    uv run python scripts/validate_gnn_spec.py --gnn-runtime "$runtime" --json
+    uv run python scripts/validate_gnn_spec.py --gnn-runtime "$runtime" --verify-tag-remote --json
     # Without this the pinned-parser test skips instead of parsing.
     GNN_RUNTIME_PYTHON="$runtime" uv run pytest -q tests/test_gnn_spec.py
 }

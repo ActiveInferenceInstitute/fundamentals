@@ -2,7 +2,7 @@
 """Validate this member's pointer and bundles with the vendored Education checker.
 
 The unmodified checker modules come from ActiveInferenceInstitute/courses;
-see docs/gate.md for the source revision and the migration's content blockers.
+see docs/gate.md for the source revision and contract verification.
 """
 
 from pathlib import Path

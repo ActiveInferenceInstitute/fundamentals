@@ -10,6 +10,7 @@ in `chapters/` and validation utilities for chapter/extras artifacts.
 |---|---|
 | `run_all_figures.py` | Render every chapter or extras script that accepts `--save` to `output/figures/`. Supports `--chapters`, `--extras`, `--no-chapters`, `--clean`, `--keep-going`, `--no-animations`. |
 | `export_notebooks.py` | Export chapter, extras, and demo orchestrators to `output/notebooks/`. Supports `--chapters`, `--extras`, `--demos`, `--no-*`, `--clean`, `--no-animations`. |
+| `generate_extra_readme_sections.py` | Generate extras README mode and source-API sections from the topic registry; `--check` detects drift without writing. |
 | `validate_notebook_exports.py` | Validate exported `.ipynb` files against `menu.runner` discovery inventory. |
 | `validate_book_topic_coverage.py` | Validate `docs/reference/book_topic_matrix.md` against the live extras registry, topic folders, READMEs, declared scripts, and, with `--require-rendered`, expected extras PNG/GIF plus NPZ+JSON artifacts. |
 | `validate_orchestrator_contracts.py` | Validate chapter/extras filename discovery, allowed imports, and non-interactive `--save` support; warn on duplicate stems and line-count drift. |
@@ -18,9 +19,9 @@ in `chapters/` and validation utilities for chapter/extras artifacts.
 | `validate_raw_data_exports.py` | Validate generated NPZ+JSON raw-data sidecars for missing partners, invalid arrays, manifest drift, and required extras topics. |
 | `validate_source_spine.py` | Validate the inspected PDF ledger: Chapters 1-14, Appendices A-D, and no Chapter 15. |
 | `gnn_parser_probe.py` | Parse the committed GNN document with the installed upstream `gnn` package and emit JSON; the subprocess half of `validate_gnn_spec.py`. |
-| `validate_gnn_spec.py` | Validate `specs/weather_pomdp.gnn.md` with the parser revision pinned in `specs/gnn-pin.json` and require the pinned parser to agree with `active_inference.gnn_spec`. Needs a pinned runtime (`--gnn-runtime`/`GNN_RUNTIME_PYTHON`) or checkout (`--gnn-root`/`GNN_ROOT`); exits 2 when neither is available. |
+| `validate_gnn_spec.py` | Validate `specs/weather_pomdp.gnn.md` with the parser revision pinned in `specs/gnn-pin.json` and require the pinned parser to agree with `active_inference.gnn_spec`. Needs a pinned runtime (`--gnn-runtime`/`GNN_RUNTIME_PYTHON`) or checkout (`--gnn-root`/`GNN_ROOT`); exits 2 when neither is available, or when the pin's tag/revision binding cannot be verified (recorded as `provenance-unverified`, never a pass). |
 | `render_manuscript.py` | The authoritative manuscript path: validate `manuscript/variables.yaml` against its repository producers, bind `output/figures/figure_registry.json` to the `::: {#fig:...}` blocks, resolve `[@key]` citations, then render the formats enabled in `manuscript/config.yaml`. `--check` stops after validation and needs no Pandoc. |
-| `check_education_contract.py` | Validate the Education pointer and bundle using the unchanged checker under `vendor/education_contract/`; missing authored content remains an explicit failure. |
+| `check_education_contract.py` | Validate the Education pointer and bundle using the unchanged checker under `vendor/education_contract/`. |
 | `run_all_chapter_01.sh` | Bash wrapper invoking `run_all_figures.py --chapters 1`. |
 | `run_all_chapter_02.sh` | Same for Chapter 2. |
 | `run_all_chapter_03.sh` | Same for Chapter 3. |

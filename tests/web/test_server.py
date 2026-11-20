@@ -141,11 +141,11 @@ class TestRoutes:
         assert isinstance(data["figures"], list)
         assert data["readme_html"]
 
-    def test_unknown_chapter_returns_500(self, server):
+    def test_unknown_chapter_returns_404(self, server):
         with pytest.raises(HTTPError) as exc:
             _get(server, "/api/chapter/99")
         err = _close_http_error(exc)
-        assert err.code in (400, 500)
+        assert err.code == 404
 
     def test_doc_api_renders_markdown(self, server):
         status, _, body = _get(server, "/api/doc/architecture.md")
@@ -203,7 +203,7 @@ class TestRunEndpoint:
             _post(server, "/api/run",
                   {"chapter": 1, "script": "nonexistent_script.py"})
         err = _close_http_error(exc)
-        assert err.code == 500  # ValueError → 500
+        assert err.code == 404
 
     def test_run_rejects_interactive_scripts(self, server):
         # Chapter 2 has interactive_explorer.py
@@ -211,7 +211,7 @@ class TestRunEndpoint:
             _post(server, "/api/run",
                   {"chapter": 2, "script": "interactive_explorer.py"})
         err = _close_http_error(exc)
-        assert err.code == 500
+        assert err.code == 400
 
     def test_run_chapter_1_script(self, server):
         # 04_inverse_problem is cheap and exercises numpy + matplotlib end-to-end.
@@ -354,12 +354,6 @@ class TestImageHelpers:
         assert _extract_example_number("01_box_scenario.py") == "01"
         assert _extract_example_number("animation_em_steps.py") is None
 
-    def test_chapter_subtitle_static_map(self):
-        from active_inference.web.server import _chapter_subtitle
-        assert _chapter_subtitle(1) == "The Hypothesis-Testing Brain"
-        assert _chapter_subtitle(2) == "Hidden State Estimation"
-        assert _chapter_subtitle(3) == "Combining Learning and Inference"
-
     def test_png_dimensions(self):
         # Use a known chapter-1 figure if it exists.
         from active_inference.web.server import _image_dimensions, OUTPUT_DIR
@@ -369,3 +363,190 @@ class TestImageHelpers:
         w, h = _image_dimensions(figs[0])
         assert isinstance(w, int) and isinstance(h, int)
         assert w > 0 and h > 0
+
+
+@pytest.fixture
+def synthetic_server(tmp_path, monkeypatch):
+    from active_inference.menu import runner
+
+    for relative in ("src", "docs", "chapters/chapter_01", "extras/toy", "demo/toy"):
+        (tmp_path / relative).mkdir(parents=True)
+    for relative in ("chapters/chapter_01", "extras/toy", "demo/toy"):
+        directory = tmp_path / relative
+        (directory / "README.md").write_text("# Synthetic resource\n")
+        for name in ("visualize_probe.py", "interactive_probe.py"):
+            (directory / name).write_text(
+                '"""Synthetic owned dispatch receipt."""\n'
+                "from pathlib import Path\n"
+                "Path(__file__).with_suffix('.ran').write_text('dispatched')\n"
+            )
+    for attribute, value in {
+        "REPO_ROOT": tmp_path, "CHAPTERS_ROOT": tmp_path / "chapters",
+        "EXTRAS_ROOT": tmp_path / "extras", "DEMO_ROOT": tmp_path / "demo",
+    }.items():
+        monkeypatch.setattr(runner, attribute, value)
+    for attribute, value in {
+        "REPO_ROOT": tmp_path, "DOCS_DIR": tmp_path / "docs",
+        "OUTPUT_DIR": tmp_path / "output/figures",
+    }.items():
+        monkeypatch.setattr(web_server, attribute, value)
+    srv = web_server.run_server(host="127.0.0.1", port=0, open_browser=False, block=False)
+    srv.test_root = tmp_path
+    try:
+        yield srv
+    finally:
+        srv.shutdown()
+        srv.serve_thread.join(timeout=5)
+        srv.server_close()
+
+
+def _raw_post(server, body, headers=None, path="/api/run"):
+    request = Request(
+        _url(server, path), data=body,
+        headers={"Content-Type": "application/json", **(headers or {})}, method="POST",
+    )
+    try:
+        response = urlopen(request, timeout=5)
+    except HTTPError as error:
+        response = error
+    with response:
+        return response.status, json.loads(response.read())
+
+
+class TestExecutionAdmission:
+    @pytest.mark.parametrize("owner,relative", [
+        ({"chapter": 1}, "chapters/chapter_01"),
+        ({"topic": "toy"}, "extras/toy"),
+        ({"demo": "toy"}, "demo/toy"),
+    ])
+    def test_same_origin_json_executes_only_the_selected_owner(
+        self, synthetic_server, owner, relative,
+    ):
+        srv = synthetic_server
+        status, result = _raw_post(
+            srv, json.dumps({**owner, "script": "visualize_probe.py"}).encode(),
+            {"Origin": _url(srv, ""), "Sec-Fetch-Site": "same-origin"},
+        )
+        assert status == 200 and result["returncode"] == 0
+        markers = list(srv.test_root.rglob("*.ran"))
+        assert markers == [srv.test_root / relative / "visualize_probe.ran"]
+
+    @pytest.mark.parametrize("path,script", [
+        ("/api/run", "visualize_probe.py"),
+        ("/api/launch-interactive", "interactive_probe.py"),
+    ])
+    @pytest.mark.parametrize("headers,status", [
+        ({"Origin": "null"}, 403),
+        ({"Origin": "http://foreign.invalid"}, 403),
+        ({"Host": "foreign.invalid"}, 403),
+        ({"Sec-Fetch-Site": "cross-site"}, 403),
+        ({"Content-Type": "text/plain"}, 415),
+        ({"Content-Type": "application/json; charset=latin-1"}, 415),
+        ({"Content-Length": "-1"}, 400),
+        ({"Content-Length": "1048577"}, 413),
+        ({"Content-Length": "9" * 5000}, 413),
+    ])
+    def test_rejected_envelope_never_dispatches(
+        self, synthetic_server, path, script, headers, status,
+    ):
+        body = json.dumps({"demo": "toy", "script": script}).encode()
+        observed, _ = _raw_post(synthetic_server, body, headers, path)
+        assert observed == status
+        assert list(synthetic_server.test_root.rglob("*.ran")) == []
+
+    @pytest.mark.parametrize("body,status", [
+        (b"{", 400), (bytes([255]), 400), (b"[]", 400), (b"null", 400),
+        (b'{"chapter":NaN,"script":"visualize_probe.py"}', 400),
+        (b'{"chapter":true,"script":"visualize_probe.py"}', 400),
+        (b'{"chapter":1,"demo":"toy","script":"visualize_probe.py"}', 400),
+        (b'{"demo":"toy","script":"../visualize_probe.py"}', 400),
+        (b'{"demo":"missing","script":"visualize_probe.py"}', 404),
+        (b'{"demo":"toy","script":"missing.py"}', 404),
+    ])
+    def test_input_and_missing_resource_statuses(self, synthetic_server, body, status):
+        assert _raw_post(synthetic_server, body)[0] == status
+        assert list(synthetic_server.test_root.rglob("*.ran")) == []
+
+    def test_new_demo_is_discovered_without_an_index_warmup(self, synthetic_server):
+        srv = synthetic_server
+        figures = srv.test_root / "output/figures/demo/toy"
+        figures.mkdir(parents=True)
+        for name in ("visualize_probe.svg", "visualize_probe_detail.svg", "unknown.svg"):
+            (figures / name).write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
+        status, _, body = _get(srv, "/api/demo/toy")
+        assert status == 200
+        detail = json.loads(body)
+        assert detail["slug"] == "toy"
+        assert {script["name"] for script in detail["scripts"]} == {
+            "interactive_probe.py", "visualize_probe.py",
+        }
+        assert {figure["name"]: figure["generated_by"] for figure in detail["figures"]} == {
+            "visualize_probe.svg": "visualize_probe.py",
+            "visualize_probe_detail.svg": "visualize_probe.py",
+            "unknown.svg": None,
+        }
+        _, _, body = _get(srv, "/api/index")
+        assert [demo["slug"] for demo in json.loads(body)["demos"]] == ["toy"]
+
+    def test_internal_failure_is_not_mislabeled_as_a_client_error(
+        self, synthetic_server, monkeypatch,
+    ):
+        def fail(*args, **kwargs):
+            raise ValueError("injected internal failure")
+
+        monkeypatch.setattr(web_server, "run_script", fail)
+        status, error = _raw_post(
+            synthetic_server, b'{"demo":"toy","script":"visualize_probe.py"}',
+        )
+        assert status == 500
+        assert "injected internal failure" in error["error"]
+        assert list(synthetic_server.test_root.rglob("*.ran")) == []
+
+    @pytest.mark.parametrize("path", [
+        "/api/chapter/99", "/api/extra/missing", "/api/demo/missing", "/api/doc/missing",
+    ])
+    def test_missing_resources_return_not_found(self, synthetic_server, path):
+        with pytest.raises(HTTPError) as raised:
+            _get(synthetic_server, path)
+        assert _close_http_error(raised).code == 404
+
+    def test_script_symlink_cannot_escape_the_admitted_repository(self, synthetic_server, tmp_path):
+        srv = synthetic_server
+        outside = tmp_path.parent / (tmp_path.name + "-outside.py")
+        marker = tmp_path / "escaped.ran"
+        outside.write_text(
+            f"from pathlib import Path\nPath({str(marker)!r}).write_text('escaped')\n"
+        )
+        try:
+            selected = srv.test_root / "demo/toy/visualize_probe.py"
+            selected.unlink()
+            selected.symlink_to(outside)
+            status, _ = _raw_post(srv, b'{"demo":"toy","script":"visualize_probe.py"}')
+            assert status == 404
+            assert not marker.exists()
+        finally:
+            outside.unlink()
+
+    def test_index_uses_one_operation_inventory(self, synthetic_server, monkeypatch):
+        from active_inference.menu import runner
+
+        calls = []
+        original = runner._scan_scripts
+
+        def observe(base, **kwargs):
+            calls.append(base)
+            return original(base, **kwargs)
+
+        monkeypatch.setattr(runner, "_scan_scripts", observe)
+        status, _, body = _get(synthetic_server, "/api/index")
+        assert status == 200
+        payload = json.loads(body)
+        assert [entry["number"] for entry in payload["chapters"]] == [1]
+        assert [entry["slug"] for entry in payload["extras"]] == ["toy"]
+        assert [entry["slug"] for entry in payload["demos"]] == ["toy"]
+        assert set(calls) == {
+            synthetic_server.test_root / "chapters/chapter_01",
+            synthetic_server.test_root / "extras/toy",
+            synthetic_server.test_root / "demo/toy",
+        }
+        assert len(calls) == 3

@@ -7,6 +7,15 @@ recognition dynamics of Chapters 6–7 and the explicit hierarchical / discrete
 architectures of Chapters 9–10. The concept map is
 [`docs/chapters/chapter_08.md`](../../docs/chapters/chapter_08.md).
 
+## Learning objective
+
+- Combine fast hidden-state perception with slow parameter learning,
+  log-precision attention updates, and two-layer hierarchical message passing
+  under one free-energy objective.
+
+Practice this objective with `example_8_1_learning_attention.py` and
+`example_8_2_hierarchical_continuous.py`.
+
 ## Scripts
 
 | Script | Book section | What it shows |

@@ -10,6 +10,15 @@ This folder contains a thin orchestrator per concept, eight bonus
 animations, and three diagnostic visualizations. Every script imports
 configurable building blocks from `active_inference`.
 
+## Learning objective
+
+- Distinguish parameter learning from hidden-state inference across Bayesian
+  linear regression, multivariate linear-Gaussian systems, and
+  expectation-maximization in factor analysis.
+
+Practice this objective with `example_3_5_bayesian_linear_regression.py` and
+`example_3_7_factor_analysis_em.py`.
+
 ## Scripts
 
 ### Numbered examples

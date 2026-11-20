@@ -118,9 +118,10 @@ commit `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`).
 - `scripts/validate_gnn_spec.py` parses the document with the pinned parser
   (installed parser files digest-verified against the pin before parsing) and
   requires the pinned parser to agree with `active_inference.gnn_spec`. It exits
-  `2` when no pinned runtime is available: that is a reported *not run*, never a
-  pass. CI's `gnn conformance` job provisions the runtime, so the check is
-  required there.
+  `2` when no pinned runtime is available (a reported *not run*) or when the
+  pin's tag/revision binding cannot be verified (a reported *not verified*);
+  neither is a pass. CI's `gnn conformance` job provisions the runtime and passes
+  `--verify-tag-remote`, so the check is required there.
 - Change the model in the declaration and the chapter literals together; never
   leave one describing a model the other does not implement.
 

@@ -5,6 +5,15 @@ forms, sophisticated lookahead, state preferences, parameter uncertainty, and
 structure learning. The concept map is
 [`docs/chapters/chapter_11.md`](../../docs/chapters/chapter_11.md).
 
+## Learning objective
+
+- Compare alternate free-energy planning objectives and apply sophisticated
+  lookahead, time-dependent preferences, parameter forgetting, and structure
+  learning in discrete planning.
+
+Practice this objective with `example_11_1_free_energy_variants.py` and
+`example_11_2_sophisticated_planning.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

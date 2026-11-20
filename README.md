@@ -129,7 +129,7 @@ command CI runs.
 ./gate.sh lint              # ruff over the tree
 ./gate.sh fast              # the CI test job: unit, contract, and documentation suites
 ./gate.sh docs              # documentation and Markdown-link contracts only
-./gate.sh contract          # Education schema/coherence (draft migration: missing authored content)
+./gate.sh contract          # Education pointer, schema, and bundle coherence
 ./gate.sh validators        # artifact, coverage, and source-spine validators
 ./gate.sh manuscript-check  # manuscript variables, figures, citations, labels (no Pandoc)
 ./gate.sh manuscript        # render the manuscript HTML and PDF
@@ -164,9 +164,10 @@ uv run python scripts/validate_orchestrator_provenance.py
 uv run python scripts/validate_source_spine.py --require-pdf
 
 # validate the committed GNN declaration against the upstream parser pinned in
-# specs/gnn-pin.json (exits 2, "not run", when no pinned runtime is available);
-# docs/gnn.md documents the GNN_ROOT / GNN_RUNTIME_PYTHON forms
-uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --json
+# specs/gnn-pin.json (exits 2, not a pass, when no pinned runtime is available
+# or the tag/revision binding is unverified); docs/gnn.md documents the
+# GNN_ROOT / GNN_RUNTIME_PYTHON forms
+uv run python scripts/validate_gnn_spec.py --gnn-runtime /path/to/gnn-venv/bin/python --verify-tag-remote --json
 
 # export Jupyter notebooks (chapters + extras + demos)
 uv sync --extra notebooks

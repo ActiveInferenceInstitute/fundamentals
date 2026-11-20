@@ -10,16 +10,27 @@ Entropy and VFE bounds for self-organizing systems.
 
 ## Scripts
 
-- `visualize_fep_entropy_bounds.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_fep_entropy_bounds.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_fep_entropy_bounds.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_fep_entropy_bounds.py` - Static visualization using shared library APIs.
+- `simulate_fep_entropy_bounds.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_fep_entropy_bounds.py` - Host GUI sliders; no saved media or data sidecars.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/fep_entropy_bounds/` and raw-data sidecars under `output/data/extras/fep_entropy_bounds/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/fep_entropy_bounds/` and `output/data/extras/fep_entropy_bounds/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_fep_entropy_bounds.py --save` | `visualize_fep_entropy_bounds.png` | `visualize_fep_entropy_bounds.npz`, `visualize_fep_entropy_bounds.json` |
+| `simulate_fep_entropy_bounds.py --save` | `simulate_fep_entropy_bounds.png` | `simulate_fep_entropy_bounds.npz`, `simulate_fep_entropy_bounds.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/fep_entropy_bounds/visualize_fep_entropy_bounds.py --save
 uv run python extras/fep_entropy_bounds/simulate_fep_entropy_bounds.py --save
 uv run python extras/fep_entropy_bounds/interactive_fep_entropy_bounds.py
 ```
+

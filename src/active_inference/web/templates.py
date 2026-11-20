@@ -761,10 +761,10 @@ JS = r"""
 const state = {
     chapters: [],
     extras: [],
+    demos: [],
     docPages: [],
     activeTab: null,
     chapterCache: new Map(),  // number → payload
-    extraCache: new Map(),    // topic → payload
     busy: new Set(),
     scriptFilter: '',
 };
@@ -796,10 +796,15 @@ async function loadIndex() {
     const data = await fetchJSON('/api/index');
     state.chapters = data.chapters;
     state.extras = data.extras || [];
+    state.demos = data.demos || [];
     state.docPages = data.docs;
     renderNav();
     if (state.chapters.length) {
         activate(`chapter-${state.chapters[0].number}`);
+    } else if (state.extras.length) {
+        activate(`extra-${state.extras[0].slug}`);
+    } else if (state.demos.length) {
+        activate(`demo-${state.demos[0].slug}`);
     } else {
         activate('about');
     }
@@ -824,6 +829,13 @@ function renderNav() {
             extra.title,
             `${extra.figure_count}/${extra.scripts.length}`,
             extra.slug,
+        ));
+    }
+    nav.appendChild(navSection('Demos'));
+    for (const demo of state.demos) {
+        nav.appendChild(navButton(
+            `demo-${demo.slug}`, demo.title,
+            `${demo.figure_count}/${demo.scripts.length}`, demo.slug,
         ));
     }
     nav.appendChild(navSection('Documentation'));
@@ -879,7 +891,9 @@ function activate(id) {
     } else if (id.startsWith('chapter-')) {
         renderChapter(content, parseInt(id.slice('chapter-'.length), 10));
     } else if (id.startsWith('extra-')) {
-        renderExtra(content, id.slice('extra-'.length));
+        renderTopic(content, id.slice('extra-'.length), 'extra');
+    } else if (id.startsWith('demo-')) {
+        renderTopic(content, id.slice('demo-'.length), 'demo');
     } else if (id.startsWith('doc-')) {
         renderDoc(content, id.slice('doc-'.length));
     }
@@ -890,20 +904,23 @@ function renderAbout(root) {
     const figureTotal = state.chapters.reduce((acc, c) => acc + c.figure_count, 0);
     const extraScriptTotal = state.extras.reduce((acc, c) => acc + c.scripts.length, 0);
     const extraFigureTotal = state.extras.reduce((acc, c) => acc + c.figure_count, 0);
+    const demoScriptTotal = state.demos.reduce((acc, c) => acc + c.scripts.length, 0);
+    const demoFigureTotal = state.demos.reduce((acc, c) => acc + c.figure_count, 0);
     root.innerHTML = `
         <h2><span class="accent-bar"></span>About this UI</h2>
         <p class="lead">A local browser front end for the chapter orchestrators.</p>
         <div class="metrics">
             <div class="metric"><div class="label">Chapters</div><div class="value">${state.chapters.length}</div></div>
-            <div class="metric"><div class="label">Scripts</div><div class="value">${scriptTotal}</div></div>
+            <div class="metric"><div class="label">Scripts</div><div class="value">${scriptTotal + extraScriptTotal + demoScriptTotal}</div></div>
             <div class="metric"><div class="label">Extras</div><div class="value">${state.extras.length}</div></div>
-            <div class="metric"><div class="label">Cached figures</div><div class="value">${figureTotal + extraFigureTotal}</div></div>
+            <div class="metric"><div class="label">Demos</div><div class="value">${state.demos.length}</div></div>
+            <div class="metric"><div class="label">Cached figures</div><div class="value">${figureTotal + extraFigureTotal + demoFigureTotal}</div></div>
             <div class="metric accent"><div class="label">Docs linked</div><div class="value">${state.docPages.length}</div></div>
         </div>
         <div class="markdown">
             <p>This page is served by <code>active_inference.web</code>, a stdlib-only
             HTTP server that shares discovery with the text menu (<code>./run.sh</code>).
-            Pick a chapter or extras topic on the left to browse its figures and the
+            Pick a chapter, extras topic or application demo on the left to browse its figures and the
             scripts that produced them.</p>
             <p>The <strong>Render</strong> button on each script re-runs the
             orchestrator with <code>--save</code> under <code>MPLBACKEND=Agg</code>;
@@ -992,10 +1009,11 @@ async function renderChapter(root, number) {
 
         renderGallery($('#figures-static'), staticFigs, number);
         if (animationFigs.length) renderGallery($('#figures-anim'), animationFigs, number);
-        renderScriptList($('#examples-section'), examples, number);
-        if (animations.length) renderScriptList($('#animations-section'), animations, number);
-        if (visualizations.length) renderScriptList($('#visualizations-section'), visualizations, number);
-        if (interactives.length) renderScriptList($('#interactives-section'), interactives, number);
+        const owner = { chapter: number };
+        renderScriptList($('#examples-section'), examples, owner);
+        if (animations.length) renderScriptList($('#animations-section'), animations, owner);
+        if (visualizations.length) renderScriptList($('#visualizations-section'), visualizations, owner);
+        if (interactives.length) renderScriptList($('#interactives-section'), interactives, owner);
         renderDocLinks($('#docs-section'), data.docs);
         wireFilter(number);
     } catch (err) {
@@ -1003,18 +1021,18 @@ async function renderChapter(root, number) {
     }
 }
 
-async function renderExtra(root, topic) {
+async function renderTopic(root, slug, kind) {
     try {
-        const data = await fetchJSON(`/api/extra/${encodeURIComponent(topic)}`);
-        state.extraCache.set(topic, data);
+        const data = await fetchJSON(`/api/${kind}/${encodeURIComponent(slug)}`);
+        const owner = kind === 'demo' ? { demo: slug } : { topic: slug };
         const visualizations = data.scripts.filter(s => s.kind === 'visualize');
         const examples = data.scripts.filter(s => s.kind !== 'visualize' && s.kind !== 'interactive');
         const interactives = data.scripts.filter(s => s.kind === 'interactive');
-        const staticFigs = data.figures.filter(f => f.kind !== 'animation');
+        const figures = data.figures;
 
         root.innerHTML = `
             <h2><span class="accent-bar"></span>${escapeHtml(data.title)}
-                <span style="color:var(--muted);font-weight:400;font-size:15px;margin-left:8px">extras</span></h2>
+                <span style="color:var(--muted);font-weight:400;font-size:15px;margin-left:8px">${kind === 'demo' ? 'application demo' : 'extras'}</span></h2>
             <p class="lead"><code>${escapeHtml(data.relative)}</code> ·
                 ${data.scripts.length} scripts · ${data.figures.length} rendered files</p>
             <div class="metrics">
@@ -1030,7 +1048,7 @@ async function renderExtra(root, topic) {
                 <span class="hint">press <kbd>/</kbd> to focus · <kbd>Esc</kbd> to clear</span>
             </div>
 
-            <h3>Figures <span class="count">· ${staticFigs.length} static</span></h3>
+            <h3>Figures <span class="count">· ${figures.length} files</span></h3>
             <div id="figures-static"></div>
 
             <h3>Topic scripts <span class="count">· ${data.scripts.length}</span></h3>
@@ -1040,11 +1058,11 @@ async function renderExtra(root, topic) {
             <div class="markdown">${data.readme_html}</div>` : ''}
         `;
 
-        renderGallery($('#figures-static'), staticFigs, null);
-        renderScriptList($('#extras-scripts-section'), data.scripts, null, topic);
+        renderGallery($('#figures-static'), figures, null);
+        renderScriptList($('#extras-scripts-section'), data.scripts, owner);
         wireFilter();
     } catch (err) {
-        root.innerHTML = `<div class="empty">Failed to load extras topic: ${escapeHtml(err.message)}</div>`;
+        root.innerHTML = `<div class="empty">Failed to load ${kind} topic: ${escapeHtml(err.message)}</div>`;
     }
 }
 
@@ -1098,7 +1116,7 @@ function renderGallery(host, figures, chapter) {
     host.appendChild(grid);
 }
 
-function renderScriptList(host, scripts, chapter, topic = '') {
+function renderScriptList(host, scripts, owner) {
     if (!host) return;
     host.innerHTML = '';
     if (!scripts.length) {
@@ -1137,10 +1155,10 @@ function renderScriptList(host, scripts, chapter, topic = '') {
             </div>
         `;
         row.querySelector('[data-action="cmd"]').addEventListener('click',
-            () => showCommandDialog(s, chapter, topic));
+            () => showCommandDialog(s, owner));
         row.querySelector(`[data-action="${primaryAction}"]`).addEventListener('click',
-            (ev) => interactive ? launchInteractive(s, ev.currentTarget)
-                                : runScript(s, chapter, ev.currentTarget, topic));
+            (ev) => interactive ? launchInteractive(s, owner, ev.currentTarget)
+                                : runScript(s, owner, ev.currentTarget));
         wrap.appendChild(row);
     }
     host.appendChild(wrap);
@@ -1204,14 +1222,21 @@ function applyFilter(q) {
     });
 }
 
-async function runScript(script, chapter, btn, topic = '') {
-    if (state.busy.has(script.name)) return;
-    state.busy.add(script.name);
+function ownerTab(owner) {
+    if (owner.demo !== undefined) return `demo-${owner.demo}`;
+    if (owner.topic !== undefined) return `extra-${owner.topic}`;
+    return `chapter-${owner.chapter}`;
+}
+
+async function runScript(script, owner, btn) {
+    const busyKey = `${ownerTab(owner)}/${script.name}`;
+    if (state.busy.has(busyKey)) return;
+    state.busy.add(busyKey);
     const original = btn.textContent;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Rendering';
     let result = null;
-    const payload = topic ? { topic, script: script.name } : { chapter, script: script.name };
+    const payload = { ...owner, script: script.name };
     try {
         result = await fetchJSON('/api/run', {
             method: 'POST',
@@ -1223,7 +1248,7 @@ async function runScript(script, chapter, btn, topic = '') {
         } else {
             toast(`${script.name} exited ${result.returncode}`, 'bad', 6000);
         }
-        const expectedTab = topic ? `extra-${topic}` : `chapter-${chapter}`;
+        const expectedTab = ownerTab(owner);
         if (state.activeTab === expectedTab) {
             // Re-render the current tab to refresh figures + metadata.
             activate(state.activeTab);
@@ -1231,7 +1256,7 @@ async function runScript(script, chapter, btn, topic = '') {
     } catch (err) {
         toast(`Failed: ${err.message}`, 'bad', 6000);
     } finally {
-        state.busy.delete(script.name);
+        state.busy.delete(busyKey);
         btn.disabled = false;
         btn.textContent = original;
         if (result && (result.stdout_tail || result.stderr_tail)) {
@@ -1246,9 +1271,10 @@ function renderRunOutput(script, result) {
     showOutputDialog(script, result);
 }
 
-async function launchInteractive(script, btn) {
-    if (state.busy.has(script.name)) return;
-    state.busy.add(script.name);
+async function launchInteractive(script, owner, btn) {
+    const busyKey = `${ownerTab(owner)}/${script.name}`;
+    if (state.busy.has(busyKey)) return;
+    state.busy.add(busyKey);
     const original = btn.textContent;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Launching';
@@ -1256,21 +1282,21 @@ async function launchInteractive(script, btn) {
         const data = await fetchJSON('/api/launch-interactive', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ script: script.name }),
+            body: JSON.stringify({ ...owner, script: script.name }),
         });
         toast(`Opened ${script.name} on host (pid=${data.pid})`, 'good');
     } catch (err) {
         toast(`Could not launch: ${err.message}`, 'bad', 6000);
     } finally {
-        state.busy.delete(script.name);
+        state.busy.delete(busyKey);
         btn.disabled = false;
         btn.textContent = original;
     }
 }
 
-function showCommandDialog(script, chapter, topic = '') {
-    const outputHint = topic
-        ? `# output/figures/extras/${topic}/`
+function showCommandDialog(script, { chapter, topic, demo }) {
+    const outputHint = demo ? `# output/figures/demo/${demo}/`
+        : topic ? `# output/figures/extras/${topic}/`
         : `# output/figures/chapter_${String(chapter).padStart(2, '0')}/`;
     const lines = script.kind === 'interactive'
         ? [
@@ -1284,8 +1310,7 @@ function showCommandDialog(script, chapter, topic = '') {
             `uv run python ${script.relative} --save`,
             ``,
             `# Or via the text menu:`,
-            topic ? `uv run python -m active_inference.menu --extra ${topic}`
-                  : `./run.sh --script ${script.name.replace('.py', '')}`,
+            `uv run python -m active_inference.menu --script ${script.relative}`,
         ];
     const cmd = lines.join('\n');
     openDialog({

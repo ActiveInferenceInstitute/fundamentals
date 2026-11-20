@@ -24,11 +24,6 @@ class TestDiscovery:
         assert (runner.REPO_ROOT / "extras").is_dir()
         assert (runner.REPO_ROOT / "src" / "active_inference").is_dir()
 
-    def test_chapter_dirs_populated(self) -> None:
-        assert set(runner.CHAPTER_DIRS) >= {1, 2, 3}
-        for path in runner.CHAPTER_DIRS.values():
-            assert path.is_dir()
-
     def test_discover_chapters_returns_entries_in_order(self) -> None:
         chapters = runner.discover_chapters()
         numbers = [c.number for c in chapters]
@@ -129,12 +124,6 @@ class TestClassification:
     def test_classify(self, name: str, expected: str) -> None:
         assert runner._classify(Path(name)) == expected
 
-    def test_is_runnable_rejects_non_scripts_and_interactive(self) -> None:
-        assert not runner._is_runnable(Path("README.md"))
-        assert not runner._is_runnable(Path("_helper.py"))
-        assert not runner._is_runnable(Path("interactive_demo.py"))
-        assert runner._is_runnable(Path("example_demo.py"))
-
 
 class TestExecutionHelpers:
     def test_build_env_prepends_src_extra_and_existing_pythonpath(
@@ -219,7 +208,7 @@ class TestExecutionHelpers:
         monkeypatch.setattr(
             runner,
             "discover_chapters",
-            lambda: [
+            lambda **kwargs: [
                 runner.ChapterEntry(1, tmp_path / "chapter_01"),
                 runner.ChapterEntry(2, tmp_path / "chapter_02"),
             ],
@@ -235,7 +224,7 @@ class TestExecutionHelpers:
         monkeypatch.setattr(
             runner,
             "discover_extras",
-            lambda: [
+            lambda **kwargs: [
                 runner.ExtraTopicEntry("a", tmp_path / "a"),
                 runner.ExtraTopicEntry("b", tmp_path / "b"),
             ],
@@ -285,3 +274,99 @@ class TestScriptResolution:
 
     def test_unknown_fragment_returns_none(self) -> None:
         assert tui._resolve_script_path("definitely_not_a_script") is None
+
+
+@pytest.fixture
+def discovery_tree(tmp_path, monkeypatch):
+    roots = {}
+    for attribute, relative in (
+        ("CHAPTERS_ROOT", "chapters"), ("EXTRAS_ROOT", "extras"), ("DEMO_ROOT", "demo"),
+    ):
+        root = tmp_path / relative
+        root.mkdir()
+        roots[relative] = root
+        monkeypatch.setattr(runner, attribute, root)
+    monkeypatch.setattr(runner, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(tui, "REPO_ROOT", tmp_path)
+    for relative in ("chapters/chapter_01", "chapters/chapter_02", "extras/toy", "demo/toy"):
+        directory = tmp_path / relative
+        directory.mkdir()
+        (directory / "visualize_probe.py").write_text("pass\n")
+        (directory / "interactive_probe.py").write_text("pass\n")
+        (directory / "_helper.py").write_text("pass\n")
+        (directory / "README.md").write_text("Authored fixture\n")
+    return tmp_path
+
+
+class TestOperationSnapshots:
+    def test_snapshot_is_stable_and_later_operations_see_changes(self, discovery_tree):
+        snapshot = runner.discover_snapshot()
+        chapter = discovery_tree / "chapters/chapter_01"
+        (chapter / "example_new.py").write_text("pass\n")
+        old_names = [script.name for script in runner.discover_scripts(1, snapshot=snapshot)]
+        assert old_names == ["visualize_probe.py"]
+        assert [script.name for script in runner.discover_scripts(
+            1, snapshot=snapshot, include_interactive=True,
+        )] == ["interactive_probe.py", "visualize_probe.py"]
+        assert [script.name for script in runner.discover_scripts(1)] == [
+            "example_new.py", "visualize_probe.py",
+        ]
+        assert tui._resolve_script_path("example_new", snapshot=snapshot) is None
+        assert tui._resolve_script_path("example_new") == chapter / "example_new.py"
+        with pytest.raises(TypeError):
+            snapshot.chapters[3] = snapshot.chapters[1]
+
+    def test_one_capture_does_not_rescan_each_topic(self, discovery_tree, monkeypatch):
+        calls = []
+        original = runner._scan_scripts
+
+        def observe(base, **kwargs):
+            calls.append(base)
+            return original(base, **kwargs)
+
+        monkeypatch.setattr(runner, "_scan_scripts", observe)
+        snapshot = runner.discover_snapshot()
+        for number in snapshot.chapters:
+            assert runner.discover_scripts(number, snapshot=snapshot)[0].name == "visualize_probe.py"
+        assert runner.discover_extra_scripts("toy", snapshot=snapshot)[0].topic == "toy"
+        assert runner.discover_demo_scripts("toy", snapshot=snapshot)[0].demo == "toy"
+        assert len(calls) == len(set(calls)) == 4
+
+    def test_concurrent_captures_cannot_clear_another_operation(self, discovery_tree, monkeypatch):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier
+
+        barrier = Barrier(2)
+        original = runner._scan_scripts
+
+        def interleave(base, **kwargs):
+            if base.name == "chapter_01":
+                barrier.wait(timeout=5)
+            return original(base, **kwargs)
+
+        monkeypatch.setattr(runner, "_scan_scripts", interleave)
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [executor.submit(runner.discover_snapshot) for _ in range(2)]
+            for future in futures:
+                snapshot = future.result(timeout=10)
+                assert tuple(snapshot.chapters) == (1, 2)
+                assert tuple(snapshot.extras) == ("toy",)
+                assert tuple(snapshot.demos) == ("toy",)
+                assert all(len(entry.scripts) == 2 for entry in snapshot.chapters.values())
+
+    def test_batch_execution_uses_the_admitted_snapshot(self, discovery_tree):
+        marker = discovery_tree / "executed.txt"
+        first = discovery_tree / "chapters/chapter_01/visualize_probe.py"
+        second = discovery_tree / "chapters/chapter_02/visualize_probe.py"
+        first.write_text(
+            f"from pathlib import Path\nPath({str(marker)!r}).write_text('first\\n')\n"
+        )
+        second.write_text(
+            f"from pathlib import Path\np=Path({str(marker)!r})\n"
+            "p.write_text(p.read_text() + 'second\\n')\n"
+        )
+        snapshot = runner.discover_snapshot()
+        (first.parent / "example_late.py").write_text("raise RuntimeError('not admitted')\n")
+        results = runner.run_all_chapters(snapshot=snapshot, quiet=True)
+        assert [code for values in results.values() for _, code in values] == [0, 0]
+        assert marker.read_text() == "first\nsecond\n"

@@ -10,16 +10,27 @@ Temperature-scaled canonical probabilities and U - T S.
 
 ## Scripts
 
-- `visualize_temperature.py` - visualize orchestrator over `active_inference.extra_topics` and core APIs.
-- `simulate_temperature.py` - simulate orchestrator over `active_inference.extra_topics` and core APIs.
-- `interactive_temperature.py` - interactive slider orchestrator over `active_inference.extra_topics` and core APIs.
+- `visualize_temperature.py` - Static visualization using shared library APIs.
+- `simulate_temperature.py` - Parameter-sweep simulation using shared library APIs.
+- `interactive_temperature.py` - Host GUI sliders; no saved media or data sidecars.
 
 ## Outputs
 
-Run any non-interactive script with `--save` to render artifacts under `output/figures/extras/temperature/` and raw-data sidecars under `output/data/extras/temperature/`.
+Run non-interactive scripts with `--save`. The default artifact paths are
+`output/figures/extras/temperature/` and `output/data/extras/temperature/`.
+These are declared outputs, not evidence that rendering has run.
+
+| Script | Figure | Raw data and manifest |
+|---|---|---|
+| `visualize_temperature.py --save` | `visualize_temperature.png` | `visualize_temperature.npz`, `visualize_temperature.json` |
+| `simulate_temperature.py --save` | `simulate_temperature.png` | `simulate_temperature.npz`, `simulate_temperature.json` |
+
+Interactive mode requires a host display. Its `--save` option closes
+the GUI without writing artifacts; use the commands below as shown.
 
 ```bash
 uv run python extras/temperature/visualize_temperature.py --save
 uv run python extras/temperature/simulate_temperature.py --save
 uv run python extras/temperature/interactive_temperature.py
 ```
+

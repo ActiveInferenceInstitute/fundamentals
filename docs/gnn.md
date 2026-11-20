@@ -69,9 +69,10 @@ GNN_ROOT=/path/to/Generalized_Notation_Notation \
 GNN_PYTHON=/path/to/parser-runtime/bin/python \
 uv run python scripts/validate_gnn_spec.py --json
 
-# Installed pinned runtime (what CI uses)
+# Installed pinned runtime (what CI uses); --verify-tag-remote resolves the
+# pin's tag upstream with `git ls-remote` and needs network access
 uv run python scripts/validate_gnn_spec.py \
-  --gnn-runtime /path/to/venv/bin/python --json
+  --gnn-runtime /path/to/venv/bin/python --verify-tag-remote --json
 
 # The drift guard and the runtime posterior
 uv run pytest tests/test_gnn_spec.py -v
@@ -84,13 +85,25 @@ development is never imported. `GNN_PYTHON` (or `--gnn-runtime`) selects the
 interpreter that has the parser dependencies; the GNN checkout's own `.venv`
 works.
 
-Exit codes are `0` pass, `1` conformance failure, and `2` pinned runtime or
-checkout unavailable. An unavailable run is reported as *not run* and is never a
-pass; the same applies to the pytest module, which prints an explicit skip when
-no pinned parser is available.
+Exit codes are `0` pass with the tag and revision verified, `1` conformance
+failure, and `2` pinned runtime or checkout unavailable or the tag/revision
+binding unverified. An unavailable run is reported as *not run*, and an
+unresolved binding as *not verified*; neither is a pass, and the receipt records
+`"ok": false` with the named `provenance-unverified` entries. The same applies to
+the pytest module, which prints an explicit skip when no pinned parser is
+available.
 
 The receipt is written to `docs/_build/gnn/validation-receipt.json`
 (`--receipt` overrides it); `docs/_build/` is generated and gitignored.
+
+`--spec PATH` selects the document for both upstream parsing and local
+comparison. The validator captures its raw bytes once and records their
+SHA-256 as `spec_sha256`; replacing the original file during parsing does not
+change the admitted document. The receipt's `spec` identifies the selected
+source path.
+
+Document binding does not relax parser provenance. Missing or unresolved
+pinned-runtime/tag evidence remains unavailable or unverified, never a pass.
 
 ## What each check proves
 
@@ -98,7 +111,7 @@ The receipt is written to `docs/_build/gnn/validation-receipt.json`
 |---|---|
 | `test_declared_arrays_equal_the_chapter_literals` | The GNN declaration and the implementation's literals are the same model, field by field. |
 | `test_infer_states_reproduces_the_book_posterior` | The declared model, run through this repository's inference, reproduces the book's Eq. 15 numbers. |
-| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. |
+| `validate_gnn_spec.py` (pinned parser) | The document is well-formed GNN under the pinned revision, and the pinned parser and the dependency-free reader agree on sections, variables, model name, and `A`/`D`. The parser files are digest-verified before the document is parsed, and the pin's `tag` is resolved to its `commit` in the GNN object store (a `--gnn-root` checkout, or `--verify-tag-remote`); a tag that resolves elsewhere fails as `tag-commit-mismatch`. For an installed runtime the installer's recorded VCS commit is compared with the pin; an install without that metadata is reported as `unresolvable-offline` and leaves the run *not verified* (exit 2), never a pass. A `--gnn-root` directory with no git metadata is digest-verified only: its parser files must match the pin, but its revision is attested as unverified, not as the pinned Git revision. With `--verify-tag-remote`, a remote that cannot answer ends the run as *not run* (exit 2), never a pass. |
 
 Nothing above proves the model is scientifically adequate, that the book's
 numbers are correct beyond the asserted Eq. 15 posterior, or that a future

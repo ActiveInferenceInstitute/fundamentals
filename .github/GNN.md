@@ -11,7 +11,7 @@ into a Python 3.12 virtual environment and requires the installed
 The job and the local arm are the same commands: the job installs the locked
 environment, then runs `./gate.sh gnn`, which provisions that pinned runtime
 under `$GATE_CACHE/gnn-runtime-<commit>`, runs
-`uv run python scripts/validate_gnn_spec.py --gnn-runtime <runtime> --json`,
+`uv run python scripts/validate_gnn_spec.py --gnn-runtime <runtime> --verify-tag-remote --json`,
 and re-runs `tests/test_gnn_spec.py` with `GNN_RUNTIME_PYTHON` set to the same
 interpreter. Setup in every job goes through
 `ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448`,

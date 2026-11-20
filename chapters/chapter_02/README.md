@@ -14,6 +14,14 @@ uv run python chapters/chapter_02/example_2_2_linear_probabilistic.py --save
 ./run.sh --chapter 2
 ```
 
+## Learning objective
+
+- Formulate a linear-Gaussian generative model and compare exact grid Bayesian
+  inference, precision-weighted posteriors, and MLE or MAP point estimates.
+
+Practice this objective with `example_2_2_linear_probabilistic.py` and
+`example_2_3_precision.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it adds |

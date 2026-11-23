@@ -4,6 +4,15 @@ Chapter 13 applies active-inference primitives to robotics navigation and social
 inference examples. The concept map is
 [`docs/chapters/chapter_13.md`](../../docs/chapters/chapter_13.md).
 
+## Learning objective
+
+- Apply active-inference belief updating and preference-driven control to
+  robotics navigation, fault-tolerant actuation, and social intention
+  inference.
+
+Practice this objective with `example_13_1_robotics_navigation.py` and
+`example_13_3_social_robotics.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

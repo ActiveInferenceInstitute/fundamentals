@@ -9,6 +9,14 @@ is [`docs/chapters/chapter_07.md`](../../docs/chapters/chapter_07.md).
 > **Scope.** This folder implements the univariate active generalized filter (§7.1–7.4,
 > Algorithm 7.2.1) and multivariate AIF in generalized coordinates (§7.5).
 
+## Learning objective
+
+- Couple perception and action under a single variational free-energy objective
+  so continuous control steers hidden states toward a preferred set-point.
+
+Practice this objective with `example_7_2_active_inference.py` and
+`example_7_5_multivariate_active_inference.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

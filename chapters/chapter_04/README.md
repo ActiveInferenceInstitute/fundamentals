@@ -12,6 +12,15 @@ imports configurable building blocks from `active_inference` and runs on the sam
 linear-Gaussian example as Chapter 3 (`y = β₀ + β₁x + noise`, prior `x ~ N(4, 0.25)`),
 so the exact grid posterior `N(2.4, 0.05)` is available as an oracle.
 
+## Learning objective
+
+- Derive variational free energy as an upper bound on surprisal and minimize it
+  with mean-field CAVI and fixed-form variational inference to approximate a
+  posterior.
+
+Practice this objective with `example_4_3_vfe_forms.py` and
+`example_4_7_fixed_form.py`.
+
 ## Scripts
 
 ### Numbered examples

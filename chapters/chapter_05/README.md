@@ -12,6 +12,15 @@ lands on `μ = 2.4` — the same belief Chapter 4's variational inference and th
 Bayesian posterior reach, so the cross-chapter oracle (`pc_linear_fixed_point` /
 `GridBayesianInference`) verifies every run.
 
+## Learning objective
+
+- Derive predictive-coding recognition dynamics as gradient descent on free
+  energy using precision-weighted prediction errors in single-layer and
+  hierarchical models.
+
+Practice this objective with `example_5_4_recognition_dynamics.py` and
+`example_5_7_hierarchical.py`.
+
 ## Scripts
 
 ### Numbered examples

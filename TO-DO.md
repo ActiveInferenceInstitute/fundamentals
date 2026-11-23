@@ -1,7 +1,17 @@
 # Documentation review TODO
 
 Date: 2026-08-02
-Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3); re-checked 2026-11-12 (estate to-do refresh at `eb64397`)
+Last reviewed: 2026-08-02 (DOCS-DEEP pass, comprehensive extension); re-checked 2026-11-11 (Institute improvements pass 3); re-checked 2026-11-12 (estate to-do refresh at `eb64397`); updated 2026-11-19 (Education contract adoption across Chapters 1–14)
+
+## Education adoption pass (2026-11-19)
+
+All fourteen chapters (`chapters/chapter_01/README.md` through
+`chapters/chapter_14/README.md`) now carry authored `## Learning objective`
+sections transcribed verbatim into `specs/education/fundamentals.json`,
+alongside the `generative-model` glossary definition from
+`manuscript/98_symbols_glossary.md`. `./gate.sh contract` reports
+`fundamentals: adopted -- adopted 1 bundle(s)` with zero `EC006` violations.
+See [the Education contract section](docs/gate.md#education-contract).
 
 ## Estate alignment pass (2026-11-12)
 
@@ -120,13 +130,13 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
   gate behavior, and conformance evidence must move together. A newer tag's
   existence alone is not admission. Unavailable or unverified runtime evidence
   must continue to fail qualification.
-- **Education publication remains content-blocked.** Chapter authors must
-  supply authored learning objectives for chapters 2–14 and the corresponding
-  unit/source mapping before an education bundle can quote them. Chapter 1's
-  existing objective is retained. Do not synthesize objectives from chapter
-  descriptions. Further glossary authorship is a content decision, not an
-  invented schema minimum. Maintainers own integration against the selected
-  courses contract/schema after those sources are admitted.
+- ~~Education publication remains content-blocked.~~ Resolved 2026-11-19:
+  authored `## Learning objective` sections now live in
+  `chapters/chapter_01/README.md` through `chapters/chapter_14/README.md`, are
+  transcribed verbatim into `specs/education/fundamentals.json`, and pass
+  `./gate.sh contract` (`adopted 1 bundle(s)`, zero `EC006` violations).
+  Further glossary authorship remains an editorial content decision, not a
+  schema minimum.
 - Extras-family M3 uses `scripts/generate_extra_readme_sections.py` for all
   58 owned Scripts/Outputs pairs, not 57. The 13 bespoke READMEs remain
   excluded. Use `--write` only under documentation custody, then require a

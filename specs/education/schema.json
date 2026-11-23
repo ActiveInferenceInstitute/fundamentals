@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ActiveInferenceInstitute/courses/specs/education/schema.json",
+  "title": "Active Inference education contract, document schema v1",
+  "description": "One machine-readable record per repository: the learnable units, the prerequisite edges between them, each unit's learning objectives, and the glossary terms those units use. Validated by software/src/education_contract (which reads this file and rejects any document it does not match) and by ./run.sh contract. The semantic rules JSON Schema cannot express -- acyclicity, edge/prerequisite agreement, term-reference resolution -- are listed in docs/workflows/education.md and implemented in software/src/education_contract/rules.py.",
+  "type": "object",
+  "required": ["schema", "provenance", "units", "prerequisite_edges", "glossary"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "education-contract/v1"
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Where this document came from. A consumer must be able to find the repository and, when the document is generated, the command that regenerates it.",
+      "required": ["repository"],
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 3
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 7
+        },
+        "generator": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unit"
+      }
+    },
+    "prerequisite_edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
+    },
+    "glossary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/term"
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "description": "Stable, lowercase, URL- and filename-safe identity. Slashes are not allowed: a repository-qualified key is <repository>#<id>.",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "pointer": {
+      "type": "object",
+      "description": "The file a member repository commits to declare it has adopted this contract.",
+      "required": ["contract", "schema_sha256", "bundles"],
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "education-contract/v1"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bundles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "description": "One learnable unit: a course module, a SkillTree skill, a textbook chapter, a notebook, or a glossary-anchored knowledge-base page.",
+      "required": ["unit_id", "title", "objectives", "prerequisites"],
+      "additionalProperties": false,
+      "properties": {
+        "unit_id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "course_id": {
+          "$ref": "#/$defs/id"
+        },
+        "topic": {
+          "description": "The eight-topic spine every course in the group follows, in this fixed order. Optional: course-level and chapter-level units carry no spine topic.",
+          "enum": [
+            "systems",
+            "agents",
+            "perception",
+            "cognition",
+            "action",
+            "learning",
+            "communication",
+            "planning"
+          ]
+        },
+        "stratum": {
+          "description": "The eight pedagogical layers of the validated prerequisite graph that Active_Skillference renders, roots to canopy. Optional: only skill-granularity units carry a stratum.",
+          "enum": [
+            "math_foundations",
+            "probability",
+            "information_theory",
+            "variational_methods",
+            "free_energy_principle",
+            "active_inference",
+            "computation",
+            "applications"
+          ]
+        },
+        "audience_level": {
+          "description": "The audience ladder from course_development/AGENTS.md.",
+          "enum": ["es", "family", "ms", "hs", "101", "core", "401"]
+        },
+        "objectives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/objective"
+          }
+        },
+        "glossary_terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "prerequisites": {
+          "description": "The inbound hard edges, denormalized onto the unit so a renderer needs one pass. Must equal the set of hard edges whose to_unit is this unit (rule EC008).",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "source_path": {
+          "description": "Repository-relative path of the authored source this unit was read from.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "required": ["objective_id", "statement"],
+      "additionalProperties": false,
+      "properties": {
+        "objective_id": {
+          "$ref": "#/$defs/id"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["from_unit", "to_unit", "kind", "rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "from_unit": {
+          "$ref": "#/$defs/id"
+        },
+        "to_unit": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "description": "hard blocks progress and must be acyclic; soft is an advisory link and is excluded from unit.prerequisites.",
+          "enum": ["hard", "soft"]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+    "term": {
+      "type": "object",
+      "required": ["term_id", "term", "definition", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "term_id": {
+          "$ref": "#/$defs/id"
+        },
+        "term": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 20
+        },
+        "aliases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "notation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "description": "Repository-relative path of the authored definition, or the citation when the definition is quoted.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

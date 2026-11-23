@@ -4,6 +4,15 @@ Chapter 12 reframes active-inference updates as local factor-graph messages.
 The concept map is
 [`docs/chapters/chapter_12.md`](../../docs/chapters/chapter_12.md).
 
+## Learning objective
+
+- Formulate discrete active inference as local factor-graph message passing
+  across sum-product smoothing, variational message passing, and hybrid
+  continuous-discrete bridges.
+
+Practice this objective with `example_12_1_factor_graph_messages.py` and
+`example_12_3_vmp_marginal_messages.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

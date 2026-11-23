@@ -13,6 +13,15 @@ map is [`docs/chapters/chapter_10.md`](../../docs/chapters/chapter_10.md).
 > two-armed bandit (Example 10.7); §10.4 — **hierarchical depth** (Eq. 39–50). Verified
 > against the book's worked Examples 10.1–10.7 plus reduction/self-consistency oracles.
 
+## Learning objective
+
+- Update POMDP parameters through Dirichlet concentration counts and extend
+  discrete active inference with policy precision, habits, factorial state
+  factors, and hierarchical depth.
+
+Practice this objective with `example_10_2_learn_A.py` and
+`example_10_7_two_armed_bandit.py`.
+
 ## Scripts
 
 | Script | Mirrors | What it shows |

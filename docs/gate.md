@@ -18,6 +18,7 @@ never restates a command that runs elsewhere.
 | `fast` | `uv run python -m pytest -q tests/core tests/estimators tests/utils tests/visualizations tests/web tests/test_*.py` | `tests (py3.11)`, `tests (py3.14)` |
 | `full` | `uv run python -m pytest -q` | local only |
 | `docs` | `uv run python -m pytest -q tests/test_documentation_contracts.py tests/test_method_documentation_contracts.py` | local fast path (a strict subset of `fast`) |
+| `contract` | `uv run python scripts/check_education_contract.py` | local only |
 | `validators` | the orchestrator-contract, provenance, book-topic, source-spine, and rendered-figure validators | `repository validators` |
 | `manuscript-check` | `uv run python scripts/render_manuscript.py --check` | `repository validators` |
 | `manuscript` | `uv run python scripts/render_manuscript.py` | local only (needs `pandoc` and `xelatex`) |
@@ -43,6 +44,53 @@ under `$GATE_CACHE/gnn-runtime-<commit>` and refuses a runtime whose
 fresh runtime instead of reusing a stale one, and CI keeps the cache on the runner
 with `GATE_CACHE=${{ runner.temp }}/gate-cache`. Set `GNN_RUNTIME_PYTHON` to use
 an existing interpreter instead of provisioning.
+
+## Education contract
+
+The [Education workflow contract](https://github.com/ActiveInferenceInstitute/courses/blob/486b4dae7d0af33d5ec95b50faed7643173fc1f6/docs/workflows/education.md)
+requires a chapter bundle and glossary transcription.
+[`education-contract.json`](../education-contract.json) points to
+[`specs/education/fundamentals.json`](../specs/education/fundamentals.json).
+The bundle transcribes all fourteen chapter README titles and authored
+`## Learning objective` statements verbatim (`chapters/chapter_01/README.md`
+through `chapters/chapter_14/README.md`), records each source path, and uses
+member-prefixed unit IDs (`fundamentals.chapter_01`–`fundamentals.chapter_14`)
+to avoid cross-member collisions. The `generative-model` glossary term is
+transcribed verbatim from
+[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md#L3).
+
+Prerequisites and edges remain empty because the only authored ordering,
+[`docs/reading_order.md`](../docs/reading_order.md) "Path A — *I'm following the
+book chapter by chapter*", is a reading path with no prerequisite statement to
+quote as an edge rationale. Chapter numbering and coverage references are not
+authored hard prerequisites.
+
+The schema and `vendor/education_contract/{schema,rules,registry}.py`
+are byte-identical copies from `ActiveInferenceInstitute/courses` commit
+`486b4dae7d0af33d5ec95b50faed7643173fc1f6`. The adapter passes the actual checkout and schema paths to the vendored
+`check_member`, so the gate also works from a named linked worktree.
+The local arm checks the pointer digest, schema, and declared bundles. Only a
+comparison with the lead can establish that the vendored schema is still current.
+These unchanged modules are by the Active Inference Institute, licensed under
+CC BY 4.0; the upstream notice is retained at
+[`vendor/education_contract/LICENSE`](../vendor/education_contract/LICENSE).
+Upstream modules live outside the local library/chapter/script trees; their
+source and documentation remain unchanged rather than adopting local style rules.
+
+```bash
+./gate.sh contract
+# From this checkout, read the sibling lead without writing bytecode there:
+python -B ../courses/software/scripts/check_education_contract.py \
+  --schema ../courses/specs/education/schema.json specs/education/fundamentals.json
+./gate.sh docs
+./gate.sh fast
+./gate.sh full
+```
+
+Local contract verification: `./gate.sh contract` reports
+`fundamentals: adopted -- adopted 1 bundle(s)` with zero schema or semantic
+violations across all fourteen chapter units and the `generative-model` glossary
+entry.
 
 ## Measured wall time
 

@@ -3,14 +3,16 @@
 `gnn conformance (pinned)` is the display name of the `gnn-conformance` job in
 `.github/workflows/ci.yml`. It reads `specs/gnn-pin.json` — the canonical pin
 file, schema `gnn-importer-pin/v1` — which pins
-`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.0.3`
-(`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`). The job installs that commit
+`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.1.0`
+(`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`). The job installs that commit
 into a Python 3.12 virtual environment and requires the installed
 `gnn.__version__` to equal the pinned tag without its `v`.
 
 The job and the local arm are the same commands: the job installs the locked
 environment, then runs `./gate.sh gnn`, which provisions that pinned runtime
-under `$GATE_CACHE/gnn-runtime-<commit>`, runs
+under `$GATE_CACHE/gnn-runtime-<commit>`, runs the shared reader
+`<runtime>/bin/python -m gnn.importers check --repo . --require-pointer --workflow .github/workflows/ci.yml --job gnn-conformance`
+(pin discovery and validation, and this pointer), runs
 `uv run python scripts/validate_gnn_spec.py --gnn-runtime <runtime> --verify-tag-remote --json`,
 and re-runs `tests/test_gnn_spec.py` with `GNN_RUNTIME_PYTHON` set to the same
 interpreter. Setup in every job goes through

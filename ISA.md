@@ -43,7 +43,7 @@ repository and with the inspected PDF source spine, not with stale plans.
   source-map extras rather than algorithmic code.
 - The Chapter 9 §9.1 weather model is declared in Generalized Notation
   Notation under [`specs/`](specs/) — `weather_pomdp.gnn.md` plus the pinned
-  upstream parser revision `gnn-pin.json` (GNN v5.0.3). The declaration is bound
+  upstream parser revision `gnn-pin.json` (GNN v5.1.0). The declaration is bound
   to the chapter's literals and the book's Eq. 15 posterior by
   `tests/test_gnn_spec.py` and validated against the pinned parser by
   `scripts/validate_gnn_spec.py`; see [`docs/gnn.md`](docs/gnn.md).

@@ -17,7 +17,7 @@ commands, and exactly what each check proves.
 | Path | Role |
 |---|---|
 | [`specs/weather_pomdp.gnn.md`](../specs/weather_pomdp.gnn.md) | The GNN declaration: `A` (3×4 likelihood), `D` (uniform prior), the four declared variables, the equations, and the ontology annotations. Hand-authored; it is the canonical statement of the model's structure and parameters. |
-| [`specs/gnn-pin.json`](../specs/gnn-pin.json) | The pin record: upstream repository, tag `v5.0.3`, commit `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, declared language version, recording date, and SHA-256 digests of the parser files the document was reviewed against. |
+| [`specs/gnn-pin.json`](../specs/gnn-pin.json) | The pin record: upstream repository, tag `v5.1.0`, commit `75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`, declared language version, recording date, and SHA-256 digests of the parser files the document was reviewed against. |
 | [`src/active_inference/gnn_spec.py`](../src/active_inference/gnn_spec.py) | Dependency-free reader (standard library + NumPy): sections, declared variables, `A`/`D` reshaped to the declared dimensions, `ModelParameters` scalars, and the pin. Not part of the package `__all__`. |
 | [`scripts/gnn_parser_probe.py`](../scripts/gnn_parser_probe.py) | The only module that imports the upstream `gnn` package; runs as a subprocess under the pinned revision. |
 | [`scripts/validate_gnn_spec.py`](../scripts/validate_gnn_spec.py) | The pinned-parser validator: materializes the pinned commit, verifies parser digests, and requires the pinned parser and the dependency-free reader to agree. |
@@ -122,8 +122,8 @@ what a consumer executes.
 
 The patterns and pin discipline this adoption follows are documented upstream in
 the [GNN downstream adoption guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md)
-(main branch; the guide postdates the pinned `v5.0.3` revision, so it is not part
-of the pin). This repository uses **pattern D, structure-only declaration**, with
+(main branch; the link follows `main`, not the pinned `v5.1.0` revision, so it is
+not part of the pin). This repository uses **pattern D, structure-only declaration**, with
 the book's authored `A` and `D` declared alongside the structure: the document
 declares the model, no runtime code reads it, the chapter orchestrator owns the
 behavior, and a conformance test binds the two sides so editing either alone

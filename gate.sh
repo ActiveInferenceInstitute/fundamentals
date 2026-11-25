@@ -122,6 +122,10 @@ provision_gnn_runtime() {
 arm_gnn() {
     local runtime
     runtime="$(provision_gnn_runtime)"
+    # The shared reader owns pin discovery and validation and checks that
+    # .github/GNN.md names the pin file, the pinned revision, the workflow, and the job.
+    "$runtime" -m gnn.importers check --repo . --require-pointer \
+        --workflow .github/workflows/ci.yml --job gnn-conformance
     uv run python scripts/validate_gnn_spec.py --gnn-runtime "$runtime" --verify-tag-remote --json
     # Without this the pinned-parser test skips instead of parsing.
     GNN_RUNTIME_PYTHON="$runtime" uv run pytest -q tests/test_gnn_spec.py

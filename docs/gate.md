@@ -22,7 +22,7 @@ never restates a command that runs elsewhere.
 | `validators` | the orchestrator-contract, provenance, book-topic, source-spine, and rendered-figure validators | `repository validators` |
 | `manuscript-check` | `uv run python scripts/render_manuscript.py --check` | `repository validators` |
 | `manuscript` | `uv run python scripts/render_manuscript.py` | local only (needs `pandoc` and `xelatex`) |
-| `gnn` | provision the pinned runtime, `validate_gnn_spec.py`, then `tests/test_gnn_spec.py` with that runtime | `gnn conformance (pinned)` |
+| `gnn` | provision the pinned runtime, `python -m gnn.importers check` from it, `validate_gnn_spec.py`, then `tests/test_gnn_spec.py` with that runtime | `gnn conformance (pinned)` |
 | `all` | every arm above, in that order | — |
 
 There is no `types` arm: `pyproject.toml` configures no type checker, and adding

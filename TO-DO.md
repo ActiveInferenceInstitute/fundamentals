@@ -22,10 +22,12 @@ provisions or accepts a runtime at the pinned revision, runs
 `scripts/validate_gnn_spec.py --gnn-runtime` — which verifies every recorded
 parser digest and requires the pinned parser and the dependency-free reader in
 `active_inference.gnn_spec` to agree — and then runs `tests/test_gnn_spec.py`.
-The pin itself still names `v5.0.3` at
-`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, and this repository still reads it
-with its own `load_pin`; the estate-wide cutover to the shared reader is open,
-below.
+The pin now names `v5.1.0` at
+`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`, the release that ships
+`gnn.importers`, and the `gnn` arm runs the shared reader
+(`python -m gnn.importers check --repo . --require-pointer`) before the deep
+validator. This repository still reads the pin with its own `load_pin` for the
+validator, the tests and the manuscript variables.
 
 Authored education source text now exists (`eb64397`, #34): a
 `## Learning objective` section in `chapters/chapter_01/README.md` and the first
@@ -124,12 +126,12 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 
 ## Open / deferred
 
-- **GNN–FEP shared-reader migration remains open.** Preserve the deliberate
-  v5.0.3 pin and its parser digests until maintainers select a producer-qualified
-  replacement. The reader migration, reviewed pin/digests, `.github/GNN.md`,
-  gate behavior, and conformance evidence must move together. A newer tag's
-  existence alone is not admission. Unavailable or unverified runtime evidence
-  must continue to fail qualification.
+- **Retire the local `load_pin` in favor of `gnn.importers`.** The pin is at
+  v5.1.0 and the `gnn` arm runs the shared reader. `active_inference.gnn_spec.load_pin`
+  remains for the validator, `tests/test_gnn_spec.py` and `scripts/render_manuscript.py`;
+  removing it means giving those three a bridge that runs in the pinned runtime, as
+  the sibling repositories did. Unavailable or unverified runtime evidence must
+  continue to fail qualification.
 - ~~Education publication remains content-blocked.~~ Resolved 2026-11-19:
   authored `## Learning objective` sections now live in
   `chapters/chapter_01/README.md` through `chapters/chapter_14/README.md`, are

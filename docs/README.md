@@ -123,3 +123,7 @@ it. The high-level rule is:
 
 The two root files are cross-cutting and update with any structural change
 to the codebase.
+
+## Manuscript
+
+- [Manuscript sources and rendering](manuscript/README.md)

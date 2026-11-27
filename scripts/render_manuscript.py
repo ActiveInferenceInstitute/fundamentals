@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Render the companion manuscript from its committed sources.
 
-This is the authoritative render path for ``manuscript/``. Before any format is
+This is the authoritative render path for ``docs/manuscript/``. Before any format is
 produced it validates the surfaces the prose depends on:
 
-* every ``{{TOKEN}}`` used in a section is declared in ``manuscript/variables.yaml``
+* every ``{{TOKEN}}`` used in a section is declared in ``docs/manuscript/variables.yaml``
   and its declared value still equals the value recomputed from the repository;
 * every section has exactly one labelled H1, and labels are unique;
 * every ``::: {#fig:...}`` block names a figure registered in
@@ -17,7 +17,7 @@ produced it validates the surfaces the prose depends on:
 ``--check`` runs those validations and stops, which is what CI runs because it
 needs no TeX installation and no Pandoc binary. The default mode then assembles
 the admitted sources in manuscript order and renders each format enabled in
-``manuscript/config.yaml``.
+``docs/manuscript/config.yaml``.
 
 Exit codes: 0 success, 1 contract violation, 2 unusable configuration input,
 3 missing external tool (named on stderr).
@@ -44,13 +44,13 @@ except ModuleNotFoundError:  # pragma: no cover - reported, never a silent pass
     yaml = None
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-MANUSCRIPT_DIR = REPO_ROOT / "manuscript"
+MANUSCRIPT_DIR = REPO_ROOT / "docs" / "manuscript"
 CONFIG_PATH = MANUSCRIPT_DIR / "config.yaml"
 VARIABLES_PATH = MANUSCRIPT_DIR / "variables.yaml"
 REGISTRY_PATH = REPO_ROOT / "output" / "figures" / "figure_registry.json"
 BUILD_DIR = REPO_ROOT / "docs" / "_build" / "manuscript"
 
-#: Files in ``manuscript/`` that are guidance or configuration, not sections.
+#: Files in ``docs/manuscript/`` that are guidance or configuration, not sections.
 NON_SECTION_FILES = {"README.md", "AGENTS.md", "SYNTAX.md", "preamble.md"}
 
 #: Namespaces owned by pandoc-crossref and the formalism filter, not BibTeX keys.
@@ -155,11 +155,11 @@ def load_variables() -> dict[str, dict[str, str]]:
     payload = _load_yaml(VARIABLES_PATH)
     if payload.get("schema") != "manuscript-variables/v1":
         raise ContractError(
-            "manuscript/variables.yaml must declare schema: manuscript-variables/v1"
+            "docs/manuscript/variables.yaml must declare schema: manuscript-variables/v1"
         )
     declared = payload.get("variables")
     if not isinstance(declared, dict) or not declared:
-        raise ContractError("manuscript/variables.yaml declares no variables")
+        raise ContractError("docs/manuscript/variables.yaml declares no variables")
     resolved: dict[str, dict[str, str]] = {}
     for token, record in declared.items():
         if not re.fullmatch(r"[A-Z0-9_]+", str(token)):
@@ -187,7 +187,7 @@ def verify_variables(
         if record["value"] != computed[token]:
             failures.append(
                 f"{token} is declared as {record['value']!r} but {record['source']} "
-                f"now yields {computed[token]!r}: update manuscript/variables.yaml"
+                f"now yields {computed[token]!r}: update docs/manuscript/variables.yaml"
             )
     for token in sorted(used - set(declared)):
         failures.append(f"{{{{{token}}}}} is used in prose but not declared in variables.yaml")
@@ -354,7 +354,7 @@ def validate_figures(sources: list[Source]) -> dict[str, dict[str, Any]]:
         if entry is None:
             failures.append(f"{label} is referenced in prose but not registered")
             continue
-        expected = f"../output/figures/{entry.get('filename')}"
+        expected = f"../../output/figures/{entry.get('filename')}"
         if path != expected:
             failures.append(f"{label} is referenced as {path} but registers as {expected}")
     for label in sorted(set(registry) - set(referenced)):
@@ -398,7 +398,7 @@ def validate_bibliography(
     """Return the cited keys and the bibliography keys left unused."""
 
     bibliography = config.get("bibliography") or {}
-    bib_path = REPO_ROOT / str(bibliography.get("references_path", "manuscript/references.bib"))
+    bib_path = REPO_ROOT / str(bibliography.get("references_path", "docs/manuscript/references.bib"))
     if not bib_path.is_file():
         raise ContractError(f"missing bibliography: {bib_path.relative_to(REPO_ROOT)}")
     defined = set(BIB_ENTRY_RE.findall(bib_path.read_text(encoding="utf-8")))
@@ -422,7 +422,7 @@ def validate_bibliography(
 
 
 def _read_preamble() -> str:
-    """Return the fenced LaTeX blocks of ``manuscript/preamble.md``."""
+    """Return the fenced LaTeX blocks of ``docs/manuscript/preamble.md``."""
 
     path = MANUSCRIPT_DIR / "preamble.md"
     if not path.is_file():
@@ -461,11 +461,11 @@ def _format_settings(config: dict[str, Any]) -> list[str]:
     unsupported = sorted(set(enabled) - SUPPORTED_FORMATS)
     if unsupported:
         raise ContractError(
-            "manuscript/config.yaml enables formats this renderer does not produce: "
+            "docs/manuscript/config.yaml enables formats this renderer does not produce: "
             + ", ".join(unsupported)
         )
     if not enabled:
-        raise ContractError("manuscript/config.yaml enables no render format")
+        raise ContractError("docs/manuscript/config.yaml enables no render format")
     return [name for name in ("html", "pdf") if name in enabled]
 
 
@@ -514,7 +514,7 @@ def _pandoc_command(
     if keywords:
         command += ["--metadata", f"keywords={', '.join(str(word) for word in keywords)}"]
 
-    bib_path = REPO_ROOT / str(bibliography.get("references_path", "manuscript/references.bib"))
+    bib_path = REPO_ROOT / str(bibliography.get("references_path", "docs/manuscript/references.bib"))
     command += ["--bibliography", str(bib_path)]
 
     command += ["--filter", "pandoc-crossref"]

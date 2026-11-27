@@ -9,7 +9,7 @@ All fourteen chapters (`chapters/chapter_01/README.md` through
 `chapters/chapter_14/README.md`) now carry authored `## Learning objective`
 sections transcribed verbatim into `specs/education/fundamentals.json`,
 alongside the `generative-model` glossary definition from
-`manuscript/98_symbols_glossary.md`. `./gate.sh contract` reports
+`docs/manuscript/98_symbols_glossary.md`. `./gate.sh contract` reports
 `fundamentals: adopted -- adopted 1 bundle(s)` with zero `EC006` violations.
 See [the Education contract section](docs/gate.md#education-contract).
 
@@ -31,7 +31,7 @@ validator, the tests and the manuscript variables.
 
 Authored education source text now exists (`eb64397`, #34): a
 `## Learning objective` section in `chapters/chapter_01/README.md` and the first
-definition in `manuscript/98_symbols_glossary.md`. That is one objective and one
+definition in `docs/manuscript/98_symbols_glossary.md`. That is one objective and one
 glossary term against fourteen chapters; the education contract needs at least one
 objective per unit, so this is a start, not an adoption.
 
@@ -42,11 +42,11 @@ objective per unit, so this is a start, not an adoption.
 ## Manuscript and gate pass (2026-11-12)
 
 - The manuscript no longer renders only through a sibling template checkout.
-  `scripts/render_manuscript.py` validates `manuscript/variables.yaml` against
+  `scripts/render_manuscript.py` validates `docs/manuscript/variables.yaml` against
   its repository producers, binds `output/figures/figure_registry.json` to the
   cited figures, resolves citations, and renders the formats enabled in
-  `manuscript/config.yaml`. It is reachable as `./gate.sh manuscript-check` and
-  `./gate.sh manuscript`, and `manuscript/README.md` and `manuscript/SYNTAX.md`
+  `docs/manuscript/config.yaml`. It is reachable as `./gate.sh manuscript-check` and
+  `./gate.sh manuscript`, and `docs/manuscript/README.md` and `docs/manuscript/SYNTAX.md`
   document the contract.
 - `./gate.sh` is the single gate entry point; `.github/workflows/ci.yml` calls
   its arms instead of restating commands, lint runs once instead of in both
@@ -60,14 +60,14 @@ objective per unit, so this is a start, not an adoption.
 Documentation-completeness re-check. `docs/README.md` now indexes the
 `learn_by_hand.md` page in both its tree and its "Pick the right page" table; no
 other `docs/` page is unreachable. A relative-link walk over every tracked
-`*.md` reports one intentional placeholder only (`manuscript/SYNTAX.md` →
+`*.md` reports one intentional placeholder only (`docs/manuscript/SYNTAX.md` →
 `../output/figures/example.png`, already listed under "Open / deferred"), and
 `grep` finds no `docs/FAQ.md` reference anywhere in the tree. Every top-level
 folder with three or more tracked files already carries a `README.md`/`AGENTS.md`
 pair, so no folder guide was needed.
 
 Source correction: the pass-3 `../output/figures/example.png` placeholder
-reference is superseded. `manuscript/SYNTAX.md` now demonstrates
+reference is superseded. `docs/manuscript/SYNTAX.md` now demonstrates
 `../output/figures/chapter_01/03_bayes_three_panel.png`. No placeholder artifact
 is required. This correction does not claim a new link-walk run.
 
@@ -117,7 +117,7 @@ extras, docs-subfolders+manuscript), whose findings are folded in below.
 - [x] Chapters family (subagent): Rules-only ch11–14 AGENTS.md expanded to the shared template (Scripts-with-Lines, Library Usage, Smoke Tests). ✓ commit `c01c6b1`
 - [x] Chapters family (subagent): skeletal ch08/11–14 READMEs expanded with concept-map links and verified programmatic-usage snippets (every snippet executed against the real API). ✓ commit `c01c6b1`
 - [x] Chapters family (subagent): `docs/chapters/` file contract relaxed to describe the two real page variants (5-step Recipe for Ch.1–5; model/architecture section for Ch.6+) and imports via table or library-surface section; `docs/chapters/chapter_10.md` gains the missing "Where the book takes this next". Files: `docs/chapters/README.md`, `docs/chapters/AGENTS.md`, `docs/chapters/chapter_10.md`. ✓ commit `8e53f09`
-- [x] Docs family (subagent): manuscript source-surfaces table de-duplicated — canonical table stays in `S01_source_surface.md`; `manuscript/README.md` and `04_artifacts_and_evidence.md` cross-reference it. ✓ commit `8e53f09`
+- [x] Docs family (subagent): manuscript source-surfaces table de-duplicated — canonical table stays in `S01_source_surface.md`; `docs/manuscript/README.md` and `04_artifacts_and_evidence.md` cross-reference it. ✓ commit `8e53f09`
 
 ## Major
 

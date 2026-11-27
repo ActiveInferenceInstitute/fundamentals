@@ -57,7 +57,7 @@ through `chapters/chapter_14/README.md`), records each source path, and uses
 member-prefixed unit IDs (`fundamentals.chapter_01`–`fundamentals.chapter_14`)
 to avoid cross-member collisions. The `generative-model` glossary term is
 transcribed verbatim from
-[`manuscript/98_symbols_glossary.md`](../manuscript/98_symbols_glossary.md#L3).
+[`docs/manuscript/98_symbols_glossary.md`](manuscript/98_symbols_glossary.md#L3).
 
 Prerequisites and edges remain empty because the only authored ordering,
 [`docs/reading_order.md`](../docs/reading_order.md) "Path A — *I'm following the

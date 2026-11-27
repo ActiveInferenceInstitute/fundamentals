@@ -141,7 +141,7 @@ command CI runs.
 [`docs/gate.md`](docs/gate.md) documents each arm, the exact command it runs,
 and its measured wall time on a development host. `./gate.sh manuscript` writes
 the manuscript to `docs/_build/manuscript/`; see
-[`manuscript/README.md`](manuscript/README.md).
+[`docs/manuscript/README.md`](docs/manuscript/README.md).
 
 The batch pipeline is documented for local use too:
 

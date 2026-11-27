@@ -12,7 +12,7 @@
 #   ./gate.sh contract         Education pointer, schema, and bundle coherence
 #   ./gate.sh validators       the repository validators (artifacts, coverage, spine)
 #   ./gate.sh manuscript-check manuscript surfaces without Pandoc or TeX
-#   ./gate.sh manuscript       render every format enabled in manuscript/config.yaml
+#   ./gate.sh manuscript       render every format enabled in docs/manuscript/config.yaml
 #   ./gate.sh gnn              pinned GNN conformance plus the drift guard
 #   ./gate.sh all              every arm above, in that order
 #   ./gate.sh --list           print the arms

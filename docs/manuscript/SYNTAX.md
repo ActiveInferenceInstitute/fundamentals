@@ -45,14 +45,14 @@ bibliography lookups.
 
 ## Figures
 
-Generated figures live under `../output/figures/` and are registered in
+Generated figures live under `../../output/figures/` and are registered in
 `output/figures/figure_registry.json`. A section names the label and the image;
 the registry supplies the alternative text and the caption, so neither is a
 second hand-maintained copy:
 
 ```markdown
 ::: {#fig:example}
-![](../output/figures/chapter_01/03_bayes_three_panel.png){width=85%}
+![](../../output/figures/chapter_01/03_bayes_three_panel.png){width=85%}
 :::
 
 Cross-reference it as @fig:example.

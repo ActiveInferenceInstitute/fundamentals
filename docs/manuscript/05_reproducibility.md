@@ -8,7 +8,7 @@ The manuscript renders from this checkout; no sibling repository is required.
 # validate every manuscript surface without needing a TeX installation
 ./gate.sh manuscript-check
 
-# render every format enabled in manuscript/config.yaml
+# render every format enabled in docs/manuscript/config.yaml
 ./gate.sh manuscript
 ```
 
@@ -30,6 +30,6 @@ uv run python scripts/validate_rendered_figures.py --root output/figures
 ## Reproducibility Contract
 
 - Do not cite results that cannot be regenerated or directly traced.
-- Keep generated outputs under `output/` and manuscript source under `manuscript/`.
+- Keep generated outputs under `output/` and manuscript source under `docs/manuscript/`.
 - Keep private data, credentials, and unpublished sensitive details out of the manuscript.
 - Record exact verification commands before marking this manuscript publication-ready.

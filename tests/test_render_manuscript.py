@@ -20,7 +20,7 @@ def manuscript(tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, spec.name, module)
     spec.loader.exec_module(module)
     root = tmp_path / "repo"
-    manuscript_dir = root / "manuscript"
+    manuscript_dir = root / "docs" / "manuscript"
     manuscript_dir.mkdir(parents=True)
     for name in ("chapters", "extras", "specs", "output/figures"):
         (root / name).mkdir(parents=True)

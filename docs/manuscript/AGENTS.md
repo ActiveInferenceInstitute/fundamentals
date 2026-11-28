@@ -10,7 +10,7 @@ from this checkout.
 - Citations must use Pandoc syntax and resolve in `references.bib`.
 - Generated numbers belong behind `{{TOKEN}}` variables declared in
   `variables.yaml`, not hard-coded prose.
-- Figures are registered in `../output/figures/figure_registry.json`, which owns
+- Figures are registered in `../../output/figures/figure_registry.json`, which owns
   the caption and the alternative text.
 
 ## Editing Rules
@@ -19,7 +19,7 @@ from this checkout.
 - Do not fabricate results, benchmark numbers, citations, DOIs, or release claims.
 - Keep project-specific computation in source modules and scripts; keep manuscript files as prose and evidence maps.
 - Prefer explicit paths to source surfaces when describing evidence.
-- If adding figures, write them under `../output/figures/`, register them, and
+- If adding figures, write them under `../../output/figures/`, register them, and
   cite the registry label from a `::: {#fig:...}` block.
 - If adding a `{{TOKEN}}`, add its producer to `compute_variables()` in
   `scripts/render_manuscript.py` and declare it in `variables.yaml`.

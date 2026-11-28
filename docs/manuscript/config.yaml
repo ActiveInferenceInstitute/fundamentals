@@ -1,9 +1,9 @@
 # Template-format manuscript configuration for fundamentals.
-# Scaffolded from the project README/AGENTS context; update before publication.
+
 
 paper:
   title: "Fundamentals of Active Inference: Python Companion"
-  subtitle: "A manuscript scaffold for executable examples aligned to the textbook source spine"
+  subtitle: "Reproducing textbook methods with executable Python examples and verified artifacts"
   version: "0.1.0"
   date: ""
 
@@ -18,7 +18,8 @@ publication:
   doi: ""
   version_doi: ""
   version_record: ""
-  github_repository: ""
+  repository_url: "https://github.com/ActiveInferenceInstitute/fundamentals"
+  release_status: "unreleased"
   year: "2026"
   transmission_bookends:
     enabled: false
@@ -36,7 +37,7 @@ metadata:
   license: "MIT"
   language: "en"
 
-manuscript_dir: "manuscript"
+manuscript_dir: "docs/manuscript"
 
 render:
   # The project renderer (scripts/render_manuscript.py) produces html and pdf.
@@ -49,6 +50,6 @@ render:
     epub: false
 
 bibliography:
-  references_path: "manuscript/references.bib"
+  references_path: "docs/manuscript/references.bib"
   fail_on_missing: true
   fail_on_unused: false

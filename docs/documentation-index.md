@@ -66,3 +66,7 @@ When adding, renaming, or removing a documentation page, update this list.
 - [`topics/thermodynamic_bridge.md`](topics/thermodynamic_bridge.md)
 - [`uv.md`](uv.md)
 - [`web.md`](web.md)
+
+## Manuscript
+
+- [Manuscript sources and rendering](manuscript/README.md)

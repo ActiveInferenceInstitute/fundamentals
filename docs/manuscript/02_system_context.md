@@ -19,4 +19,4 @@ The Chapter 9 weather model is declared once as Generalized Notation Notation un
 
 ## Render Boundary
 
-Rendering is project-local. `scripts/render_manuscript.py` validates the declared variables, the figure registry, the bibliography keys, and the section labels, then assembles the admitted sections and calls pandoc. It reads `manuscript/config.yaml` for title, authors, bibliography, and the enabled formats. The prose does not depend on a sibling repository checkout to build.
+Rendering is project-local. `scripts/render_manuscript.py` validates the declared variables, the figure registry, the bibliography keys, and the section labels, then assembles the admitted sections and calls pandoc. It reads `docs/manuscript/config.yaml` for title, authors, bibliography, and the enabled formats. The prose does not depend on a sibling repository checkout to build.

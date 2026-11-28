@@ -17,7 +17,7 @@ registry, so it builds from this checkout alone.
 - `config.yaml` - title, authors, bibliography, and enabled render formats
 - `variables.yaml` - declared `{{TOKEN}}` values, each with a repository producer
 - `preamble.md` - fenced LaTeX passed to Pandoc as `--include-in-header`
-- `references.bib` - bibliography (a placeholder until verified entries are added)
+- `references.bib` - bibliography used by the renderer
 - `00_abstract.md` ... `06_limitations_and_next_steps.md` - main sections
 - `S01_source_surface.md` - supplemental source-surface table
 - `98_symbols_glossary.md`, `99_references.md` - back matter
@@ -25,7 +25,7 @@ registry, so it builds from this checkout alone.
 - `AGENTS.md` - agent guidance for this directory
 
 Figures are registered in
-[`../output/figures/figure_registry.json`](../output/figures/figure_registry.json).
+[`../../output/figures/figure_registry.json`](../../output/figures/figure_registry.json).
 
 ## Source Surfaces
 
@@ -45,4 +45,4 @@ inspect before turning prose into claims.
 
 Both commands run `scripts/render_manuscript.py`; the second writes the HTML, the
 PDF, and a render receipt under `docs/_build/manuscript/`. The repository gate is
-documented in [`../docs/gate.md`](../docs/gate.md).
+documented in [`../gate.md`](../gate.md).

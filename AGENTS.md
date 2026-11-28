@@ -108,8 +108,8 @@ domain logic.
 The Chapter 9 §9.1 weather model is declared in
 [`specs/weather_pomdp.gnn.md`](specs/weather_pomdp.gnn.md) using Generalized
 Notation Notation, with the upstream parser revision pinned in
-[`specs/gnn-pin.json`](specs/gnn-pin.json) (GNN v5.1.0,
-commit `75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`).
+[`specs/gnn-pin.json`](specs/gnn-pin.json) (GNN v5.2.0,
+commit `4a7cccce6d4d7cb483f00323ec5cdd79300f3464`).
 
 - `tests/test_gnn_spec.py` binds the declaration to the implementation: the
   declared `A`/`D` must equal the module-level literals in

@@ -3,8 +3,8 @@
 `gnn conformance (pinned)` is the display name of the `gnn-conformance` job in
 `.github/workflows/ci.yml`. It reads `specs/gnn-pin.json` — the canonical pin
 file, schema `gnn-importer-pin/v1` — which pins
-`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.1.0`
-(`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`). The job installs that commit
+`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.2.0`
+(`4a7cccce6d4d7cb483f00323ec5cdd79300f3464`). The job installs that commit
 into a Python 3.12 virtual environment and requires the installed
 `gnn.__version__` to equal the pinned tag without its `v`.
 

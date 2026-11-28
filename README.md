@@ -453,7 +453,7 @@ Chapters 1-14 and Appendices A-D, and no Chapter 15.
 | File | Contents |
 |---|---|
 | [`weather_pomdp.gnn.md`](specs/weather_pomdp.gnn.md) | The Chapter 9 §9.1 weather model declared in Generalized Notation Notation: variables, connections, `A`/`D`, equations, and ontology annotations |
-| [`gnn-pin.json`](specs/gnn-pin.json) | The upstream parser revision the declaration was reviewed against (GNN v5.1.0, commit `75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`) with the parser-file SHA-256 digests |
+| [`gnn-pin.json`](specs/gnn-pin.json) | The upstream parser revision the declaration was reviewed against (GNN v5.2.0, commit `4a7cccce6d4d7cb483f00323ec5cdd79300f3464`) with the parser-file SHA-256 digests |
 
 [`tests/test_gnn_spec.py`](tests/test_gnn_spec.py) binds the declaration to the
 chapter's literals and to the book's Eq. 15 posterior;

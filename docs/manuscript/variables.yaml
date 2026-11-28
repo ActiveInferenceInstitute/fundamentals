@@ -31,10 +31,10 @@ variables:
     value: "gnn-importer-pin/v1"
     source: "specs/gnn-pin.json schema"
   GNN_PIN_TAG:
-    value: "v5.1.0"
+    value: "v5.2.0"
     source: "specs/gnn-pin.json tag"
   GNN_PIN_COMMIT:
-    value: "75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf"
+    value: "a9ab7fd5e9f7f64bc491de566c2dcf7f92aa5749"
     source: "specs/gnn-pin.json commit"
   GNN_PIN_LANGUAGE_VERSION:
     value: "GNN v1.1"

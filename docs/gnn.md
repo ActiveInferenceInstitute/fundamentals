@@ -17,7 +17,7 @@ commands, and exactly what each check proves.
 | Path | Role |
 |---|---|
 | [`specs/weather_pomdp.gnn.md`](../specs/weather_pomdp.gnn.md) | The GNN declaration: `A` (3×4 likelihood), `D` (uniform prior), the four declared variables, the equations, and the ontology annotations. Hand-authored; it is the canonical statement of the model's structure and parameters. |
-| [`specs/gnn-pin.json`](../specs/gnn-pin.json) | The pin record: upstream repository, tag `v5.2.0`, commit `a9ab7fd5e9f7f64bc491de566c2dcf7f92aa5749`, declared language version, recording date, and SHA-256 digests of the parser files the document was reviewed against. |
+| [`specs/gnn-pin.json`](../specs/gnn-pin.json) | The pin record: upstream repository, tag `v5.2.0`, commit `4a7cccce6d4d7cb483f00323ec5cdd79300f3464`, declared language version, recording date, and SHA-256 digests of the parser files the document was reviewed against. |
 | [`src/active_inference/gnn_spec.py`](../src/active_inference/gnn_spec.py) | Dependency-free reader (standard library + NumPy): sections, declared variables, `A`/`D` reshaped to the declared dimensions, `ModelParameters` scalars, and the pin. Not part of the package `__all__`. |
 | [`scripts/gnn_parser_probe.py`](../scripts/gnn_parser_probe.py) | The only module that imports the upstream `gnn` package; runs as a subprocess under the pinned revision. |
 | [`scripts/validate_gnn_spec.py`](../scripts/validate_gnn_spec.py) | The pinned-parser validator: materializes the pinned commit, verifies parser digests, and requires the pinned parser and the dependency-free reader to agree. |

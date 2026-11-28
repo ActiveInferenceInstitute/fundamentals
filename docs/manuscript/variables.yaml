@@ -34,7 +34,7 @@ variables:
     value: "v5.2.0"
     source: "specs/gnn-pin.json tag"
   GNN_PIN_COMMIT:
-    value: "a9ab7fd5e9f7f64bc491de566c2dcf7f92aa5749"
+    value: "4a7cccce6d4d7cb483f00323ec5cdd79300f3464"
     source: "specs/gnn-pin.json commit"
   GNN_PIN_LANGUAGE_VERSION:
     value: "GNN v1.1"

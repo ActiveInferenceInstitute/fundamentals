@@ -4,7 +4,7 @@
 `.github/workflows/ci.yml`. It reads `specs/gnn-pin.json` — the canonical pin
 file, schema `gnn-importer-pin/v1` — which pins
 `ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.2.0`
-(`a9ab7fd5e9f7f64bc491de566c2dcf7f92aa5749`). The job installs that commit
+(`4a7cccce6d4d7cb483f00323ec5cdd79300f3464`). The job installs that commit
 into a Python 3.12 virtual environment and requires the installed
 `gnn.__version__` to equal the pinned tag without its `v`.
 

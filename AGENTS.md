@@ -109,7 +109,7 @@ The Chapter 9 §9.1 weather model is declared in
 [`specs/weather_pomdp.gnn.md`](specs/weather_pomdp.gnn.md) using Generalized
 Notation Notation, with the upstream parser revision pinned in
 [`specs/gnn-pin.json`](specs/gnn-pin.json) (GNN v5.2.0,
-commit `a9ab7fd5e9f7f64bc491de566c2dcf7f92aa5749`).
+commit `4a7cccce6d4d7cb483f00323ec5cdd79300f3464`).
 
 - `tests/test_gnn_spec.py` binds the declaration to the implementation: the
   declared `A`/`D` must equal the module-level literals in
